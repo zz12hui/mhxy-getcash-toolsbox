@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python3 *)",
-      "Read(//Users/llbbove/.claude/skills/genskills--code-review/**)"
+      "Read(//Users/llbbove/.claude/skills/genskills--code-review/**)",
+      "WebSearch"
     ]
   }
 }

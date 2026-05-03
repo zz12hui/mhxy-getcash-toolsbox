@@ -1,18 +1,18 @@
-// 宠环任务类型
+// 宠环任务类型（cost 为参考市场均价，单位：两银子）
 const PET_TYPES = [
-  { id: 'find_npc', name: '找人', icon: '👤', sc: 1, cat: 'f' },
-  { id: 'equip60', name: '60环装', icon: '⚔️', sc: 2, cat: 'l' },
-  { id: 'equip70', name: '70环装', icon: '🗡️', sc: 3, cat: 'l' },
-  { id: 'food_drug', name: '烹饪/三药', icon: '🍖', sc: 2, cat: 'l' },
-  { id: 'furniture1', name: '1级家具', icon: '🪑', sc: 2, cat: 'l' },
-  { id: 'flower', name: '花卉', icon: '🌸', sc: 4, cat: 'm' },
-  { id: 'instrument', name: '乐器', icon: '🎵', sc: 4, cat: 'm' },
-  { id: 'equip80', name: '80环装', icon: '🔪', sc: 5, cat: 'h' },
-  { id: 'furniture2', name: '2级家具', icon: '🛋️', sc: 5, cat: 'h' },
-  { id: 'variant_nonspecific', name: '非指定变异', icon: '🐉', sc: 5, cat: 'h' },
-  { id: 'variant_specific', name: '指定变异', icon: '⭐', sc: 10, cat: 'b' },
-  { id: 'variant_substitute', name: '普通宠替变异', icon: '❌', sc: -15, cat: 'n' },
-  { id: 'skip', name: '跳过任务', icon: '⏭️', sc: -20, cat: 'n' }
+  { id: 'find_npc', name: '找人', icon: '👤', sc: 1, cat: 'f', cost: 0 },
+  { id: 'equip60', name: '60环装', icon: '⚔️', sc: 2, cat: 'l', cost: 180000 },
+  { id: 'equip70', name: '70环装', icon: '🗡️', sc: 3, cat: 'l', cost: 120000 },
+  { id: 'food_drug', name: '烹饪/三药', icon: '🍖', sc: 2, cat: 'l', cost: 20000 },
+  { id: 'furniture1', name: '1级家具', icon: '🪑', sc: 2, cat: 'l', cost: 30000 },
+  { id: 'flower', name: '花卉', icon: '🌸', sc: 4, cat: 'm', cost: 50000 },
+  { id: 'instrument', name: '乐器', icon: '🎵', sc: 4, cat: 'm', cost: 80000 },
+  { id: 'equip80', name: '80环装', icon: '🔪', sc: 5, cat: 'h', cost: 450000 },
+  { id: 'furniture2', name: '2级家具', icon: '🛋️', sc: 5, cat: 'h', cost: 50000 },
+  { id: 'variant_nonspecific', name: '非指定变异', icon: '🐉', sc: 5, cat: 'h', cost: 2500000 },
+  { id: 'variant_specific', name: '指定变异', icon: '⭐', sc: 10, cat: 'b', cost: 6000000 },
+  { id: 'variant_substitute', name: '普通宠替变异', icon: '❌', sc: -15, cat: 'n', cost: 10000 },
+  { id: 'skip', name: '跳过任务', icon: '⏭️', sc: -20, cat: 'n', cost: 0 }
 ]
 
 // 任务链任务类型

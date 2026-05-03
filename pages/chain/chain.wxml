@@ -209,6 +209,7 @@
     <view class="sheet-title">更多操作</view>
     <view class="more-menu-item" bindtap="showUserSheet">👥 角色管理</view>
     <view class="more-menu-item" bindtap="showPricesSheet">💰 物品价格设置</view>
+    <view class="more-menu-item" bindtap="showGuideSheet">📖 使用引导</view>
     <view wx:if="{{hasCur}}" class="more-menu-item" bindtap="abandonFromMenu" style="color:var(--danger);">🗑️ 放弃当前任务链</view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeMoreMenu" style="flex:1">关闭</view>
@@ -355,6 +356,30 @@
     <view class="sheet-actions">
       <view class="btn" bindtap="closeSegModal">跳过</view>
       <view class="btn btn-a" style="flex:1" bindtap="confirmSeg">确认记录</view>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Sheet: Guide -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showGuide}}" style="background:rgba(0,0,0,0.85);">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">📖 使用引导 <text style="font-size:22rpx;color:var(--text2);font-weight:400;">{{guideStep+1}}/{{guideSteps.length}}</text></view>
+    <view style="text-align:center;padding:20rpx 0;">
+      <view style="font-size:80rpx;margin-bottom:20rpx;">{{guideSteps[guideStep].icon}}</view>
+      <view style="font-size:32rpx;font-weight:700;margin-bottom:12rpx;">{{guideSteps[guideStep].title}}</view>
+      <view style="font-size:26rpx;color:var(--text2);line-height:1.8;padding:0 20rpx;">{{guideSteps[guideStep].desc}}</view>
+      <view wx:if="{{guideSteps[guideStep].pos}}" style="margin-top:16rpx;padding:12rpx 20rpx;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);border-radius:10rpx;font-size:22rpx;color:var(--accent);line-height:1.6;">{{guideSteps[guideStep].pos}}</view>
+    </view>
+    <view style="display:flex;justify-content:center;gap:8rpx;margin-bottom:24rpx;">
+      <block wx:for="{{guideSteps}}" wx:key="index">
+        <view style="width:{{index===guideStep?'24':'12'}}rpx;height:12rpx;border-radius:6rpx;background:{{index===guideStep?'var(--accent)':'var(--border)'}};transition:all 0.2s;"></view>
+      </block>
+    </view>
+    <view class="sheet-actions">
+      <view wx:if="{{guideStep>0}}" class="btn" bindtap="guidePrev">上一步</view>
+      <view wx:else class="btn" bindtap="closeGuide">跳过</view>
+      <view class="btn btn-a" style="flex:1" bindtap="guideNext">{{guideStep>=guideSteps.length-1?'知道了':'下一步'}}</view>
     </view>
   </view>
 </view>

@@ -22,6 +22,19 @@ Page({
     history: [],
     // Stats
     stats: {}, typeDist: [],
+    // Guide
+    showGuide: false, guideStep: 0,
+    guideSteps: [
+      { icon: '👤', title: '创建角色', desc: '点击标题栏角色名切换或创建角色，不同角色数据完全隔离', pos: '📍 位置：标题栏左侧，角色名显示区域' },
+      { icon: '⚙️', title: '设置等级', desc: '输入角色等级（60~175），等级决定三段奖励的书铁等级区间', pos: '📍 位置：标题栏 Lv. 输入框' },
+      { icon: '💰', title: '设置物品价格', desc: '修改60环装/80环装/兽诀等物品价格，用于准确计算总费用', pos: '👉 操作：标题栏 ⋯ → 💰 物品价格设置' },
+      { icon: '▶️', title: '开始任务链', desc: '开始新一轮300环任务链，每个角色独立存储数据', pos: '👉 操作：标题栏 "+新" 按钮（绿色）' },
+      { icon: '📝', title: '记录每环任务', desc: '选择快速栏中的任务类型，点击"记录"录入当前环', pos: '📍 位置：页面中部快速栏区域，任务类型按钮 → "记录 #N" 按钮' },
+      { icon: '📦', title: '批量填充', desc: '选择100环范围一键填入相同任务，快速通过找人/战斗段', pos: '👉 操作：网格标题行 → "批量填充" 按钮' },
+      { icon: '🏷️', title: '段奖励记录', desc: '每完成100环自动弹出提示，选择实际获得的制造指南书/百炼精铁等级和类型', pos: '📍 位置：自动弹出，每100环触发一次' },
+      { icon: '🏁', title: '完成结算', desc: '300环全部完成并记录三段奖励后自动结算', pos: '👉 操作：也可在完成300环前主动点击标题栏 "结算" 按钮' },
+      { icon: '📊', title: '查看历史和统计', desc: '查看多轮任务链的费用和任务类型分布', pos: '📍 位置：顶部标签栏 → "历史" / "统计" 标签页' }
+    ],
     // Modals
     showMoreMenu: false,
     showEditModal: false, editRing: 0, editSelTid: '', editItem: '', editHasCur: false, editCostWan: '0',
@@ -44,6 +57,10 @@ Page({
     this.updateClock()
     if (this._clockTimer) clearInterval(this._clockTimer)
     this._clockTimer = setInterval(() => this.updateClock(), 1000)
+    const uid = this.data.activeUser
+    if (uid && !wx.getStorageSync('mhxy_guide_seen_chain_' + uid)) {
+      setTimeout(() => this.setData({ showGuide: true }), 500)
+    }
   },
 
   onHide() {
@@ -103,7 +120,23 @@ Page({
   closeMoreMenu() { this.setData({ showMoreMenu: false }) },
   showUserSheet() { this.setData({ showMoreMenu: false, showUserModal: true }) },
   showPricesSheet() { this.setData({ showMoreMenu: false, showPricesModal: true }) },
+  showGuideSheet() { this.setData({ showMoreMenu: false, showGuide: true, guideStep: 0 }) },
   abandonFromMenu() { this.setData({ showMoreMenu: false }); this.abandon() },
+
+  // ===== Guide =====
+  closeGuide() {
+    this.setData({ showGuide: false, guideStep: 0 })
+    const uid = this.data.activeUser
+    if (uid) wx.setStorageSync('mhxy_guide_seen_chain_' + uid, true)
+  },
+  guideNext() {
+    const next = this.data.guideStep + 1
+    if (next >= this.data.guideSteps.length) this.closeGuide()
+    else this.setData({ guideStep: next })
+  },
+  guidePrev() {
+    this.setData({ guideStep: Math.max(0, this.data.guideStep - 1) })
+  },
 
   // ===== User =====
   onUserChange(e) {

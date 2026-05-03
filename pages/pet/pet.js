@@ -23,6 +23,18 @@ Page({
     history: [],
     // Stats
     stats: {}, tierDist: [],
+    // Guide
+    showGuide: false, guideStep: 0,
+    guideSteps: [
+      { icon: '👤', title: '创建角色', desc: '点击标题栏角色名切换或创建角色，不同角色数据完全隔离', pos: '📍 位置：标题栏左侧，角色名显示区域' },
+      { icon: '⚙️', title: '设置等级', desc: '输入你的角色等级（65~175），影响书铁奖励预测和控分计算', pos: '📍 位置：标题栏 Lv. 输入框' },
+      { icon: '💰', title: '设置物品价格', desc: '修改60环装/80环装/变异等物品价格，用于准确计算每轮费用', pos: '👉 操作：标题栏 ⋯ → 💰 物品价格设置' },
+      { icon: '▶️', title: '开始跑环', desc: '开始新一轮100环宠环记录，每个角色独立存储数据', pos: '👉 操作：标题栏 "+新" 按钮（绿色）' },
+      { icon: '📝', title: '记录每环任务', desc: '选择快速栏中的任务类型，点击"记录"录入当前环', pos: '📍 位置：页面中部快速栏区域，任务类型按钮 → "记录 #N" 按钮' },
+      { icon: '📦', title: '批量填充', desc: '选择范围一键填入相同任务类型，大幅提升记录效率', pos: '👉 操作：网格标题行 → "批量填充" 按钮' },
+      { icon: '🏆', title: '结算奖励', desc: '全部100环完成后点击"结算"，记录实际获得的书铁等级和额外奖励', pos: '👉 操作：标题栏 "结算" 按钮（跑环进行中时显示）' },
+      { icon: '📊', title: '查看历史和统计', desc: '查看多轮跑环的得分趋势、奖励档位分布和费用统计', pos: '📍 位置：顶部标签栏 → "历史" / "统计" 标签页' }
+    ],
     // Modals
     showMoreMenu: false,
     showEditModal: false, editRing: 0, editSelTid: '', editItem: '', editHasCur: false, editCostWan: '0',
@@ -47,6 +59,11 @@ Page({
     this.updateClock()
     if (this._clockTimer) clearInterval(this._clockTimer)
     this._clockTimer = setInterval(() => this.updateClock(), 1000)
+    // First-use guide check
+    const uid = this.data.activeUser
+    if (uid && !wx.getStorageSync('mhxy_guide_seen_pet_' + uid)) {
+      setTimeout(() => this.setData({ showGuide: true }), 500)
+    }
   },
 
   onHide() {
@@ -107,9 +124,25 @@ Page({
   closeMoreMenu() { this.setData({ showMoreMenu: false }) },
   showUserSheet() { this.setData({ showMoreMenu: false, showUserModal: true }) },
   showPricesSheet() { this.setData({ showMoreMenu: false, showPricesModal: true }) },
+  showGuideSheet() { this.setData({ showMoreMenu: false, showGuide: true, guideStep: 0 }) },
   abandonFromMenu() {
     this.setData({ showMoreMenu: false })
     this.abandon()
+  },
+
+  // ===== Guide =====
+  closeGuide() {
+    this.setData({ showGuide: false, guideStep: 0 })
+    const uid = this.data.activeUser
+    if (uid) wx.setStorageSync('mhxy_guide_seen_pet_' + uid, true)
+  },
+  guideNext() {
+    const next = this.data.guideStep + 1
+    if (next >= this.data.guideSteps.length) this.closeGuide()
+    else this.setData({ guideStep: next })
+  },
+  guidePrev() {
+    this.setData({ guideStep: Math.max(0, this.data.guideStep - 1) })
   },
 
   // ===== User =====
