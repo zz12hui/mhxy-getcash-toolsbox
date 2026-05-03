@@ -1,0 +1,42 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/pet/pet",
+    "pages/chain/chain"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#0f1623",
+    "navigationBarTitleText": "梦幻搞钱工具箱",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#080c14"
+  },
+  "tabBar": {
+    "color": "#6b7d95",
+    "selectedColor": "#00d4aa",
+    "backgroundColor": "#0f1623",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home-active.png"
+      },
+      {
+        "pagePath": "pages/pet/pet",
+        "text": "宠环助手",
+        "iconPath": "images/pet.png",
+        "selectedIconPath": "images/pet-active.png"
+      },
+      {
+        "pagePath": "pages/chain/chain",
+        "text": "跑环助手",
+        "iconPath": "images/chain.png",
+        "selectedIconPath": "images/chain-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

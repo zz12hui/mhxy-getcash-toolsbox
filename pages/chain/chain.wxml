@@ -1,0 +1,363 @@
+<view class="app">
+  <!-- Header -->
+  <view class="header">
+    <view class="header-l">
+      <view class="header-title">跑环助手</view>
+    </view>
+    <view class="header-r">
+      <picker bindchange="onUserChange" value="{{userIdx}}" range="{{userNames}}">
+        <view class="picker-btn">{{currentUserName}}</view>
+      </picker>
+      <view class="lv">
+        <text>Lv.</text>
+        <input type="number" value="{{cfg.level}}" bindblur="onLevelChange" min="60" max="175"/>
+      </view>
+      <block wx:if="{{hasCur}}">
+        <view class="btn btn-xs btn-a" bindtap="complete">结算</view>
+      </block>
+      <view wx:else class="btn btn-xs btn-a" bindtap="startNew">+新</view>
+      <view class="btn btn-xs" bindtap="toggleMoreMenu">⋯</view>
+    </view>
+  </view>
+
+  <!-- Tabs -->
+  <view class="tabs">
+    <view class="tab {{tab==='record'?'active':''}}" bindtap="switchTab" data-t="record">记录</view>
+    <view class="tab {{tab==='reward'?'active':''}}" bindtap="switchTab" data-t="reward">奖励</view>
+    <view class="tab {{tab==='history'?'active':''}}" bindtap="switchTab" data-t="history">历史</view>
+    <view class="tab {{tab==='stats'?'active':''}}" bindtap="switchTab" data-t="stats">统计</view>
+  </view>
+
+  <!-- Tab: Record -->
+  <block wx:if="{{tab==='record'}}">
+    <block wx:if="{{!hasCur}}">
+      <view class="ring-grid-wrap">
+        <view class="empty-state">
+          <view class="icon">📋</view>
+          <text>还没有开始任务链记录</text>
+          <view class="btn btn-a" bindtap="startNew">+ 开始新任务链</view>
+        </view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="strip">
+        <view class="si"><text class="sl">进度</text><text class="sv a">{{completed}}/300</text></view>
+        <view class="sd"></view>
+        <view class="si"><text class="sl">完成</text><text class="sv">{{completedPct}}%</text></view>
+        <view class="sd"></view>
+        <view class="si"><text class="sl">剩余</text><text class="sv w">{{remaining}}环</text></view>
+        <view class="sd"></view>
+        <view class="si"><text class="sl">费用</text><text class="sv" style="color:#f472b6;">{{costWan}}万</text></view>
+        <view class="prog-inline"><view class="prog-fill" style="width:{{completedPct}}%;"></view></view>
+      </view>
+
+      <view class="seg-badges">
+        <view class="seg-badge {{seg1Done?'done':''}} {{curSeg===1?'cur':''}}">1-100 {{seg1Done?'✅':'⏳'}}</view>
+        <view class="seg-badge {{seg2Done?'done':''}} {{curSeg===2?'cur':''}}">101-200 {{seg2Done?'✅':'⏳'}}</view>
+        <view class="seg-badge {{seg3Done?'done':''}} {{curSeg===3?'cur':''}}">201-300 {{seg3Done?'✅':'⏳'}}</view>
+      </view>
+
+      <view class="minimap">
+        <block wx:for="{{ringList}}" wx:key="index">
+          <view class="dot {{item.cls}}" style="width:{{700/30 - 2}}rpx;height:16rpx;"></view>
+        </block>
+      </view>
+
+      <view class="quick-bar">
+        <view class="qb-tasks">
+          <block wx:for="{{chainTypes}}" wx:key="id">
+            <view class="qb-t {{modalTask===item.id?'sel':''}}" bindtap="selectTask" data-tid="{{item.id}}">{{item.icon}} {{item.name}}</view>
+          </block>
+        </view>
+        <input class="qb-input" placeholder="物品名" value="{{qbItem}}" bindinput="onQbItemInput"/>
+        <view class="qb-go" style="width:100%;" bindtap="quickRecord">记录 #{{nextRing||'✓'}}</view>
+      </view>
+
+      <view class="ring-grid-wrap">
+        <view class="ring-grid-h">
+          <text>点击格子编辑 | 已录{{completed}}/300</text>
+          <view style="display:flex;gap:8rpx;">
+            <view class="btn btn-xs" bindtap="showBatch">批量填充</view>
+            <view class="btn btn-xs" style="color:var(--danger);border-color:var(--danger);" bindtap="clearAll">清除</view>
+          </view>
+        </view>
+        <scroll-view scroll-y class="scroll-wrap">
+          <view class="ring-grid x10c">
+            <block wx:for="{{gridCells}}" wx:key="index">
+              <view class="cell {{item.cls}}" data-ring="{{item.rn}}" bindtap="editCell">{{item.rn}}</view>
+            </block>
+          </view>
+        </scroll-view>
+      </view>
+    </block>
+  </block>
+
+  <!-- Tab: Reward -->
+  <block wx:if="{{tab==='reward'}}">
+    <scroll-view scroll-y class="scroll-wrap" style="flex:1;">
+      <view class="section">
+        <view class="section-title">奖励规则 — Lv.{{rewardLv}}{{hasCur?' | 当前'+completed+'/300':''}}</view>
+        <view class="reward-rule-box">
+          <view><text class="hl-text">规则：</text>{{rewardRuleStr}}</view>
+          <view style="margin-top:4rpx;"><text class="hl-text">NPC：</text>长寿村陆萧然 | ≥60级 | 200环后无战斗，寻物必80环装</view>
+        </view>
+        <view class="section-title">各段奖励记录</view>
+        <view style="display:flex;gap:12rpx;margin-bottom:16rpx;">
+          <block wx:for="{{segRewards}}" wx:key="seg">
+            <view class="seg-reward-card {{item.done?'seg-reward-done':''}}">
+              <view class="seg-reward-title {{item.done?'hl-accent':''}}">第{{item.seg}}环</view>
+              <view class="seg-reward-desc">{{item.desc}}</view>
+              <view wx:if="{{item.rewards}}" class="seg-reward-val">{{item.rewards}}</view>
+              <view wx:else class="seg-reward-empty">未记录</view>
+            </view>
+          </block>
+        </view>
+        <view class="table">
+          <view class="tr head">
+            <view class="th" style="flex:2">书铁等级</view>
+            <view class="th" style="flex:1.5">100环(书)</view>
+            <view class="th" style="flex:1.5">200环(铁)</view>
+            <view class="th" style="flex:1.5">300环(随机)</view>
+          </view>
+          <block wx:for="{{rewardRows}}" wx:key="lv">
+            <view class="tr {{item.cls}}">
+              <view class="td" style="flex:2;font-weight:700">{{item.label}}</view>
+              <view class="td" style="flex:1.5">{{item.s100}}</view>
+              <view class="td" style="flex:1.5">{{item.s200}}</view>
+              <view class="td" style="flex:1.5">{{item.s300}}</view>
+            </view>
+          </block>
+        </view>
+      </view>
+    </scroll-view>
+  </block>
+
+  <!-- Tab: History -->
+  <block wx:if="{{tab==='history'}}">
+    <block wx:if="{{!history.length}}">
+      <view class="ring-grid-wrap">
+        <view class="empty-state">
+          <view class="icon">📜</view>
+          <text>暂无任务链记录</text>
+        </view>
+      </view>
+    </block>
+    <scroll-view wx:else scroll-y class="scroll-wrap" style="flex:1;">
+      <view class="section">
+        <view class="history-header">
+          <text class="section-title" style="margin-bottom:0">历史记录（{{history.length}}条）</text>
+          <view style="display:flex;gap:8rpx;">
+            <view class="btn btn-xs" bindtap="exportData">导出</view>
+            <view class="btn btn-xs" bindtap="importData">导入</view>
+          </view>
+        </view>
+        <block wx:for="{{history}}" wx:key="id" wx:for-item="r">
+          <view class="hist-item">
+            <view style="flex:1;min-width:0;">
+              <view class="hist-title">
+                {{r.done?'✅':'🔄'}} #{{history.length - index}}
+                <text class="hist-sub">Lv.{{r.level}} | {{r.comp}}/300 | 费{{r.costWan}}万</text>
+              </view>
+              <view class="hist-date">
+                {{r.startedStr}}{{r.doneStr}}
+                <text wx:if="{{r.rewardStr}}"> | {{r.rewardStr}}</text>
+              </view>
+            </view>
+            <view class="cost">{{r.costWan}}万</view>
+            <view class="btn btn-xs" bindtap="showReport" data-id="{{r.id}}">📊</view>
+            <view class="btn btn-xs" style="color:var(--danger);border-color:var(--danger);" bindtap="deleteRun" data-id="{{r.id}}">✕</view>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+  </block>
+
+  <!-- Tab: Stats -->
+  <block wx:if="{{tab==='stats'}}">
+    <block wx:if="{{!history.length}}">
+      <view class="ring-grid-wrap">
+        <view class="empty-state">
+          <view class="icon">📈</view>
+          <text>暂无数据</text>
+        </view>
+      </view>
+    </block>
+    <scroll-view wx:else scroll-y class="scroll-wrap" style="flex:1;">
+      <view class="section">
+        <view class="section-title">统计分析</view>
+        <view class="stat-cards">
+          <view class="stat-card"><view class="lbl">总次数</view><view class="val" style="color:var(--accent);">{{stats.total}}</view></view>
+          <view class="stat-card"><view class="lbl">平均完成</view><view class="val">{{stats.avgComp}}环</view></view>
+          <view class="stat-card"><view class="lbl">总费用</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{stats.totalCostWan}}万</view></view>
+          <view class="stat-card"><view class="lbl">均次费用</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{stats.avgCostWan}}万</view></view>
+        </view>
+        <view style="margin-bottom:16rpx;">
+          <view class="section-sub-title">任务类型分布</view>
+          <block wx:for="{{typeDist}}" wx:key="name">
+            <view class="stat-row"><text>{{item.name}}</text><text class="val">{{item.count}}次 ({{item.pct}}%)</text></view>
+          </block>
+        </view>
+      </view>
+    </scroll-view>
+  </block>
+</view>
+
+<!-- Bottom Sheet: More Menu -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showMoreMenu}}" bindtap="closeMoreMenu">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">更多操作</view>
+    <view class="more-menu-item" bindtap="showUserSheet">👥 角色管理</view>
+    <view class="more-menu-item" bindtap="showPricesSheet">💰 物品价格设置</view>
+    <view wx:if="{{hasCur}}" class="more-menu-item" bindtap="abandonFromMenu" style="color:var(--danger);">🗑️ 放弃当前任务链</view>
+    <view class="sheet-actions">
+      <view class="btn" bindtap="closeMoreMenu" style="flex:1">关闭</view>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Sheet: Edit ring -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showEditModal}}" bindtap="closeEditModal">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">编辑第{{editRing}}环</view>
+    <view class="modal-grid" style="grid-template-columns:repeat(3,1fr);">
+      <block wx:for="{{chainTypes}}" wx:key="id">
+        <view class="modal-item {{editSelTid===item.id?'sel':''}}" bindtap="pickEditType" data-tid="{{item.id}}">{{item.icon}}{{item.name}}<view style="font-size:18rpx;color:var(--text2);">{{item.costLabel}}</view></view>
+      </block>
+    </view>
+    <input value="{{editItem}}" placeholder="物品名称（选填）" bindinput="onEditItemInput" style="width:100%;padding:16rpx;background:var(--bg);border:1px solid var(--border);border-radius:10rpx;color:var(--text);font-size:26rpx;margin-bottom:16rpx;box-sizing:border-box;"/>
+    <view wx:if="{{editHasCur}}" style="font-size:22rpx;color:var(--text2);margin-bottom:16rpx;">预估费用：{{editCostWan}}万</view>
+    <view class="sheet-actions">
+      <view wx:if="{{editHasCur}}" class="btn btn-d" bindtap="clearEdit">清除</view>
+      <view class="btn" bindtap="closeEditModal">取消</view>
+      <view class="btn btn-a" style="flex:1" bindtap="saveEdit">保存</view>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Sheet: Batch fill -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showBatchModal}}" bindtap="closeBatchModal">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">📦 批量填充</view>
+    <view class="batch-range-row">
+      <text style="font-size:24rpx;color:var(--text2);">从</text>
+      <input type="number" value="{{batchStart}}" bindinput="onBatchStartInput" placeholder="起始环"/>
+      <text class="sep">—</text>
+      <input type="number" value="{{batchEnd}}" bindinput="onBatchEndInput" placeholder="结束环"/>
+      <text style="font-size:24rpx;color:var(--warn);">共{{batchCount}}环</text>
+    </view>
+    <view class="batch-quick-btns">
+      <view class="btn btn-xs" bindtap="quickBatchRange" data-s="1" data-e="100">1-100</view>
+      <view class="btn btn-xs" bindtap="quickBatchRange" data-s="101" data-e="200">101-200</view>
+      <view class="btn btn-xs" bindtap="quickBatchRange" data-s="201" data-e="300">201-300</view>
+      <view class="btn btn-xs" bindtap="quickBatchRange" data-s="1" data-e="300">全部</view>
+    </view>
+    <view class="modal-sub-label">选择任务类型：</view>
+    <view style="display:flex;flex-wrap:wrap;gap:10rpx;margin-bottom:20rpx;">
+      <block wx:for="{{chainTypes}}" wx:key="id">
+        <view class="btn btn-xs {{batchSelTid===item.id?'btn-a':''}}" bindtap="pickBatchType" data-tid="{{item.id}}">{{item.icon}}{{item.name}}</view>
+      </block>
+    </view>
+    <view class="sheet-actions">
+      <view class="btn" bindtap="closeBatchModal">取消</view>
+      <view class="btn btn-a" style="flex:1" bindtap="confirmBatch">填充{{batchCount}}环</view>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Sheet: Prices -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showPricesModal}}" bindtap="closePricesModal">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">💰 物品参考价格</view>
+    <view style="font-size:22rpx;color:var(--text2);margin-bottom:16rpx;">修改后保存，用于计算费用（单位：两银子）</view>
+    <scroll-view scroll-y style="max-height:50vh;">
+      <block wx:for="{{chainTypes}}" wx:key="id">
+        <view class="setting-row">
+          <text class="label">{{item.icon}}{{item.name}}</text>
+          <input type="number" data-tid="{{item.id}}" value="{{prices[item.id]||0}}" bindblur="onPriceChange" style="width:200rpx;"/>
+        </view>
+      </block>
+    </scroll-view>
+    <view class="sheet-actions">
+      <view class="btn" bindtap="resetPrices">恢复默认</view>
+      <view class="btn btn-a" style="flex:1" bindtap="savePrices">保存</view>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Sheet: User manager -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showUserModal}}" bindtap="closeUserModal">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">👥 角色管理</view>
+    <scroll-view scroll-y style="max-height:400rpx;margin-bottom:20rpx;">
+      <block wx:for="{{users}}" wx:key="id">
+        <view class="user-item {{item.id===activeUser?'user-active':''}}">
+          <view>
+            <view class="user-name {{item.id===activeUser?'hl-accent':''}}">{{item.name}}{{item.id===activeUser?' (当前)':''}}</view>
+            <view style="font-size:20rpx;color:var(--text2);">创建于{{item.createdStr}}</view>
+          </view>
+          <view style="display:flex;gap:8rpx;">
+            <view wx:if="{{item.id!==activeUser}}" class="btn btn-xs btn-a" bindtap="switchUser" data-uid="{{item.id}}">切换</view>
+            <view class="btn btn-xs btn-d" bindtap="deleteUser" data-uid="{{item.id}}">删除</view>
+          </view>
+        </view>
+      </block>
+    </scroll-view>
+    <view style="display:flex;gap:12rpx;margin-bottom:20rpx;">
+      <input placeholder="新角色名称" maxlength="12" value="{{newUserName}}" bindinput="onNewUserName" style="flex:1;padding:16rpx;background:var(--bg);border:1px solid var(--border);border-radius:10rpx;color:var(--text);font-size:26rpx;"/>
+      <view class="btn btn-a" bindtap="createUser">创建</view>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Sheet: Seg reward -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showSegModal}}" bindtap="closeSegModal">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">🏆 第{{segRewardSeg}}环奖励记录</view>
+    <view class="stat-row"><text>角色等级</text><text class="val">{{cfg.level}}级</text></view>
+    <view class="stat-row"><text>奖励说明</text><text class="val" style="color:var(--warn);font-size:22rpx;">{{rewardRuleShort}}</text></view>
+    <view class="modal-sub-label">📖 主奖励 — {{segLabel}}：</view>
+    <view style="display:flex;gap:8rpx;align-items:center;margin-top:8rpx;flex-wrap:wrap;">
+      <block wx:if="{{segShowCat}}">
+        <picker bindchange="onSegCatChange" value="{{segCatIdx}}" range="{{segCats}}">
+          <view class="btn btn-xs">{{segCats[segCatIdx]||'类别'}}</view>
+        </picker>
+      </block>
+      <block wx:else>
+        <text style="font-size:24rpx;color:var(--accent);">{{segFixedCat}}</text>
+      </block>
+      <picker bindchange="onSegLvChange" value="{{segLvIdx}}" range="{{segLvs}}">
+        <view class="btn btn-xs">{{segLvs[segLvIdx]||'等级'}}</view>
+      </picker>
+      <picker bindchange="onSegTypeChange" value="{{segTypeIdx}}" range="{{segSubTypes}}" wx:if="{{segCatIdx===0||segFixedCat==='制造指南书'}}">
+        <view class="btn btn-xs">{{segSubTypes[segTypeIdx]||'类型'}}</view>
+      </picker>
+      <view class="btn btn-a btn-xs" bindtap="addSegMain">确认</view>
+    </view>
+    <view wx:if="{{segMainReward}}" style="margin-top:8rpx;font-size:24rpx;">
+      <text class="hl-accent">📖 {{segMainReward}}</text>
+      <text style="color:var(--danger);margin-left:16rpx;" bindtap="clearSegMain">✕</text>
+    </view>
+    <view wx:if="{{segExtras.length}}" class="modal-sub-label">💍 灵饰奖励（≥110级有几率）：</view>
+    <checkbox-group wx:if="{{segExtras.length}}" bindchange="onSegExtrasChange">
+      <view class="modal-grid" style="max-height:200rpx;">
+        <label class="modal-item" wx:for="{{segExtras}}" wx:key="label" style="display:flex;align-items:center;gap:8rpx;">
+          <checkbox value="{{item.label}}" checked="{{item.checked}}"/>{{item.label}}
+        </label>
+      </view>
+    </checkbox-group>
+    <input placeholder="其他（手动输入）" value="{{segCustom}}" bindinput="onSegCustom" style="width:100%;padding:16rpx;background:var(--bg);border:1px solid var(--border);border-radius:10rpx;color:var(--text);font-size:26rpx;margin:16rpx 0;box-sizing:border-box;"/>
+    <view class="sheet-actions">
+      <view class="btn" bindtap="closeSegModal">跳过</view>
+      <view class="btn btn-a" style="flex:1" bindtap="confirmSeg">确认记录</view>
+    </view>
+  </view>
+</view>
+
+<!-- Toast -->
+<view class="toast" wx:if="{{toastMsg}}">{{toastMsg}}</view>

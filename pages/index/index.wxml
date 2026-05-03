@@ -1,0 +1,72 @@
+<scroll-view scroll-y style="flex:1;height:100%;">
+  <view class="hub-view">
+    <view class="hub-bg">
+      <view class="orb orb1"></view>
+      <view class="orb orb2"></view>
+      <view class="orb orb3"></view>
+    </view>
+
+    <view class="hub-main">
+      <view class="hub-header">
+        <view class="hub-icon">💰</view>
+        <text class="hub-title">梦幻搞钱工具箱</text>
+        <view class="hub-sub">跑环助手 · 宠环助手 — 更多工具持续更新</view>
+      </view>
+
+      <view class="tool-grid">
+        <view class="tool-card" bindtap="goPet">
+          <view class="tool-card-icon pet-icon">🐾</view>
+          <view class="tool-card-body">
+            <view class="tool-card-title">宠环助手</view>
+            <view class="tool-card-desc">100环召唤兽修炼 · 积分追踪 · 奖励预测 · 控分策略</view>
+          </view>
+          <view class="tool-card-tags">
+            <text class="tool-tag">100环</text>
+            <text class="tool-tag">积分制</text>
+            <text class="tool-tag">多角色</text>
+          </view>
+        </view>
+
+        <view class="tool-card" bindtap="goChain">
+          <view class="tool-card-icon chain-icon">📜</view>
+          <view class="tool-card-body">
+            <view class="tool-card-title">跑环助手</view>
+            <view class="tool-card-desc">300环任务链记录 · 三段奖励结算 · 等级预测书铁区间</view>
+          </view>
+          <view class="tool-card-tags">
+            <text class="tool-tag">300环</text>
+            <text class="tool-tag">三段奖励</text>
+            <text class="tool-tag">多角色</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="coming-soon">
+        <view class="coming-soon-title">🔧 更多工具开发中</view>
+        <view class="coming-soon-grid">
+          <view class="placeholder-card">
+            <view class="placeholder-icon">📊</view>
+            <text>收益统计</text>
+          </view>
+          <view class="placeholder-card">
+            <view class="placeholder-icon">💎</view>
+            <text>物价参考</text>
+          </view>
+          <view class="placeholder-card">
+            <view class="placeholder-icon">📝</view>
+            <text>答题器</text>
+          </view>
+          <view class="placeholder-card">
+            <view class="placeholder-icon">⏱️</view>
+            <text>传说计时</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="hub-ft">
+        <text>梦幻搞钱工具箱 · 数据本地存储 · </text>
+        <text>{{clockStr}}</text>
+      </view>
+    </view>
+  </view>
+</scroll-view>
