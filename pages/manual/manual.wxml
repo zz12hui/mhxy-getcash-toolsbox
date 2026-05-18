@@ -1,0 +1,37 @@
+<view class="app">
+  <!-- Tool tabs -->
+  <view class="manual-tabs">
+    <view wx:for="{{tabs}}" wx:key="key" class="manual-tab {{activeTab===item.key?'active':''}}" data-key="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
+  </view>
+
+  <!-- Steps list -->
+  <scroll-view scroll-y class="manual-scroll" wx:if="{{activeTab==='pet'}}">
+    <view wx:for="{{petSteps}}" wx:key="index" class="manual-step {{curStepIdx===index?'expanded':''}}" data-idx="{{index}}" bindtap="onStepTap">
+      <view class="step-header">
+        <text class="step-num">{{index+1}}</text>
+        <text class="step-icon">{{item.icon}}</text>
+        <view class="step-title-wrap">
+          <text class="step-title">{{item.title}}</text>
+        </view>
+        <text class="step-arrow">{{curStepIdx===index?'▼':'▶'}}</text>
+      </view>
+      <view class="step-desc" wx:if="{{curStepIdx===index}}">{{item.desc}}</view>
+    </view>
+    <view style="height:60rpx;"></view>
+  </scroll-view>
+
+  <scroll-view scroll-y class="manual-scroll" wx:if="{{activeTab==='chain'}}">
+    <view wx:for="{{chainSteps}}" wx:key="index" class="manual-step {{curStepIdx===index?'expanded':''}}" data-idx="{{index}}" bindtap="onStepTap">
+      <view class="step-header">
+        <text class="step-num">{{index+1}}</text>
+        <text class="step-icon">{{item.icon}}</text>
+        <view class="step-title-wrap">
+          <text class="step-title">{{item.title}}</text>
+        </view>
+        <text class="step-arrow">{{curStepIdx===index?'▼':'▶'}}</text>
+      </view>
+      <view class="step-desc" wx:if="{{curStepIdx===index}}">{{item.desc}}</view>
+    </view>
+    <view style="height:60rpx;"></view>
+  </scroll-view>
+</view>

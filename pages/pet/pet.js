@@ -546,7 +546,7 @@ Page({
 
   clearSettleMain() { this.setData({ settleMainReward: '' }) },
 
-  toggleSettleExtra(e) {
+  toggleSettleExtra(_e) {
     // handled by onSettleExtrasChange instead
   },
 
@@ -659,7 +659,7 @@ Page({
   },
 
   // ===== Settlement from history =====
-  showReportModal(e) {
+  showReportModal(_e) {
     // stub
   },
 
@@ -733,7 +733,7 @@ Page({
     return this.data.prices[ring.t] || C.P_DEFAULT_PRICES[ring.t] || 0
   },
 
-  buildRecordData(cur, prices) {
+  buildRecordData(cur, _prices) {
     const data = {
       score: 0, minScore: 0, maxScore: 0, completed: 0,
       bookLevel: 80, expVal: 0, costWan: '0', skipCount: 0,
@@ -750,7 +750,7 @@ Page({
     const nr = cur.rings.findIndex(r => !r.t) + 1
     const sk = cur.rings.filter(r => r.t === 'skip').length
 
-    const ringList = cur.rings.map((r, i) => {
+    const ringList = cur.rings.map((r) => {
       let cls = 'dot'
       if (r.t) {
         cls += ' done'
@@ -782,7 +782,7 @@ Page({
     const rows = lvls.map(l2 => {
       const need = Math.max(0, l2 + 130 - lo)
       const ok = cur && sc >= need
-      let cls = 'hl', status, tagCls, reward
+      let status, tagCls, reward
       if (ok && cur) { status = '已达标'; tagCls = 'tag tag-g' }
       else if (cur) {
         status = need - sc > 50 ? '差距大' : '可冲刺'
@@ -796,7 +796,7 @@ Page({
     return { predictLv: lv, offset: lo, predictRows: rows }
   },
 
-  buildControlData(cur, cfg) {
+  buildControlData(cur, _cfg) {
     if (!cur) return { controlRows: [], controlNeedPerRing: '-' }
     const sc = cur.rings.reduce((s, r) => s + (r.sc || 0), 0)
     const comp = cur.rings.filter(r => r.t).length

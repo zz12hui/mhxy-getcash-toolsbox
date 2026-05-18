@@ -508,7 +508,7 @@ Page({
 
   clearSegMain() { this.setData({ segMainReward: '' }) },
 
-  toggleSegExtra(e) {
+  toggleSegExtra(_e) {
     // handled by onSegExtrasChange instead
   },
 
@@ -616,7 +616,7 @@ Page({
     return this.data.prices[ring.t] || C.C_DEFAULT_PRICES[ring.t] || 0
   },
 
-  buildRecordData(cur, prices, cfg) {
+  buildRecordData(cur, _prices, _cfg) {
     const data = {
       completed: 0, remaining: 300, costWan: '0', completedPct: 0,
       nextRing: 0, ringList: [], gridCells: [],

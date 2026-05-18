@@ -482,7 +482,7 @@ page {
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  padding: 16rpx 28rpx 40rpx;
+  padding: 16rpx 28rpx 170rpx;
   box-sizing: border-box;
   animation: sheetUp 0.25s ease-out;
 }

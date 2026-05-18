@@ -1,0 +1,54 @@
+<view class="app">
+  <!-- Not logged in -->
+  <view class="login-view" wx:if="{{!isLoggedIn}}">
+    <view class="login-avatar-wrap">
+      <view class="login-avatar login-avatar-default">👤</view>
+    </view>
+    <view class="login-title">登录梦幻搞钱工具箱</view>
+    <view class="login-desc">登录后可同步数据，防止丢失</view>
+    <view class="login-err" wx:if="{{loginErr}}">{{loginErr}}</view>
+    <button class="btn btn-a login-btn" bindtap="doLogin" disabled="{{loggingIn}}">
+      {{loggingIn ? '登录中...' : '微信一键登录'}}
+    </button>
+    <view class="login-skip" bindtap="goBack">暂不登录，继续使用</view>
+  </view>
+
+  <!-- Logged in -->
+  <block wx:else>
+    <scroll-view scroll-y class="login-scroll">
+      <view class="login-view">
+        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <image wx:if="{{avatarUrl}}" src="{{avatarUrl}}" class="login-avatar" mode="aspectFill"/>
+          <view wx:else class="login-avatar login-avatar-default">👤</view>
+          <text class="avatar-hint">点击换头像</text>
+        </button>
+
+        <view class="login-title">{{nickName}}</view>
+        <view class="login-desc">已绑定微信账号</view>
+
+        <view class="profile-info">
+          <view class="profile-info-row">
+            <text class="pi-label">昵称</text>
+            <input class="pi-input" type="nickname" value="{{nickName}}" bindinput="onNickInput" placeholder="点此设置昵称" focus="{{true}}"/>
+          </view>
+          <view class="profile-info-row">
+            <text class="pi-label">手机</text>
+            <block wx:if="{{hasPhone}}">
+              <text class="pi-value">{{phoneNumber}}</text>
+            </block>
+            <block wx:else>
+              <button class="btn btn-xs" open-type="getPhoneNumber" bindgetphonenumber="onGetPhone" style="height:56rpx;line-height:56rpx;font-size:24rpx;padding:0 20rpx;">
+                绑定手机号
+              </button>
+            </block>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- Logout fixed at bottom center -->
+    <view class="logout-bar">
+      <view class="btn btn-d" bindtap="doLogout" style="width:320rpx;height:72rpx;font-size:28rpx;">退出登录</view>
+    </view>
+  </block>
+</view>

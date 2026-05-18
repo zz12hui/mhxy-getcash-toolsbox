@@ -1,0 +1,130 @@
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  gap: 16rpx;
+}
+.search-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border-radius: 32rpx;
+  padding: 0 24rpx;
+  height: 72rpx;
+  border: 1rpx solid var(--border);
+}
+.search-input {
+  flex: 1;
+  height: 72rpx;
+  font-size: 28rpx;
+  color: var(--text);
+}
+.search-btn {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+.search-clear {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  border-radius: 50%;
+  font-size: 24rpx;
+  color: var(--text2);
+}
+
+/* Category tabs */
+.cat-tabs-scroll {
+  white-space: nowrap;
+  padding: 0 24rpx 16rpx;
+}
+.cat-tabs {
+  display: flex;
+  gap: 16rpx;
+}
+.cat-tab {
+  display: inline-flex;
+  align-items: center;
+  height: 64rpx;
+  padding: 0 24rpx;
+  border-radius: 32rpx;
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 26rpx;
+  white-space: nowrap;
+  border: 1rpx solid var(--border);
+}
+.cat-tab.active {
+  background: var(--accent);
+  color: #0f1623;
+  border-color: var(--accent);
+}
+
+.faq-count {
+  padding: 0 24rpx 12rpx;
+  font-size: 24rpx;
+  color: var(--text2);
+}
+
+/* FAQ cards */
+.faq-list {
+  padding: 0 24rpx;
+}
+.faq-card {
+  background: var(--surface);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid var(--border);
+}
+.faq-card.pinned {
+  border-left: 4rpx solid var(--accent);
+}
+.faq-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+.faq-card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.faq-card-pin {
+  font-size: 24rpx;
+}
+.faq-card-summary {
+  font-size: 26rpx;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 12rpx;
+}
+.faq-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.faq-card-tags {
+  font-size: 22rpx;
+  color: var(--accent);
+}
+.faq-card-views {
+  font-size: 22rpx;
+  color: var(--text2);
+}
+
+.load-more {
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 24rpx;
+  color: var(--text2);
+}

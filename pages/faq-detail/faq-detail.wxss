@@ -1,0 +1,67 @@
+.scroll-wrap {
+  height: 100%;
+}
+
+.detail-section {
+  padding: 24rpx 28rpx;
+}
+
+.detail-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 16rpx;
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 32rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.detail-date,
+.detail-views {
+  font-size: 24rpx;
+  color: var(--text2);
+}
+
+.detail-body {
+  font-size: 30rpx;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+/* Rich text inner styles are limited in WXSS, so we style the container */
+.detail-body rich-text {
+  font-size: 30rpx;
+  line-height: 1.8;
+}
+
+.detail-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 40rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid var(--border);
+}
+
+.detail-tags-label {
+  font-size: 24rpx;
+}
+
+.detail-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 48rpx;
+  padding: 0 16rpx;
+  border-radius: 24rpx;
+  background: var(--surface2);
+  color: var(--accent);
+  font-size: 22rpx;
+}

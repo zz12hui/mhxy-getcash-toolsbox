@@ -2,7 +2,13 @@
   "pages": [
     "pages/index/index",
     "pages/pet/pet",
-    "pages/chain/chain"
+    "pages/chain/chain",
+    "pages/profile/profile",
+    "pages/faq/faq",
+    "pages/faq-detail/faq-detail",
+    "pages/login/login",
+    "pages/feedback/feedback",
+    "pages/manual/manual"
   ],
   "window": {
     "navigationBarBackgroundColor": "#0f1623",
@@ -11,6 +17,7 @@
     "backgroundColor": "#080c14"
   },
   "tabBar": {
+    "custom": true,
     "color": "#6b7d95",
     "selectedColor": "#00d4aa",
     "backgroundColor": "#0f1623",
@@ -33,6 +40,12 @@
         "text": "跑环助手",
         "iconPath": "images/chain.png",
         "selectedIconPath": "images/chain-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "个人中心",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home-active.png"
       }
     ]
   },

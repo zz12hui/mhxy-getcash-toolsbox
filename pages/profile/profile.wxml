@@ -1,0 +1,65 @@
+<view class="app">
+  <scroll-view scroll-y class="scroll-wrap">
+
+    <!-- Account -->
+    <view class="profile-section">
+      <view class="profile-card" bindtap="onAccountTap">
+        <view class="profile-card-left">
+          <image wx:if="{{avatarUrl}}" src="{{avatarUrl}}" class="profile-avatar" mode="aspectFill"/>
+          <view wx:else class="profile-avatar profile-avatar-d">👤</view>
+          <view class="profile-name-wrap">
+            <text class="profile-name">{{isLoggedIn ? nickName : '未登录'}}</text>
+            <text class="profile-sub">{{isLoggedIn ? '已绑定微信账号' : '点击登录同步数据到云端'}}</text>
+          </view>
+        </view>
+        <text class="profile-arrow">›</text>
+      </view>
+    </view>
+
+    <!-- Sync -->
+    <view class="profile-section" wx:if="{{isLoggedIn}}">
+      <view class="section-title">数据同步</view>
+      <view class="menu-list">
+        <view class="menu-item" bindtap="backupToCloud">
+          <text>☁️ 备份到云端</text>
+          <text class="menu-item-hint" wx:if="{{!isSyncing}}">{{lastSyncAtStr}}</text>
+          <text class="menu-item-hint" wx:else>同步中...</text>
+        </view>
+        <view class="menu-item" bindtap="restoreFromCloud">
+          <text>📥 从云端恢复</text>
+          <text class="menu-item-hint">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Role switch -->
+    <view class="profile-section">
+      <view class="section-title">角色管理</view>
+      <view class="menu-list">
+        <picker mode="selector" value="{{activeUserIndex}}" range="{{userPickerRange}}" bindchange="onUserPickerChange">
+          <view class="menu-item">
+            <text>🔄 切换角色</text>
+            <text class="menu-item-hint">{{activeUserName}} ›</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- Services — 4 per row -->
+    <view class="profile-section">
+      <view class="section-title">服务</view>
+      <view class="service-grid">
+        <button class="service-item" open-type="feedback">
+          <text class="service-icon">💬</text>
+          <text class="service-label">意见反馈</text>
+        </button>
+        <view class="service-item" bindtap="goManual">
+          <text class="service-icon">📋</text>
+          <text class="service-label">操作手册</text>
+        </view>
+      </view>
+    </view>
+
+    <view style="height:80rpx;"></view>
+  </scroll-view>
+</view>

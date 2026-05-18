@@ -1,0 +1,41 @@
+<view class="app">
+  <!-- Loading -->
+  <view class="empty-state" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- Error -->
+  <view class="empty-state" wx:if="{{!loading && error}}">
+    <text>{{errorText}}</text>
+    <view class="btn btn-xs" bindtap="onRetry" style="margin-top:20rpx;width:160rpx;">重试</view>
+  </view>
+
+  <!-- Content -->
+  <scroll-view wx:if="{{!loading && !error}}" scroll-y class="scroll-wrap">
+    <view class="detail-section">
+      <!-- Title -->
+      <view class="detail-title">
+        <text>{{title}}</text>
+      </view>
+
+      <!-- Meta -->
+      <view class="detail-meta">
+        <text class="detail-date" wx:if="{{dateStr}}">{{dateStr}}</text>
+        <text class="detail-views" wx:if="{{viewStr}}">{{viewStr}}</text>
+      </view>
+
+      <!-- Body -->
+      <view class="detail-body">
+        <rich-text nodes="{{contentHtml}}"></rich-text>
+      </view>
+
+      <!-- Tags -->
+      <view class="detail-tags" wx:if="{{hasTags}}">
+        <text class="detail-tags-label">🏷️</text>
+        <text wx:for="{{tagArr}}" wx:key="*this" class="detail-tag">{{item}}</text>
+      </view>
+    </view>
+
+    <view style="height:60rpx;"></view>
+  </scroll-view>
+</view>

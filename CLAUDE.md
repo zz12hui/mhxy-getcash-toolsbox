@@ -1,109 +1,103 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## 项目概述
 
-梦幻搞钱工具箱 — 微信小程序。当前提供宠环助手（100环召唤兽修炼）和跑环助手（300环任务链）两个工具，后续可扩展更多功能模块（收益统计、物价参考、答题器、传说计时等）。支持跑环记录、积分预测、控分策略、奖励结算、历史统计和多角色数据隔离。纯本地存储，无后端。
+梦幻搞钱工具箱 — 微信小程序。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 用户系统 + 后台管理。微信云开发后端（云函数 + 云数据库），可选微信登录，登录后可云端备份数据。
 
-## 运行方式
-
-用**微信开发者工具**打开此目录。AppID 选"测试号"即可（`project.config.json` 中 `appid` 已设为 `touristappid`）。基础库版本 2.19.4。
-
-无需构建/安装依赖。直接在开发者工具中编译预览。
+基础库 2.19.4，AppID `<YOUR_APPID>`，云环境 `<YOUR_CLOUD_ENV>`。
 
 ## 架构
 
 ```
-app.js / app.json / app.wxss    # 应用入口、全局配置、全局样式（CSS 变量深色主题）
+app.js / app.json / app.wxss       # 应用入口、云开发初始化、全局样式
+custom-tab-bar/                     # 自定义 TabBar 组件（首页 | 当前工具 | 我的）
 utils/
-  constants.js                   # 游戏数据常量 + 计算公式（任务类型、积分表、奖励档位）
-  storage.js                     # wx.setStorageSync 封装，按用户 ID 做 key 命名空间隔离
+  constants.js                      # 游戏常量 + 计算公式
+  storage.js                        # 本地存储封装（按用户 ID 隔离）
+  cloud.js                          # 云开发 API 封装（callFunction + 数据库查询）
+  faq-cache.js                      # FAQ 本地缓存（1h TTL 离线可用）
+cloudfunctions/                     # 11 个云函数（login/getPhone/sync*/submitFeedback/init/admin*）
 pages/
-  index/                         # 首页 — 可扩展工具箱布局（tool-card 列表 + coming-soon 占位）
-  pet/                           # 宠环助手 — 5 个内部 Tab（记录/预测/控分/历史/统计）
-  chain/                         # 跑环助手 — 4 个内部 Tab（记录/奖励/历史/统计）
-images/                          # 6 张 81×81 的 tabBar 图标（home/pet/chain × active/inactive）
+  index/                            # 首页 — 工具卡片 + 入口
+  pet/                              # 宠环助手（记录/预测/控分/历史/统计）
+  chain/                            # 跑环助手（记录/奖励/历史/统计）
+  profile/                          # 个人中心（登录/云同步/角色管理/反馈/后台入口）
+  faq/                              # 知识库列表（分类 Tab + 搜索）
+  faq-detail/                       # 知识库详情（rich-text 渲染）
+  login/                            # 微信登录/手机绑定
+  feedback/                         # 意见反馈表单
+  admin/                            # 后台管理（看板/FAQ CRUD/用户/反馈）
+admin/                              # PC 后台管理 React 项目（备用，当前未启用）
 ```
+
+### 导航结构
+
+- **自定义 TabBar**：首页 | [宠环助手/跑环助手 动态切换] | 我的
+- 中间 Tab 根据 `app.globalData.currentToolTab` 动态显示宠环或跑环
+- 知识库、登录、反馈、后台管理为非 Tab 页面，通过 `wx.navigateTo` 进入
 
 ### 数据流
 
-1. `app.js` onLaunch 初始化用户系统（`mhxy_users` / `mhxy_active`），迁移旧版全局数据
-2. 每个页面 `onShow` 时调用 `loadData()` → 从 storage 读取当前用户的 cfg/cur/prices/runs
-3. 调用 `buildXxxData()` 方法将原始数据转换为视图所需格式（**所有显示值在 JS 层预计算，不在 WXML 中调用方法**）
-4. 通过 `setData()` 更新视图
-5. 修改操作直接写入 `this._cur`（内存中的当前跑环对象）然后 `S.savePetCur()` / `S.saveChainCur()` 持久化
-6. 页面间通过 `app.globalData` 共享 activeUser，通过 `wx.switchTab` 切换
+1. `app.js` onLaunch → 初始化云开发 + 用户系统 + 迁移旧数据 + 加载微信登录状态
+2. 每个页面 `onShow` → `loadData()` 从 storage 读取数据 → `buildXxxData()` 预计算显示值 → `setData()`
+3. 云数据：小程序通过 `wx.cloud.callFunction()` 调用云函数，FAQ 公开数据直接查云数据库
+4. 本地用户系统（`mhxy_users`/`mhxy_active`）保持不变，微信登录是附加层
+5. 登录可选，未登录用户体验与 v1.0 完全一致
 
-### 页面内部状态管理
+### 云数据库集合
 
-- 每个页面通过 `tab` 字符串控制当前子 Tab
-- 弹窗显隐通过 `showXxxModal` / `showMoreMenu` 等布尔值控制
-- 所有弹窗的临时状态（选中的任务类型、价格输入等）放在 `data` 中
-- 内存中的当前跑环对象存储在 `this._cur`，不在 data 中
+| 集合 | 用途 | 权限 |
+|------|------|------|
+| `faq_categories` | FAQ 分类 | 所有用户可读，仅云函数可写 |
+| `faq_items` | FAQ 条目（含 contentHtml） | 所有用户可读，仅云函数可写 |
+| `users` | 微信登录用户 | 仅创建者可读写 |
+| `user_sync_data` | 用户云端备份数据 | 仅创建者可读写 |
+| `feedbacks` | 用户反馈 | 所有用户可写 |
+| `admins` | 管理员（含 openid 字段做白名单） | 仅云函数可读写 |
+
+### 云函数清单
+
+| 函数 | 用途 | 调用方 |
+|------|------|--------|
+| `login` | 微信登录，返回 openid + isAdmin | 小程序 callFunction |
+| `getPhone` | 手机号解密存储 | 小程序 callFunction |
+| `syncUpload` | 备份跑环数据 | 小程序 callFunction |
+| `syncDownload` | 恢复跑环数据 | 小程序 callFunction |
+| `submitFeedback` | 提交反馈 | 小程序 callFunction |
+| `init` | 环境初始化（管理员+示例 FAQ） | 手动调用一次 |
+| `adminLogin` | 管理员登录，返回 token | 小程序 callFunction |
+| `adminStats` | 数据统计 | 小程序 callFunction |
+| `adminUsers` | 用户列表/详情 | 小程序 callFunction |
+| `adminFaq` | FAQ 分类+条目 CRUD | 小程序 callFunction |
+| `adminFeedback` | 反馈列表+状态更新 | 小程序 callFunction |
+
+### Storage key 清单
+
+| Key | 用途 |
+|-----|------|
+| `mhxy_users` / `mhxy_active` | 本地用户列表和当前活跃用户 |
+| `mhxy_{k}_{uid}` | 宠环数据（cfg/cur/runs/prices） |
+| `mhxy3_{k}_{uid}` | 跑环数据（cfg/cur/runs/prices） |
+| `mhxy_wx_profile` | 微信登录信息（openid/nickName/avatarUrl/phoneNumber/isAdmin） |
+| `mhxy_last_sync_at` | 上次云端同步时间戳 |
+| `mhxy_admin_token` | 管理员登录 token（24h 过期） |
+| `mhxy_tool_tab` | 当前工具 Tab（'pet'/'chain'） |
+| `mhxy_faq_*` | FAQ 本地缓存 |
+
+### 管理员白名单机制
+
+- 管理员通过 `admin`/`admin123` 登录后台 → 云函数将当前微信 openid 写入 `admins` 集合
+- 后续微信登录时，`login` 云函数检查 openid 是否在 `admins` 中 → 返回 `isAdmin` 标记
+- 仅 `isAdmin=true` 的用户在个人中心看到「后台管理」入口
+- 首次使用：开发者先微信登录 → 再进后台管理登录 → openid 自动绑定
 
 ### UI 模式
 
-- **弹窗**：统一使用底部弹出式（`.sheet-overlay` + `.sheet`），圆角 32rpx 顶部 + 滑入动画 + 拖动条指示器（`.sheet-handle`）。轻触遮罩可关闭，内部用 `catchtap="noop"` 阻止冒泡
-- **标题栏**：核心操作放 header，次要功能（角色管理、价格设置、放弃跑环）收入 `⋯` 更多菜单（底部弹出）
-- **更多菜单**：`showMoreMenu` 控制显隐，点击菜单项关闭自身并打开对应子功能弹窗
-- **首页工具箱**：纵向 card 列表 `.tool-grid`，每张卡含图标/标题/描述/标签，底部有 `.coming-soon-grid` 占位区域。新增工具时：app.json 加页面 → tool-grid 加 card → 完成
-- **批量填充**：用数字输入框替代滑块，`onBatchStartInput` / `onBatchEndInput` 处理输入
-
-### 触摸目标规范
-
-| 元素 | 最小高度 | CSS 类 |
-|------|----------|--------|
-| 标准按钮 | 80rpx | `.btn` |
-| 小按钮 | 64rpx | `.btn-xs` |
-| 标签页 | 80rpx | `.tab` |
-| 网格单元 | 68rpx | `.cell` |
-| 快速栏芯片 | 72rpx | `.qb-t` |
-| 弹窗选项 | 72rpx | `.modal-item` |
-
-### 数据模型
-
-宠环（`_cur`）:
-```js
-{ id, level, startedAt, rings: [{t, sc, item} × 100], notes, done, doneAt, reward, totalScore, totalExp, totalCost, bookLevel }
-```
-
-任务链（`_cur`）:
-```js
-{ id, level, startedAt, rings: [{t, item} × 300], rewards: {100:[], 200:[], 300:[]}, notes, done, doneAt, totalCost }
-```
+- **弹窗**：统一底部弹出式（`.sheet-overlay` + `.sheet`），圆角 32rpx + 滑入动画 + `.sheet-handle`。遮罩可关闭，内部 `catchtap="noop"` 阻止冒泡
+- **自定义 TabBar**：`custom-tab-bar/` 组件，3 项动态显示。`pageLifetimes.show` 自动更新选中状态
+- **触摸目标**：标准按钮 ≥80rpx、小按钮 ≥64rpx、标签页 ≥80rpx
 
 ### WXML 约束（重要）
 
-微信小程序 WXML 表达式解析器**不支持方法调用**。以下写法在 WXML 中无效：
-- `{{arr.indexOf(x)}}` — ❌ 不可用
-- `{{num.toFixed(0)}}` — ❌ 不可用
-- `{{str.join(',')}}` — ❌ 不可用
-
-**解决方案**：在 JS 的 `buildXxxData()` 中预计算好显示值，通过 `setData` 传入。例如：
-- chain.js loadData() 中把 `C.CHAIN_TYPES` 映射为带 `costLabel` 的对象数组
-- pet.js showSettle() 中把 `bonusOpts` 映射为带 `{label, checked}` 的对象数组
-- 用 `{{item.checked}}` 代替 `{{arr.indexOf(item)>-1}}`
-
-WXSS 也不支持 `inset` 简写，需使用 `top/right/bottom/left`。
-
-### Storage key 命名规则
-
-| 前缀 | 用途 |
-|------|------|
-| `mhxy_users` / `mhxy_active` | 全局用户列表和当前活跃用户 |
-| `mhxy_{k}_{uid}` | 宠环数据（cfg/cur/runs/prices） |
-| `mhxy3_{k}_{uid}` | 任务链数据（cfg/cur/runs/prices） |
-
-### 页面配置要求
-
-每个页面的 `.json` 必须包含 `"enable-flex": true` 以启用 flexbox 布局（即使 `app.json` 已设置 `"style": "v2"`）。
-
-### 关键模式与约定
-
-- `pages/pet/pet.js` 和 `pages/chain/chain.js` 存在约 200 行相似逻辑（用户管理、导入导出、价格设置），后续可提取共享模块
-- chain.js 有 `switchUserById(uid)` 辅助方法，pet.js 应该对齐
-- 时钟定时器：`onShow` 创建前需先 `clearInterval`，`onHide` 中清除
-- Canvas 使用 `type="2d"` API，查询用 `wx.createSelectorQuery()`
-- 颜色值统一通过 `page` 选择器中的 CSS 变量定义，页面内不硬编码颜色
-- Toast 位置设为 `bottom: 120rpx` 以避开 iPhone Home Indicator
+WXML 表达式**不支持方法调用**。`{{arr.indexOf(x)}}`、`{{num.toFixed(0)}}` 等均无效。必须在 JS 中预计算，通过 `setData` 传入。
+WXSS 不支持 `inset` 简写，需用 `top/right/bottom/left`。每个页面 `.json` 必须包含 `"enable-flex": true`。

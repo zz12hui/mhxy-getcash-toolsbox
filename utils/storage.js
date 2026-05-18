@@ -94,11 +94,32 @@ function saveChainRuns(uid, runs) {
   try { wx.setStorageSync('mhxy3_runs_' + uid, runs); return true } catch (e) { logError('save', 'mhxy3_runs_' + uid, e); return false }
 }
 
+// ===== WeChat login profile =====
+function getWxProfile() {
+  try { return wx.getStorageSync('mhxy_wx_profile') || null } catch (e) { return null }
+}
+function saveWxProfile(profile) {
+  try { wx.setStorageSync('mhxy_wx_profile', profile); return true } catch (e) { logError('save', 'mhxy_wx_profile', e); return false }
+}
+function clearWxProfile() {
+  try { wx.removeStorageSync('mhxy_wx_profile'); return true } catch (e) { logError('remove', 'mhxy_wx_profile', e); return false }
+}
+
+// ===== Last sync timestamp =====
+function getLastSyncAt() {
+  try { return wx.getStorageSync('mhxy_last_sync_at') || null } catch (e) { return null }
+}
+function saveLastSyncAt(ts) {
+  try { wx.setStorageSync('mhxy_last_sync_at', ts); return true } catch (e) { logError('save', 'mhxy_last_sync_at', e); return false }
+}
+
 module.exports = {
   getUsers, saveUsers, getActiveUser, saveActiveUser,
   getPetPrices, savePetPrices, getPetCfg, savePetCfg,
   getPetCur, savePetCur, getPetRuns, savePetRuns,
   getChainPrices, saveChainPrices, getChainCfg, saveChainCfg,
   getChainCur, saveChainCur, getChainRuns, saveChainRuns,
+  getWxProfile, saveWxProfile, clearWxProfile,
+  getLastSyncAt, saveLastSyncAt,
   getLastError: () => _lastError
 }

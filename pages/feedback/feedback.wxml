@@ -1,0 +1,31 @@
+<view class="app">
+  <!-- Submitted state -->
+  <view class="feedback-success" wx:if="{{submitted}}">
+    <view class="success-icon">✅</view>
+    <view class="success-title">反馈已提交</view>
+    <view class="success-text">感谢你的反馈，我们会尽快处理！</view>
+    <view class="btn btn-a" style="width:320rpx;margin-top:40rpx;" bindtap="resetAndGoBack">返回</view>
+  </view>
+
+  <!-- Form -->
+  <view class="feedback-form" wx:else>
+    <view class="form-desc">请描述你遇到的问题或改进建议：</view>
+
+    <textarea class="form-textarea" placeholder="请详细描述你的建议或问题..." value="{{content}}" bindinput="onContentInput" maxlength="500" auto-height/>
+
+    <view class="form-input-wrap">
+      <text class="fi-label">联系方式（选填）</text>
+      <input class="fi-input" placeholder="微信号/QQ号等，方便我们联系你" value="{{contactInfo}}" bindinput="onContactInput" maxlength="64"/>
+    </view>
+
+    <view class="btn btn-a" style="width:100%;" bindtap="submitFeedback" loading="{{submitting}}" disabled="{{submitting}}">
+      提交反馈
+    </view>
+
+    <view class="form-note">
+      <text>也可以使用微信官方反馈通道，我们同样会收到。</text>
+    </view>
+  </view>
+
+  <view style="height:40rpx;"></view>
+</view>

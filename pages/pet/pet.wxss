@@ -1,1 +1,1 @@
-/* Page-specific overrides for pet - most styles in global app.wxss */
+page { padding-bottom: 130rpx; }

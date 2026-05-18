@@ -1,3 +1,4 @@
+page { padding-bottom: 130rpx; }
 .hub-view {
   flex: 1; height: 100%; display: flex;
   align-items: flex-start; justify-content: center;
@@ -72,8 +73,9 @@
   border-radius: 20rpx;
   padding: 28rpx;
   display: flex;
-  flex-direction: column;
-  gap: 16rpx;
+  flex-direction: row;
+  align-items: center;
+  gap: 20rpx;
   transition: all 0.2s;
 }
 
@@ -83,25 +85,30 @@
 }
 
 .tool-card-icon {
-  width: 80rpx; height: 80rpx;
+  width: 100rpx; height: 100rpx;
+  min-width: 100rpx;
   border-radius: 20rpx;
   display: flex; align-items: center; justify-content: center;
-  font-size: 40rpx;
+  font-size: 48rpx;
 }
 .pet-icon { background: rgba(0,180,216,0.15); }
 .chain-icon { background: rgba(139,92,246,0.15); }
 
-.tool-card-body {
+.tool-card-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
 }
 .tool-card-title {
-  font-size: 30rpx; font-weight: 700; margin-bottom: 6rpx;
+  font-size: 30rpx; font-weight: 700;
 }
 .tool-card-desc {
   font-size: 24rpx; color: var(--text2); line-height: 1.5;
 }
 .tool-card-tags {
   display: flex; gap: 8rpx; flex-wrap: wrap;
+  margin-top: 4rpx;
 }
 .tool-tag {
   font-size: 20rpx;
@@ -110,32 +117,34 @@
   border: 1px solid var(--border);
 }
 
-/* Coming soon */
-.coming-soon {
+/* Quick modules — single row, horizontal scroll */
+.quick-row {
+  white-space: nowrap;
   margin-bottom: 48rpx;
 }
-.coming-soon-title {
-  font-size: 24rpx; color: var(--text2); margin-bottom: 20rpx;
-  text-align: center;
+
+.quick-module {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 160rpx;
+  height: 130rpx;
+  background: var(--surface);
+  border: 1rpx solid var(--border);
+  border-radius: 20rpx;
+  margin-right: 16rpx;
+  vertical-align: top;
 }
-.coming-soon-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16rpx;
+
+.qm-icon {
+  font-size: 40rpx;
+  margin-bottom: 6rpx;
 }
-.placeholder-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(26,39,64,0.5);
-  border-radius: 16rpx;
-  padding: 24rpx 12rpx;
-  text-align: center;
+
+.qm-label {
   font-size: 22rpx;
   color: var(--text2);
-}
-.placeholder-icon {
-  font-size: 36rpx;
-  margin-bottom: 8rpx;
-  opacity: 0.5;
 }
 
 /* Footer */

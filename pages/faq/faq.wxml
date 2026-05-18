@@ -1,0 +1,72 @@
+<view class="app">
+  <!-- Search bar -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <input class="search-input" placeholder="搜索知识库..." value="{{searchKeyword}}" bindinput="onSearchInput" bindconfirm="onSearch" confirm-type="search"/>
+      <view class="search-btn" bindtap="onSearch">
+        <text>🔍</text>
+      </view>
+    </view>
+    <view class="search-clear" wx:if="{{searchKeyword}}" bindtap="onClearSearch">
+      <text>✕</text>
+    </view>
+  </view>
+
+  <!-- Category tabs -->
+  <scroll-view class="cat-tabs-scroll" scroll-x enable-flex>
+    <view class="cat-tabs">
+      <view wx:for="{{categoryTabs}}" wx:key="id" class="cat-tab {{item.activeClass}}" data-id="{{item.id}}" bindtap="onCategoryTap">
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Count -->
+  <view class="faq-count" wx:if="{{totalStr}}">
+    <text>{{totalStr}}</text>
+  </view>
+
+  <!-- Loading -->
+  <view class="empty-state" wx:if="{{loading && itemList.length===0}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- Error -->
+  <view class="empty-state" wx:if="{{error && itemList.length===0}}">
+    <text>{{errorText}}</text>
+    <view class="btn btn-xs" bindtap="onRetry" style="margin-top:20rpx;width:160rpx;">重试</view>
+  </view>
+
+  <!-- Empty -->
+  <view class="empty-state" wx:if="{{!loading && !error && itemList.length===0}}">
+    <text>{{emptyText}}</text>
+  </view>
+
+  <!-- Item list -->
+  <view class="faq-list" wx:if="{{itemList.length>0}}">
+    <view wx:for="{{itemList}}" wx:key="id" class="faq-card {{item.pinnedClass}}" data-id="{{item.id}}" bindtap="onItemTap">
+      <view class="faq-card-head">
+        <text class="faq-card-title">{{item.title}}</text>
+        <text class="faq-card-pin" wx:if="{{item.isPinned}}">📌</text>
+      </view>
+      <view class="faq-card-summary" wx:if="{{item.summary}}">
+        <text>{{item.summary}}</text>
+      </view>
+      <view class="faq-card-foot">
+        <text class="faq-card-tags" wx:if="{{item.tagStr}}">🏷️ {{item.tagStr}}</text>
+        <text class="faq-card-views" wx:if="{{item.viewStr}}">{{item.viewStr}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Load more -->
+  <view class="load-more" wx:if="{{loading && itemList.length>0}}">
+    <text>加载更多...</text>
+  </view>
+  <view class="load-more" wx:if="{{!hasMore && itemList.length>0}}">
+    <text>— 已加载全部 —</text>
+  </view>
+
+  <!-- Bottom safe area -->
+  <view style="height:40rpx;"></view>
+</view>

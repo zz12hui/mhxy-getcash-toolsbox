@@ -1,31 +1,29 @@
-/*
- * Eslint config file
- * Documentation: https://eslint.org/docs/user-guide/configuring/
- * Install the Eslint extension before using this feature.
- */
 module.exports = {
   env: {
     es6: true,
     browser: true,
     node: true,
   },
-  ecmaFeatures: {
-    modules: true,
-  },
   parserOptions: {
-    ecmaVersion: 2018,
+    ecmaVersion: 2020,
     sourceType: 'module',
   },
   globals: {
-    wx: true,
-    App: true,
-    Page: true,
-    getCurrentPages: true,
-    getApp: true,
-    Component: true,
-    requirePlugin: true,
-    requireMiniProgram: true,
+    wx: true, App: true, Page: true, getCurrentPages: true,
+    getApp: true, Component: true, requirePlugin: true,
   },
-  // extends: 'eslint:recommended',
-  rules: {},
+  extends: 'eslint:recommended',
+  rules: {
+    'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    'no-console': 'off',
+    'no-undef': 'error',
+    'no-extra-semi': 'warn',
+    'no-redeclare': 'error',
+    'no-empty': 'warn',
+    'no-constant-condition': 'warn',
+    'no-duplicate-case': 'error',
+    'no-irregular-whitespace': 'warn',
+    'no-unreachable': 'warn',
+  },
+  ignorePatterns: ['node_modules/', 'cloudfunctions/*/node_modules/', 'admin/'],
 }

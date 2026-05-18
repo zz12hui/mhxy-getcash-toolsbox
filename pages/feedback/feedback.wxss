@@ -1,0 +1,78 @@
+.feedback-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 48rpx 40rpx;
+}
+
+.success-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+}
+
+.success-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12rpx;
+}
+
+.success-text {
+  font-size: 26rpx;
+  color: var(--text2);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.feedback-form {
+  padding: 24rpx;
+}
+
+.form-desc {
+  font-size: 26rpx;
+  color: var(--text2);
+  margin-bottom: 16rpx;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 240rpx;
+  background: var(--surface);
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: var(--text);
+  border: 1rpx solid var(--border);
+  box-sizing: border-box;
+  margin-bottom: 24rpx;
+}
+
+.form-input-wrap {
+  background: var(--surface);
+  border-radius: 12rpx;
+  padding: 20rpx;
+  border: 1rpx solid var(--border);
+  margin-bottom: 32rpx;
+}
+
+.fi-label {
+  font-size: 24rpx;
+  color: var(--text2);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.fi-input {
+  width: 100%;
+  height: 56rpx;
+  font-size: 28rpx;
+  color: var(--text);
+}
+
+.form-note {
+  margin-top: 24rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--text2);
+  line-height: 1.5;
+}

@@ -2,6 +2,14 @@ const STORAGE = require('./utils/storage')
 
 App({
   onLaunch() {
+    // Init WeChat cloud
+    if (wx.cloud) {
+      wx.cloud.init({
+        env: '<YOUR_CLOUD_ENV>',
+        traceUser: true
+      })
+    }
+
     const users = STORAGE.getUsers()
     let activeUser = STORAGE.getActiveUser()
 
@@ -35,12 +43,21 @@ App({
       STORAGE.saveActiveUser(activeUser)
     }
 
+    // Load WeChat login state
+    const wxProfile = STORAGE.getWxProfile()
+    this.globalData.wxProfile = wxProfile
+    this.globalData.isLoggedIn = !!wxProfile
+
     this.globalData.activeUser = activeUser
     this.globalData.users = users
+    this.globalData.currentToolTab = wx.getStorageSync('mhxy_tool_tab') || 'pet'
   },
 
   globalData: {
     activeUser: null,
-    users: []
+    users: [],
+    wxProfile: null,
+    isLoggedIn: false,
+    currentToolTab: 'pet'
   }
 })

@@ -1,0 +1,154 @@
+page { padding-bottom: 130rpx; }
+.scroll-wrap {
+  height: 100%;
+}
+
+.profile-section {
+  margin: 24rpx 24rpx 0;
+}
+
+.section-title {
+  font-size: 24rpx;
+  color: var(--text2);
+  padding: 0 8rpx 12rpx;
+}
+
+/* Profile card */
+.profile-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid var(--border);
+}
+
+.profile-card-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.profile-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+}
+
+.profile-avatar-d {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  font-size: 40rpx;
+}
+
+.profile-name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.profile-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.profile-sub {
+  font-size: 24rpx;
+  color: var(--text2);
+}
+
+.profile-arrow {
+  font-size: 36rpx;
+  color: var(--text2);
+}
+
+/* Menu list */
+.menu-list {
+  background: var(--surface);
+  border-radius: 16rpx;
+  overflow: hidden;
+  border: 1rpx solid var(--border);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  color: var(--text);
+  border-bottom: 1rpx solid var(--border);
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
+  border-radius: 0;
+  font-weight: normal;
+}
+
+.menu-item-btn::after {
+  border: none;
+}
+
+.menu-item-hint {
+  font-size: 24rpx;
+  color: var(--text2);
+}
+
+/* Service grid — 4 per row */
+.service-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.service-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 156rpx;
+  height: 140rpx;
+  background: var(--surface);
+  border-radius: 16rpx;
+  border: 1rpx solid var(--border);
+  gap: 8rpx;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* button service-item reset */
+button.service-item {
+  background: var(--surface);
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+  border-radius: 16rpx;
+}
+
+button.service-item::after {
+  border: none;
+}
+
+.service-icon {
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.service-label {
+  font-size: 22rpx;
+  color: var(--text);
+}
+

@@ -1,3 +1,5 @@
+const app = getApp()
+
 Page({
   data: {
     clockStr: ''
@@ -21,11 +23,23 @@ Page({
   },
 
   goPet() {
+    app.globalData.currentToolTab = 'pet'
+    wx.setStorageSync('mhxy_tool_tab', 'pet')
     wx.switchTab({ url: '/pages/pet/pet' })
   },
 
   goChain() {
+    app.globalData.currentToolTab = 'chain'
+    wx.setStorageSync('mhxy_tool_tab', 'chain')
     wx.switchTab({ url: '/pages/chain/chain' })
+  },
+
+  goFaq() {
+    wx.navigateTo({ url: '/pages/faq/faq' })
+  },
+
+  onComing() {
+    wx.showToast({ title: '功能开发中，敬请期待', icon: 'none' })
   },
 
   onShareAppMessage() {
