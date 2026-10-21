@@ -8,7 +8,8 @@
     "pages/faq-detail/faq-detail",
     "pages/login/login",
     "pages/feedback/feedback",
-    "pages/manual/manual"
+    "pages/manual/manual",
+    "pages/privacy/privacy"
   ],
   "window": {
     "navigationBarBackgroundColor": "#0f1623",

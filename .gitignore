@@ -12,3 +12,11 @@ $RECYCLE.BIN/
 
 # Node.js
 node_modules/
+
+# Claude Code 本地配置
+.claude/
+
+# 本地调试/分析产物
+_tmp/
+*.log
+coverage/

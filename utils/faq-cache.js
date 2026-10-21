@@ -28,14 +28,9 @@ function setCache(key, data) {
 
 function clearAll() {
   try {
-    const keys = ['faq_categories', 'faq_items_all', 'faq_items_', 'faq_search_']
     const info = wx.getStorageInfoSync()
-    keys.forEach(prefix => {
-      info.keys.forEach(k => {
-        if (k.startsWith('mhxy_faq_' + prefix) || k.startsWith('mhxy_faq_' + prefix.replace('_', ''))) {
-          wx.removeStorageSync(k)
-        }
-      })
+    info.keys.forEach(k => {
+      if (k.indexOf('mhxy_faq_') === 0) wx.removeStorageSync(k)
     })
   } catch (e) { /* ignore */ }
 }

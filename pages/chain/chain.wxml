@@ -65,20 +65,29 @@
 
       <view class="quick-bar">
         <view class="qb-tasks">
-          <block wx:for="{{chainTypes}}" wx:key="id">
+          <block wx:for="{{quickTasks}}" wx:key="id">
             <view class="qb-t {{modalTask===item.id?'sel':''}}" bindtap="selectTask" data-tid="{{item.id}}">{{item.icon}} {{item.name}}</view>
           </block>
+          <view wx:if="{{chainTypes.length > 8}}" class="qb-more" bindtap="toggleAllTasks">{{showAllTasks ? '收起' : '更多'}}</view>
         </view>
         <input class="qb-input" placeholder="物品名" value="{{qbItem}}" bindinput="onQbItemInput"/>
+        <view wx:if="{{itemChips.length}}" class="qb-chips">
+          <view wx:for="{{itemChips}}" wx:key="*this" class="qb-chip" bindtap="pickItem" data-item="{{item}}">{{item}}</view>
+        </view>
         <view class="qb-go" style="width:100%;" bindtap="quickRecord">记录 #{{nextRing||'✓'}}</view>
       </view>
 
       <view class="ring-grid-wrap">
         <view class="ring-grid-h">
           <text>点击格子编辑 | 已录{{completed}}/300</text>
-          <view style="display:flex;gap:8rpx;">
+          <view class="grid-tools">
+            <view class="btn btn-xs {{undoCount ? '' : 'btn-off'}}" bindtap="undoLast">撤销{{undoCount ? '(' + undoCount + ')' : ''}}</view>
             <view class="btn btn-xs" bindtap="showBatch">批量填充</view>
             <view class="btn btn-xs" style="color:var(--danger);border-color:var(--danger);" bindtap="clearAll">清除</view>
+          </view>
+          <view class="jump-box">
+            <input type="number" placeholder="跳转到环" value="{{jumpRing}}" bindinput="onJumpInput" bindconfirm="jumpRingTo"/>
+            <view class="btn btn-xs" bindtap="jumpRingTo">跳转</view>
           </view>
         </view>
         <scroll-view scroll-y class="scroll-wrap">
@@ -210,6 +219,7 @@
     <view class="more-menu-item" bindtap="showUserSheet">👥 角色管理</view>
     <view class="more-menu-item" bindtap="showPricesSheet">💰 物品价格设置</view>
     <view class="more-menu-item" bindtap="showGuideSheet">📖 使用引导</view>
+    <view class="more-menu-item" bindtap="toggleVibrate">📳 震动反馈：{{vibrateOn ? '开' : '关'}}</view>
     <view wx:if="{{hasCur}}" class="more-menu-item" bindtap="abandonFromMenu" style="color:var(--danger);">🗑️ 放弃当前任务链</view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeMoreMenu" style="flex:1">关闭</view>
@@ -253,6 +263,8 @@
       <view class="btn btn-xs" bindtap="quickBatchRange" data-s="1" data-e="100">1-100</view>
       <view class="btn btn-xs" bindtap="quickBatchRange" data-s="101" data-e="200">101-200</view>
       <view class="btn btn-xs" bindtap="quickBatchRange" data-s="201" data-e="300">201-300</view>
+      <view class="btn btn-xs" bindtap="batchToNextTen">下一整十</view>
+      <view class="btn btn-xs" bindtap="batchToSegEnd">本段末</view>
       <view class="btn btn-xs" bindtap="quickBatchRange" data-s="1" data-e="300">全部</view>
     </view>
     <view class="modal-sub-label">选择任务类型：</view>
@@ -335,7 +347,7 @@
       <picker bindchange="onSegLvChange" value="{{segLvIdx}}" range="{{segLvs}}">
         <view class="btn btn-xs">{{segLvs[segLvIdx]||'等级'}}</view>
       </picker>
-      <picker bindchange="onSegTypeChange" value="{{segTypeIdx}}" range="{{segSubTypes}}" wx:if="{{segCatIdx===0||segFixedCat==='制造指南书'}}">
+      <picker bindchange="onSegTypeChange" value="{{segTypeIdx}}" range="{{segSubTypes}}" wx:if="{{segShowCat ? segCatIdx===0 : segFixedCat==='制造指南书'}}">
         <view class="btn btn-xs">{{segSubTypes[segTypeIdx]||'类型'}}</view>
       </picker>
       <view class="btn btn-a btn-xs" bindtap="addSegMain">确认</view>

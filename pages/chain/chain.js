@@ -1,17 +1,22 @@
 const C = require('../../utils/constants')
 const S = require('../../utils/storage')
+const RING_COST = require('../../utils/ring-cost')
+const TASK_USAGE = require('../../utils/task-usage')
+const ITEM_MEMORY = require('../../utils/item-memory')
+const UI = require('../../utils/ui')
+const UNDO = require('../../utils/undo')
 const app = getApp()
 
 Page({
   data: {
     tab: 'record',
-    clockStr: '',
     // User
     users: [], activeUser: '', currentUserName: '', userIdx: 0, userNames: [],
     // Config
     cfg: { level: 175 }, hasCur: false,
     // Record
-    chainTypes: [], modalTask: '', qbItem: '',
+    chainTypes: [], quickTasks: [], showAllTasks: false,
+    itemChips: [], modalTask: '', qbItem: '', jumpRing: '', undoCount: 0, vibrateOn: true,
     completed: 0, remaining: 300, costWan: '0', completedPct: 0,
     nextRing: 0, ringList: [], gridCells: [],
     seg1Done: false, seg2Done: false, seg3Done: false, curSeg: 1,
@@ -52,11 +57,13 @@ Page({
     _cur: null
   },
 
+  onLoad() {
+    this._undo = new UNDO.UndoStack(10)
+  },
+
   onShow() {
     this.loadData()
-    this.updateClock()
-    if (this._clockTimer) clearInterval(this._clockTimer)
-    this._clockTimer = setInterval(() => this.updateClock(), 1000)
+    this.setData({ vibrateOn: UI.isVibrateOn() })
     const uid = this.data.activeUser
     if (uid && !wx.getStorageSync('mhxy_guide_seen_chain_' + uid)) {
       setTimeout(() => this.setData({ showGuide: true }), 500)
@@ -64,7 +71,6 @@ Page({
   },
 
   onHide() {
-    if (this._clockTimer) { clearInterval(this._clockTimer); this._clockTimer = null }
     if (this._checkTimer) { clearTimeout(this._checkTimer); this._checkTimer = null }
   },
 
@@ -78,11 +84,18 @@ Page({
     const prices = S.getChainPrices(activeUser)
     const runs = S.getChainRuns(activeUser)
     this._cur = cur
+    this._prices = prices
 
     const hasCur = !!cur
     const userIdx = users.findIndex(u => u.id === activeUser)
 
-    let recordData = this.buildRecordData(cur, prices, cfg)
+    // 快速栏：常用任务置顶（前 8 个），可展开全部
+    const usage = TASK_USAGE.getUsage(activeUser, 'chain')
+    const orderedTasks = TASK_USAGE.sortTasks(C.CHAIN_TYPES, usage)
+    const quickTasks = this.data.showAllTasks ? orderedTasks : orderedTasks.slice(0, 8)
+    const itemChips = ITEM_MEMORY.getAll(activeUser)
+
+    let recordData = this.buildRecordData(cur, prices)
     let rewardData = this.buildRewardData(cur, cfg)
     let historyData = this.buildHistoryData(runs)
     let statsData = this.buildStatsData(runs)
@@ -99,15 +112,10 @@ Page({
       userNames: users.map(u => u.name),
       currentUserName: users[userIdx] ? users[userIdx].name : '',
       cfg, hasCur, prices: { ...prices }, chainTypes,
+      quickTasks, itemChips, undoCount: this._undo ? this._undo.size : 0,
       ...recordData, ...rewardData,
       history: historyData, ...statsData
     })
-  },
-
-  // ===== Clock =====
-  updateClock() {
-    const n = new Date()
-    this.setData({ clockStr: n.toLocaleTimeString('zh-CN', { hour12: false }) })
   },
 
   // ===== Tab =====
@@ -155,6 +163,7 @@ Page({
   switchUserById(uid) {
     S.saveActiveUser(uid)
     app.globalData.activeUser = uid
+    if (this._undo) this._undo.clear()
     this.loadData()
     this.showToast('已切换角色')
   },
@@ -168,10 +177,11 @@ Page({
       content: '该角色的所有跑环数据将被永久删除。',
       success: res => {
         if (res.confirm) {
-          ['mhxy3_cfg_','mhxy3_cur_','mhxy3_runs_','mhxy3_prices_'].forEach(k => wx.removeStorageSync(k + uid))
+          S.clearRoleData(uid)
           const newUsers = users.filter(u => u.id !== uid)
           S.saveUsers(newUsers)
           if (this.data.activeUser === uid) { S.saveActiveUser(newUsers[0].id); app.globalData.activeUser = newUsers[0].id }
+          if (this._undo) this._undo.clear()
           this.setData({ showUserModal: false })
           this.loadData()
         }
@@ -185,6 +195,7 @@ Page({
     const nu = { id: 'user_' + Date.now(), name, createdAt: Date.now() }
     const users = [...this.data.users, nu]
     S.saveUsers(users); S.saveActiveUser(nu.id); app.globalData.activeUser = nu.id
+    if (this._undo) this._undo.clear()
     this.setData({ showUserModal: false, newUserName: '' })
     this.loadData()
     this.showToast('已创建角色')
@@ -220,6 +231,7 @@ Page({
   },
 
   doStartNew() {
+    if (this._undo) this._undo.clear()
     const cur = {
       id: Date.now(), level: this.data.cfg.level, startedAt: Date.now(),
       rings: Array.from({ length: 300 }, () => ({ t: null, item: '' })),
@@ -239,6 +251,7 @@ Page({
       success: res => {
         if (res.confirm) {
           this._cur = null
+          if (this._undo) this._undo.clear()
           S.saveChainCur(this.data.activeUser, null)
           this.loadData()
           this.showToast('已放弃')
@@ -263,12 +276,13 @@ Page({
     const cur = this._cur
     if (!cur || cur.done) return
     cur.done = true; cur.doneAt = Date.now()
-    cur.totalCost = cur.rings.reduce((s, r) => s + this.ringCost(r), 0)
+    cur.totalCost = RING_COST.totalCost(cur.rings, this._prices, C.C_DEFAULT_PRICES)
     const runs = S.getChainRuns(this.data.activeUser)
     runs.unshift({ ...cur })
     S.saveChainRuns(this.data.activeUser, runs)
     S.saveChainCur(this.data.activeUser, null)
     this._cur = null
+    if (this._undo) this._undo.clear()
     this.loadData()
     this.showToast('结算完成！费用:' + (cur.totalCost / 10000).toFixed(0) + '万')
   },
@@ -280,7 +294,10 @@ Page({
     S.saveChainCur(this.data.activeUser, this._cur)
   },
 
-  selectTask(e) { this.setData({ modalTask: e.currentTarget.dataset.tid }) },
+  selectTask(e) {
+    const tid = e.currentTarget.dataset.tid
+    this.setData({ modalTask: this.data.modalTask === tid ? '' : tid })
+  },
   onQbItemInput(e) { this.setData({ qbItem: e.detail.value }) },
 
   quickRecord() {
@@ -289,16 +306,24 @@ Page({
     if (!tid) { this.showToast('请先选择任务类型'); return }
     const nr = this._cur.rings.findIndex(r => !r.t) + 1
     if (!nr) { this.showToast('已全部记录'); return }
+    this.pushUndo('记录第' + nr + '环')
     this.setRing(nr, tid, this.data.qbItem)
-    this.setData({ modalTask: '', qbItem: '' })
+    TASK_USAGE.bump(this.data.activeUser, 'chain', tid)
+    if (this.data.qbItem) ITEM_MEMORY.add(this.data.activeUser, this.data.qbItem)
+    // 保留任务类型方便连续记录同类型，只清空物品名
+    this.setData({ qbItem: '' })
+    UI.vibrate()
     this.loadData()
     this.checkSeg()
   },
 
   editCell(e) {
-    const rn = parseInt(e.currentTarget.dataset.ring)
-    if (!this._cur) return
-    const ring = this._cur.rings[rn - 1]
+    this.openEdit(parseInt(e.currentTarget.dataset.ring))
+  },
+
+  openEdit(rn) {
+    if (!this._cur || !rn || rn < 1 || rn > 300) return
+    const ring = this._cur.rings[rn - 1] || { t: null, item: '' }
     const hasCur = !!ring.t
     this.setData({
       showEditModal: true, editRing: rn,
@@ -308,6 +333,17 @@ Page({
     })
   },
 
+  onJumpInput(e) { this.setData({ jumpRing: e.detail.value }) },
+
+  jumpRingTo() {
+    const rn = parseInt(this.data.jumpRing)
+    if (!rn || rn < 1 || rn > 300) { this.showToast('请输入 1-300 的环号'); return }
+    this.setData({ jumpRing: '' })
+    this.openEdit(rn)
+  },
+
+  pickItem(e) { this.setData({ qbItem: e.currentTarget.dataset.item }) },
+
   closeEditModal() { this.setData({ showEditModal: false }) },
   pickEditType(e) { this.setData({ editSelTid: e.currentTarget.dataset.tid }) },
   onEditItemInput(e) { this.setData({ editItem: e.detail.value }) },
@@ -315,7 +351,11 @@ Page({
   saveEdit() {
     const tid = this.data.editSelTid
     if (!tid) { this.showToast('请选择任务类型'); return }
+    this.pushUndo('编辑第' + this.data.editRing + '环')
     this.setRing(this.data.editRing, tid, this.data.editItem)
+    TASK_USAGE.bump(this.data.activeUser, 'chain', tid)
+    if (this.data.editItem) ITEM_MEMORY.add(this.data.activeUser, this.data.editItem)
+    UI.vibrate()
     this.setData({ showEditModal: false })
     this.loadData()
     this.checkSeg()
@@ -323,6 +363,7 @@ Page({
 
   clearEdit() {
     if (!this._cur) return
+    this.pushUndo('清除第' + this.data.editRing + '环')
     this._cur.rings[this.data.editRing - 1] = { t: null, item: '' }
     S.saveChainCur(this.data.activeUser, this._cur)
     this.setData({ showEditModal: false })
@@ -336,6 +377,7 @@ Page({
       content: '清除所有记录？',
       success: res => {
         if (res.confirm) {
+          this.pushUndo('清除全部记录')
           this._cur.rings = Array.from({ length: 300 }, () => ({ t: null, item: '' }))
           this._cur.rewards = { 100: [], 200: [], 300: [] }
           S.saveChainCur(this.data.activeUser, this._cur)
@@ -412,10 +454,13 @@ Page({
     } else if (batchStart <= 200 && batchEnd > 200 && this._cur.rewards[200].length === 0) {
       effEnd = 200; this.showToast('已限制到第200环，请先结算第200环奖励')
     }
+    this.pushUndo('批量填充 ' + batchStart + '-' + effEnd)
     for (let i = batchStart; i <= effEnd; i++) {
       if (!this._cur.rings[i - 1].t) this._cur.rings[i - 1] = { t: batchSelTid, item: '' }
     }
     S.saveChainCur(this.data.activeUser, this._cur)
+    TASK_USAGE.bump(this.data.activeUser, 'chain', batchSelTid)
+    UI.vibrate()
     this.setData({ showBatchModal: false })
     this.loadData()
     this.showToast(`已填充${batchStart}-${effEnd}环`)
@@ -424,7 +469,13 @@ Page({
 
   // ===== Prices =====
   showPrices() { this.setData({ showPricesModal: true }) },
-  closePricesModal() { this.setData({ showPricesModal: false }) },
+  closePricesModal() {
+    // 取消编辑：恢复已保存价格，避免未保存的价格参与费用计算
+    this.setData({
+      showPricesModal: false,
+      prices: { ...S.getChainPrices(this.data.activeUser) }
+    })
+  },
 
   onPriceChange(e) {
     const tid = e.currentTarget.dataset.tid
@@ -433,7 +484,9 @@ Page({
   },
 
   savePrices() {
-    S.saveChainPrices(this.data.activeUser, this.data.prices)
+    const prices = { ...this.data.prices }
+    S.saveChainPrices(this.data.activeUser, prices)
+    this._prices = prices
     this.setData({ showPricesModal: false })
     this.loadData()
     this.showToast('价格已保存')
@@ -445,6 +498,7 @@ Page({
       success: res => {
         if (res.confirm) {
           S.saveChainPrices(this.data.activeUser, { ...C.C_DEFAULT_PRICES })
+          this._prices = { ...C.C_DEFAULT_PRICES }
           this.setData({ showPricesModal: false, prices: { ...C.C_DEFAULT_PRICES } })
           this.loadData()
           this.showToast('已恢复默认价格')
@@ -527,6 +581,7 @@ Page({
     if (this.data.segMainReward) checked.push(this.data.segMainReward)
     checked.push(...this.data.segExtraChecked)
     if (this.data.segCustom.trim()) checked.push(this.data.segCustom.trim())
+    this.pushUndo('记录第' + seg + '环奖励')
     this._cur.rewards[seg] = checked.length > 0 ? checked : ['未记录']
     S.saveChainCur(this.data.activeUser, this._cur)
     this.setData({ showSegModal: false })
@@ -588,8 +643,11 @@ Page({
             success: res2 => {
               try {
                 const d = JSON.parse(res2.data)
-                const imported = d.hist || d.history
-                if (imported && Array.isArray(imported)) {
+                const raw = d.hist || d.history
+                const imported = Array.isArray(raw)
+                  ? raw.filter(r => r && typeof r === 'object').slice(0, 500)
+                  : []
+                if (imported.length) {
                   wx.showModal({
                     title: '确认导入',
                     content: `导入${imported.length}条记录？`,
@@ -601,7 +659,7 @@ Page({
                       }
                     }
                   })
-                } else this.showToast('无效数据')
+                } else this.showToast('没有可导入的记录')
               } catch (e) { this.showToast('解析失败') }
             }
           })
@@ -611,12 +669,11 @@ Page({
   },
 
   // ===== Data builders =====
-  ringCost(ring) {
-    if (!ring || !ring.t) return 0
-    return this.data.prices[ring.t] || C.C_DEFAULT_PRICES[ring.t] || 0
+  ringCost(ring, prices) {
+    return RING_COST.ringCost(ring, prices || this._prices, C.C_DEFAULT_PRICES)
   },
 
-  buildRecordData(cur, _prices, _cfg) {
+  buildRecordData(cur, prices) {
     const data = {
       completed: 0, remaining: 300, costWan: '0', completedPct: 0,
       nextRing: 0, ringList: [], gridCells: [],
@@ -624,7 +681,7 @@ Page({
     }
     if (!cur) return data
     const comp = cur.rings.filter(r => r.t).length
-    const cost = cur.rings.reduce((s, r) => s + this.ringCost(r), 0)
+    const cost = RING_COST.totalCost(cur.rings, prices, C.C_DEFAULT_PRICES)
     const nr = cur.rings.findIndex(r => !r.t) + 1
     const s1 = this.segDone(100), s2 = this.segDone(200), s3 = this.segDone(300)
     let curSeg = 1
@@ -649,7 +706,7 @@ Page({
     return {
       completed: comp, remaining: 300 - comp,
       costWan: (cost / 10000).toFixed(0),
-      completedPct: (comp / 3).toFixed(0),
+      completedPct: Math.floor(comp / 3),
       nextRing: nr, ringList, gridCells,
       seg1Done: s1, seg2Done: s2, seg3Done: s3, curSeg
     }
@@ -673,8 +730,8 @@ Page({
 
     const rows = lvls.map(l => ({
       lv: l, label: l + '级', cls: l === r.max ? 'hl' : '',
-      s100: lv >= 156 ? '可能' : (l >= r.min && l <= r.max ? '可能' : '—'),
-      s200: lv >= 156 ? '可能' : (l >= r.min && l <= r.max ? '可能' : '—'),
+      s100: l >= r.min && l <= r.max ? '可能' : '—',
+      s200: l >= r.min && l <= r.max ? '可能' : '—',
       s300: '可能'
     }))
     if (r.has150) rows.unshift({ lv: 160, label: '160战魄', cls: 'hl', s100: '—', s200: '—', s300: 'lv≥156极高分可能' })
@@ -725,6 +782,50 @@ Page({
       stats: { total: runs.length, avgComp, avgCostWan: avgCost, totalCostWan: (totalAll / 10000).toFixed(0) },
       typeDist
     }
+  },
+
+  // ===== Record helpers (v1.2) =====
+  pushUndo(label) {
+    if (!this._cur || !this._undo) return
+    this._undo.push({ label, cur: JSON.parse(JSON.stringify(this._cur)) })
+    this.setData({ undoCount: this._undo.size })
+  },
+
+  undoLast() {
+    if (!this._undo || !this._undo.size) { this.showToast('没有可撤销的操作'); return }
+    const snapshot = this._undo.pop()
+    if (!snapshot || !snapshot.cur) { this.setData({ undoCount: this._undo.size }); return }
+    this._cur = snapshot.cur
+    S.saveChainCur(this.data.activeUser, this._cur)
+    UI.vibrate()
+    this.loadData()
+    this.showToast('已撤销：' + snapshot.label)
+  },
+
+  toggleVibrate() {
+    const on = !this.data.vibrateOn
+    UI.setVibrate(on)
+    this.setData({ vibrateOn: on })
+    if (on) UI.vibrate()
+  },
+
+  toggleAllTasks() {
+    this.setData({ showAllTasks: !this.data.showAllTasks })
+    this.loadData()
+  },
+
+  batchToNextTen() {
+    const firstEmpty = this._cur ? this._cur.rings.findIndex(r => !r.t) + 1 : 1
+    const start = firstEmpty || 1
+    const end = Math.min(Math.max(1, Math.ceil(start / 10) * 10), 300)
+    this.setData({ batchStart: start, batchEnd: end, batchCount: end - start + 1 })
+  },
+
+  batchToSegEnd() {
+    const firstEmpty = this._cur ? this._cur.rings.findIndex(r => !r.t) + 1 : 1
+    const start = firstEmpty || 1
+    const end = start <= 100 ? 100 : (start <= 200 ? 200 : 300)
+    this.setData({ batchStart: start, batchEnd: end, batchCount: end - start + 1 })
   },
 
   // ===== Toast =====

@@ -14,12 +14,11 @@ Page({
     isSyncing: false,
 
     users: [],
+    roleCount: 0,
     activeUser: '',
     activeUserIndex: -1,
     activeUserName: '',
-    userPickerRange: [],
-    showDeleteConfirm: false,
-    deleteTarget: null
+    userPickerRange: []
   },
 
   onShow() {
@@ -51,6 +50,7 @@ Page({
       avatarUrl: profile ? (profile.avatarUrl || '') : '',
       lastSyncAtStr,
       users,
+      roleCount: users.length,
       activeUser,
       activeUserIndex,
       activeUserName: activeUserObj ? activeUserObj.name : '',
@@ -58,68 +58,85 @@ Page({
     })
   },
 
+  formatTime(ts) {
+    if (!ts) return ''
+    const d = new Date(ts)
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+  },
+
+  // v1.2：登录后也能进入账号页（改头像/昵称/绑定手机/退出登录）
   onAccountTap() {
-    if (!this.data.isLoggedIn) {
-      wx.navigateTo({ url: '/pages/login/login' })
-    }
+    wx.navigateTo({ url: '/pages/login/login' })
   },
 
   async backupToCloud() {
     if (!this.data.isLoggedIn) { wx.showToast({ title: '请先登录', icon: 'none' }); return }
+    if (this.data.isSyncing) return
+    const roles = S.exportAllRoles()
+    if (!roles.length) { wx.showToast({ title: '没有可备份的角色', icon: 'none' }); return }
+    if (roles.length > 10) { wx.showToast({ title: '最多备份 10 个角色，请先导出多余角色', icon: 'none' }); return }
     this.setData({ isSyncing: true })
-    wx.showLoading({ title: '备份中...' })
+    wx.showLoading({ title: '备份中...', mask: true })
     try {
-      const uid = app.globalData.activeUser
-      const payload = {
-        pet: { cfg: S.getPetCfg(uid), prices: S.getPetPrices(uid), runs: S.getPetRuns(uid), cur: S.getPetCur(uid) },
-        chain: { cfg: S.getChainCfg(uid), prices: S.getChainPrices(uid), runs: S.getChainRuns(uid), cur: S.getChainCur(uid) }
-      }
-      const data = await CLOUD.callFunction('syncUpload', payload)
-      S.saveLastSyncAt(data.syncedAt || Date.now())
+      const data = await CLOUD.callFunction('syncUpload', { roles })
+      S.saveLastSyncAt((data && data.syncedAt) || Date.now())
       wx.hideLoading()
       this.setData({ isSyncing: false })
       this.loadData()
-      wx.showToast({ title: '备份成功', icon: 'success' })
+      wx.showToast({ title: '已备份 ' + roles.length + ' 个角色', icon: 'none' })
     } catch (err) {
       wx.hideLoading()
       this.setData({ isSyncing: false })
-      wx.showToast({ title: '备份失败', icon: 'none' })
+      wx.showToast({ title: err.message || '备份失败', icon: 'none' })
     }
   },
 
-  async restoreFromCloud() {
+  restoreFromCloud() {
     if (!this.data.isLoggedIn) { wx.showToast({ title: '请先登录', icon: 'none' }); return }
-    wx.showModal({
-      title: '恢复数据',
-      content: '将从云端下载数据覆盖本地当前角色数据，确认？',
-      success: async res => {
-        if (!res.confirm) return
-        wx.showLoading({ title: '恢复中...' })
-        try {
-          const data = await CLOUD.callFunction('syncDownload', {})
-          const uid = app.globalData.activeUser
-          if (data.pet) {
-            if (data.pet.cfg) S.savePetCfg(uid, data.pet.cfg)
-            if (data.pet.prices) S.savePetPrices(uid, data.pet.prices)
-            if (data.pet.runs) S.savePetRuns(uid, data.pet.runs)
-            if (data.pet.cur) S.savePetCur(uid, data.pet.cur)
-          }
-          if (data.chain) {
-            if (data.chain.cfg) S.saveChainCfg(uid, data.chain.cfg)
-            if (data.chain.prices) S.saveChainPrices(uid, data.chain.prices)
-            if (data.chain.runs) S.saveChainRuns(uid, data.chain.runs)
-            if (data.chain.cur) S.saveChainCur(uid, data.chain.cur)
-          }
-          if (data.syncedAt) S.saveLastSyncAt(data.syncedAt)
-          wx.hideLoading()
-          this.loadData()
-          wx.showToast({ title: '恢复成功', icon: 'success' })
-        } catch (err) {
-          wx.hideLoading()
-          wx.showToast({ title: '恢复失败', icon: 'none' })
+    wx.showLoading({ title: '读取备份...', mask: true })
+    CLOUD.callFunction('syncDownload', {})
+      .then(data => {
+        wx.hideLoading()
+        const roles = (data && data.roles) || []
+        if (!roles.length) {
+          wx.showToast({
+            title: data && data.legacy ? '云端是旧版备份，请先重新备份一次' : '云端还没有备份',
+            icon: 'none'
+          })
+          return
         }
-      }
-    })
+        const lines = roles.map(r => r.name + ' · ' + this.formatTime(r.updatedAt)).join('\n')
+        wx.showModal({
+          title: '从云端恢复',
+          content: '云端共 ' + roles.length + ' 个角色：\n' + lines +
+            '\n\n将用云端数据覆盖本地全部角色，建议先备份。确定恢复？',
+          confirmText: '覆盖恢复',
+          success: res => {
+            if (res.confirm) this.doRestore(roles, data.syncedAt)
+          }
+        })
+      })
+      .catch(err => {
+        wx.hideLoading()
+        wx.showToast({ title: err.message || '读取备份失败', icon: 'none' })
+      })
+  },
+
+  doRestore(roles, syncedAt) {
+    wx.showLoading({ title: '恢复中...', mask: true })
+    try {
+      if (!S.applyAllRoles(roles)) throw new Error('写入本地失败，可能是存储空间不足')
+      app.globalData.users = S.getUsers()
+      app.globalData.activeUser = S.getActiveUser()
+      if (syncedAt) S.saveLastSyncAt(syncedAt)
+      wx.hideLoading()
+      this.loadData()
+      wx.showToast({ title: '已恢复 ' + roles.length + ' 个角色', icon: 'none' })
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '恢复失败', icon: 'none' })
+    }
   },
 
   // Simple role switch via picker
@@ -135,5 +152,7 @@ Page({
   },
 
   goManual() { wx.navigateTo({ url: '/pages/manual/manual' }) },
+  goFeedback() { wx.navigateTo({ url: '/pages/feedback/feedback' }) },
+  goPrivacy() { wx.navigateTo({ url: '/pages/privacy/privacy' }) },
   noop() {}
 })

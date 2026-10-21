@@ -1,17 +1,22 @@
 const C = require('../../utils/constants')
 const S = require('../../utils/storage')
+const RING_COST = require('../../utils/ring-cost')
+const TASK_USAGE = require('../../utils/task-usage')
+const ITEM_MEMORY = require('../../utils/item-memory')
+const UI = require('../../utils/ui')
+const UNDO = require('../../utils/undo')
 const app = getApp()
 
 Page({
   data: {
     tab: 'record',
-    clockStr: '',
     // User
     users: [], activeUser: '', currentUserName: '', userIdx: 0, userNames: [],
     // Config
     cfg: { level: 175 }, hasCur: false,
     // Record
-    petTypes: C.PET_TYPES, modalTask: '', qbItem: '',
+    petTypes: C.PET_TYPES, quickTasks: C.PET_TYPES, showAllTasks: false,
+    itemChips: [], modalTask: '', qbItem: '', jumpRing: '', undoCount: 0, vibrateOn: true,
     score: 0, minScore: 0, maxScore: 0, completed: 0, bookLevel: 80,
     expVal: 0, costWan: '0', skipCount: 0, tier: C.REWARD_TIERS[0],
     nextRing: 0, ringList: [], gridCells: [], remaining: 0,
@@ -54,11 +59,13 @@ Page({
     _cur: null, _settleRun: null
   },
 
+  onLoad() {
+    this._undo = new UNDO.UndoStack(10)
+  },
+
   onShow() {
     this.loadData()
-    this.updateClock()
-    if (this._clockTimer) clearInterval(this._clockTimer)
-    this._clockTimer = setInterval(() => this.updateClock(), 1000)
+    this.setData({ vibrateOn: UI.isVibrateOn() })
     // First-use guide check
     const uid = this.data.activeUser
     if (uid && !wx.getStorageSync('mhxy_guide_seen_pet_' + uid)) {
@@ -67,7 +74,6 @@ Page({
   },
 
   onHide() {
-    if (this._clockTimer) { clearInterval(this._clockTimer); this._clockTimer = null }
     if (this._checkTimer) { clearTimeout(this._checkTimer); this._checkTimer = null }
   },
 
@@ -86,8 +92,15 @@ Page({
     const runs = S.getPetRuns(activeUser)
 
     this._cur = cur
+    this._prices = prices
     const hasCur = !!cur
     const userIdx = users.findIndex(u => u.id === activeUser)
+
+    // 快速栏：常用任务置顶（前 8 个），可展开全部
+    const usage = TASK_USAGE.getUsage(activeUser, 'pet')
+    const orderedTasks = TASK_USAGE.sortTasks(C.PET_TYPES, usage)
+    const quickTasks = this.data.showAllTasks ? orderedTasks : orderedTasks.slice(0, 8)
+    const itemChips = ITEM_MEMORY.getAll(activeUser)
 
     let recordData = this.buildRecordData(cur, prices)
     let predictData = this.buildPredictData(cur, cfg)
@@ -101,15 +114,10 @@ Page({
       userNames: users.map(u => u.name),
       currentUserName: users[userIdx] ? users[userIdx].name : '',
       cfg, hasCur, prices: { ...prices },
+      quickTasks, itemChips, undoCount: this._undo ? this._undo.size : 0,
       ...recordData, ...predictData, ...controlData,
       history: historyData, ...statsData
     })
-  },
-
-  // ===== Clock =====
-  updateClock() {
-    const n = new Date()
-    this.setData({ clockStr: n.toLocaleTimeString('zh-CN', { hour12: false }) })
   },
 
   // ===== Tab =====
@@ -165,6 +173,7 @@ Page({
   switchUserById(uid) {
     S.saveActiveUser(uid)
     app.globalData.activeUser = uid
+    if (this._undo) this._undo.clear()
     this.loadData()
     this.showToast('已切换角色')
   },
@@ -178,13 +187,14 @@ Page({
       content: '该角色的所有跑环数据将被永久删除。',
       success: res => {
         if (res.confirm) {
-          ['mhxy_cfg_','mhxy_cur_','mhxy_runs_','mhxy_prices_'].forEach(k => wx.removeStorageSync(k + uid))
+          S.clearRoleData(uid)
           const newUsers = users.filter(u => u.id !== uid)
           S.saveUsers(newUsers)
           if (this.data.activeUser === uid) {
             S.saveActiveUser(newUsers[0].id)
             app.globalData.activeUser = newUsers[0].id
           }
+          if (this._undo) this._undo.clear()
           this.loadData()
           this.setData({ showUserModal: false })
           this.showToast('已删除')
@@ -201,6 +211,7 @@ Page({
     S.saveUsers(users)
     S.saveActiveUser(nu.id)
     app.globalData.activeUser = nu.id
+    if (this._undo) this._undo.clear()
     this.setData({ showUserModal: false, newUserName: '' })
     this.loadData()
     this.showToast('已创建角色')
@@ -236,6 +247,7 @@ Page({
   },
 
   doStartNew() {
+    if (this._undo) this._undo.clear()
     const cur = {
       id: Date.now(), level: this.data.cfg.level, startedAt: Date.now(),
       rings: Array.from({ length: 100 }, () => ({ t: null, sc: 0, item: '' })),
@@ -254,6 +266,7 @@ Page({
       success: res => {
         if (res.confirm) {
           this._cur = null
+          if (this._undo) this._undo.clear()
           S.savePetCur(this.data.activeUser, null)
           this.loadData()
           this.showToast('已放弃')
@@ -287,7 +300,7 @@ Page({
     cur.doneAt = Date.now()
     cur.totalScore = sc
     cur.totalExp = C.pExp(cur.rings)
-    cur.totalCost = cur.rings.reduce((s, r) => s + this.ringCost(r), 0)
+    cur.totalCost = RING_COST.totalCost(cur.rings, this._prices, C.P_DEFAULT_PRICES)
     cur.rewardTier = C.pGetTier(sc, cur.level)
     cur.bookLevel = C.pBookLevel(sc, cur.level)
     this.showSettle(cur)
@@ -302,7 +315,8 @@ Page({
   },
 
   selectTask(e) {
-    this.setData({ modalTask: e.currentTarget.dataset.tid })
+    const tid = e.currentTarget.dataset.tid
+    this.setData({ modalTask: this.data.modalTask === tid ? '' : tid })
   },
 
   onQbItemInput(e) {
@@ -315,8 +329,13 @@ Page({
     if (!tid) { this.showToast('请先选择任务类型'); return }
     const nr = this._cur.rings.findIndex(r => !r.t) + 1
     if (!nr) { this.showToast('已全部记录'); return }
+    this.pushUndo('记录第' + nr + '环')
     this.setRing(nr, tid, this.data.qbItem)
-    this.setData({ modalTask: '', qbItem: '' })
+    TASK_USAGE.bump(this.data.activeUser, 'pet', tid)
+    if (this.data.qbItem) ITEM_MEMORY.add(this.data.activeUser, this.data.qbItem)
+    // 保留任务类型方便连续记录同类型，只清空物品名
+    this.setData({ qbItem: '' })
+    UI.vibrate()
     this.loadData()
     this.checkComplete()
   },
@@ -330,7 +349,10 @@ Page({
       content: `跳过第${nr}环？（扣20分）`,
       success: res => {
         if (res.confirm) {
+          this.pushUndo('跳过第' + nr + '环')
           this.setRing(nr, 'skip', '')
+          TASK_USAGE.bump(this.data.activeUser, 'pet', 'skip')
+          UI.vibrate()
           this.loadData()
           this.checkComplete()
         }
@@ -339,9 +361,12 @@ Page({
   },
 
   editCell(e) {
-    const rn = parseInt(e.currentTarget.dataset.ring)
-    if (!this._cur) return
-    const ring = this._cur.rings[rn - 1]
+    this.openEdit(parseInt(e.currentTarget.dataset.ring))
+  },
+
+  openEdit(rn) {
+    if (!this._cur || !rn || rn < 1 || rn > 100) return
+    const ring = this._cur.rings[rn - 1] || { t: null, sc: 0, item: '' }
     const hasCur = !!ring.t
     const cost = this.ringCost(ring)
     this.setData({
@@ -351,6 +376,17 @@ Page({
       editCostWan: (cost / 10000).toFixed(0)
     })
   },
+
+  onJumpInput(e) { this.setData({ jumpRing: e.detail.value }) },
+
+  jumpRingTo() {
+    const rn = parseInt(this.data.jumpRing)
+    if (!rn || rn < 1 || rn > 100) { this.showToast('请输入 1-100 的环号'); return }
+    this.setData({ jumpRing: '' })
+    this.openEdit(rn)
+  },
+
+  pickItem(e) { this.setData({ qbItem: e.currentTarget.dataset.item }) },
 
   closeEditModal() { this.setData({ showEditModal: false }) },
 
@@ -365,7 +401,11 @@ Page({
   saveEdit() {
     const tid = this.data.editSelTid
     if (!tid) { this.showToast('请选择任务类型'); return }
+    this.pushUndo('编辑第' + this.data.editRing + '环')
     this.setRing(this.data.editRing, tid, this.data.editItem)
+    TASK_USAGE.bump(this.data.activeUser, 'pet', tid)
+    if (this.data.editItem) ITEM_MEMORY.add(this.data.activeUser, this.data.editItem)
+    UI.vibrate()
     this.setData({ showEditModal: false })
     this.loadData()
     this.checkComplete()
@@ -373,6 +413,7 @@ Page({
 
   clearEdit() {
     if (!this._cur) return
+    this.pushUndo('清除第' + this.data.editRing + '环')
     this._cur.rings[this.data.editRing - 1] = { t: null, sc: 0, item: '' }
     S.savePetCur(this.data.activeUser, this._cur)
     this.setData({ showEditModal: false })
@@ -406,6 +447,7 @@ Page({
       content: '清除所有记录？',
       success: res => {
         if (res.confirm) {
+          this.pushUndo('清除全部记录')
           this._cur.rings = Array.from({ length: 100 }, () => ({ t: null, sc: 0, item: '' }))
           S.savePetCur(this.data.activeUser, this._cur)
           this.loadData()
@@ -454,12 +496,15 @@ Page({
     if (!this._cur) return
     const { batchStart, batchEnd, batchSelTid } = this.data
     const t = C.pGetT(batchSelTid)
+    this.pushUndo('批量填充 ' + batchStart + '-' + batchEnd)
     for (let i = batchStart; i <= batchEnd; i++) {
       if (!this._cur.rings[i - 1].t) {
         this._cur.rings[i - 1] = { t: batchSelTid, sc: t ? t.sc : 0, item: '' }
       }
     }
     S.savePetCur(this.data.activeUser, this._cur)
+    TASK_USAGE.bump(this.data.activeUser, 'pet', batchSelTid)
+    UI.vibrate()
     this.setData({ showBatchModal: false })
     this.loadData()
     this.showToast(`已填充${batchStart}-${batchEnd}环`)
@@ -468,7 +513,13 @@ Page({
 
   // ===== Prices =====
   showPrices() { this.setData({ showPricesModal: true }) },
-  closePricesModal() { this.setData({ showPricesModal: false }) },
+  closePricesModal() {
+    // 取消编辑：恢复已保存价格，避免未保存的价格参与费用计算
+    this.setData({
+      showPricesModal: false,
+      prices: { ...S.getPetPrices(this.data.activeUser) }
+    })
+  },
 
   onPriceChange(e) {
     const tid = e.currentTarget.dataset.tid
@@ -478,7 +529,9 @@ Page({
   },
 
   savePrices() {
-    S.savePetPrices(this.data.activeUser, this.data.prices)
+    const prices = { ...this.data.prices }
+    S.savePetPrices(this.data.activeUser, prices)
+    this._prices = prices
     this.setData({ showPricesModal: false })
     this.loadData()
     this.showToast('价格已保存')
@@ -491,6 +544,7 @@ Page({
       success: res => {
         if (res.confirm) {
           S.savePetPrices(this.data.activeUser, { ...C.P_DEFAULT_PRICES })
+          this._prices = { ...C.P_DEFAULT_PRICES }
           this.setData({ showPricesModal: false, prices: { ...C.P_DEFAULT_PRICES } })
           this.loadData()
           this.showToast('已恢复默认价格')
@@ -517,7 +571,23 @@ Page({
     this._settleRun = run
   },
 
-  closeSettleModal() { this.setData({ showSettleModal: false }) },
+  closeSettleModal() {
+    // 取消结算：回滚内存中的完成状态，避免运行中的记录被标记为已完成
+    const run = this._settleRun
+    if (run) {
+      run.done = false
+      run.doneAt = null
+      delete run.totalScore
+      delete run.totalExp
+      delete run.totalCost
+      delete run.rewardTier
+      delete run.bookLevel
+      S.savePetCur(this.data.activeUser, run)
+      this._settleRun = null
+      this.loadData()
+    }
+    this.setData({ showSettleModal: false })
+  },
 
   onSettleCatChange(e) { this.setData({ settleCatIdx: parseInt(e.detail.value), settleLvIdx: 0, settleTypeIdx: 0, settleMainReward: '' }) },
   onSettleLvChange(e) { this.setData({ settleLvIdx: parseInt(e.detail.value), settleMainReward: '' }) },
@@ -572,6 +642,8 @@ Page({
     S.savePetRuns(this.data.activeUser, runs)
     S.savePetCur(this.data.activeUser, null)
     this._cur = null
+    this._settleRun = null
+    if (this._undo) this._undo.clear()
     this.setData({ showSettleModal: false })
     this.loadData()
     this.showToast('结算完成！总分:' + run.totalScore + '|费用:' + (run.totalCost / 10000).toFixed(0) + '万')
@@ -635,8 +707,11 @@ Page({
             success: res2 => {
               try {
                 const d = JSON.parse(res2.data)
-                const imported = d.hist || d.history
-                if (imported && Array.isArray(imported)) {
+                const raw = d.hist || d.history
+                const imported = Array.isArray(raw)
+                  ? raw.filter(r => r && typeof r === 'object').slice(0, 500)
+                  : []
+                if (imported.length) {
                   wx.showModal({
                     title: '确认导入',
                     content: `导入${imported.length}条记录？`,
@@ -649,7 +724,7 @@ Page({
                       }
                     }
                   })
-                } else this.showToast('无效文件')
+                } else this.showToast('没有可导入的记录')
               } catch (e) { this.showToast('解析失败') }
             }
           })
@@ -670,7 +745,8 @@ Page({
       if (!res[0] || !res[0].node) return
       const canvas = res[0].node
       const ctx = canvas.getContext('2d')
-      const dpr = wx.getSystemInfoSync().pixelRatio
+      const win = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+      const dpr = win.pixelRatio
       const w = res[0].width
       const h = res[0].height
       canvas.width = w * dpr
@@ -728,12 +804,11 @@ Page({
   },
 
   // ===== Data builders =====
-  ringCost(ring) {
-    if (!ring || !ring.t) return 0
-    return this.data.prices[ring.t] || C.P_DEFAULT_PRICES[ring.t] || 0
+  ringCost(ring, prices) {
+    return RING_COST.ringCost(ring, prices || this._prices, C.P_DEFAULT_PRICES)
   },
 
-  buildRecordData(cur, _prices) {
+  buildRecordData(cur, prices) {
     const data = {
       score: 0, minScore: 0, maxScore: 0, completed: 0,
       bookLevel: 80, expVal: 0, costWan: '0', skipCount: 0,
@@ -746,7 +821,7 @@ Page({
     const exp = C.pExp(cur.rings)
     const bl = C.pBookLevel(sc, cur.level)
     const tier = C.pGetTier(sc, cur.level)
-    const cost = cur.rings.reduce((s, r) => s + this.ringCost(r), 0)
+    const cost = RING_COST.totalCost(cur.rings, prices, C.P_DEFAULT_PRICES)
     const nr = cur.rings.findIndex(r => !r.t) + 1
     const sk = cur.rings.filter(r => r.t === 'skip').length
 
@@ -781,9 +856,10 @@ Page({
     const lvls = [150, 140, 130, 120, 110, 100, 90, 80]
     const rows = lvls.map(l2 => {
       const need = Math.max(0, l2 + 130 - lo)
-      const ok = cur && sc >= need
+      const guaranteed = l2 === 80
+      const ok = !!cur && (guaranteed || sc >= need)
       let status, tagCls, reward
-      if (ok && cur) { status = '已达标'; tagCls = 'tag tag-g' }
+      if (ok) { status = guaranteed ? '保底' : '已达标'; tagCls = 'tag tag-g' }
       else if (cur) {
         status = need - sc > 50 ? '差距大' : '可冲刺'
         tagCls = need - sc > 50 ? 'tag tag-r' : 'tag tag-y'
@@ -791,7 +867,15 @@ Page({
       if (l2 === 80) reward = '80书铁(保底)'
       else if (l2 === 150) reward = '150书铁/160战魄/修炼果'
       else reward = l2 + '制造书/铁+修炼果'
-      return { lv: l2, label: l2 === 150 ? '150级+战魄' : l2 + '级', need, cls: ok && cur ? 'hl' : '', status, tagCls, reward }
+      return {
+        lv: l2,
+        label: l2 === 150 ? '150级+战魄' : l2 + '级',
+        need: guaranteed ? '—' : need,
+        cls: ok && cur && !guaranteed ? 'hl' : '',
+        status,
+        tagCls,
+        reward
+      }
     })
     return { predictLv: lv, offset: lo, predictRows: rows }
   },
@@ -803,20 +887,24 @@ Page({
     const rem = 100 - comp
     const lo = Math.floor(cur.level / 3)
     const targets = [80, 90, 100, 110, 120, 130, 140, 150].map(lv => {
-      const need = Math.max(0, lv + 130 - lo)
-      const diff = Math.max(0, need - sc)
-      const ppr = rem > 0 ? Math.max(0, (need - sc) / rem) : 0
-      const ok = sc >= need
+      const guaranteed = lv === 80
+      const need = guaranteed ? 0 : Math.max(0, lv + 130 - lo)
+      const diff = guaranteed ? 0 : Math.max(0, need - sc)
+      const ppr = guaranteed || rem <= 0 ? 0 : Math.max(0, (need - sc) / rem)
+      const ok = guaranteed || sc >= need
       const feasible = rem > 0 ? (ppr <= 10) : ok
-      let label = lv === 150 ? '150书铁/战魄' : lv + '书铁'
+      let label = lv === 150 ? '150书铁/战魄' : (lv === 80 ? '80书铁(保底)' : lv + '书铁')
       let ftCls = '', ftLabel = '', sg
-      if (ok) { ftCls = 'tag tag-g'; ftLabel = '已达成'; sg = '保持即可' }
-      else if (feasible) {
+      if (ok) {
+        ftCls = 'tag tag-g'
+        ftLabel = guaranteed ? '保底' : '已达成'
+        sg = guaranteed ? '80级为保底档' : '保持即可'
+      } else if (feasible) {
         ftCls = 'tag tag-g'; ftLabel = '可行'
         const an = parseFloat(ppr.toFixed(1))
         sg = an <= 3 ? '常规任务' : an <= 5 ? '多交80环/2家' : an <= 7 ? '需指定变异+高分' : '困难，需连续高分'
       } else { ftCls = 'tag tag-r'; ftLabel = '不可行'; sg = '降低目标或下轮再冲' }
-      return { lv, label, need, diff, pr: ok ? '—' : ppr.toFixed(1), ok, cls: ok ? 'hl' : '', ftCls, ftLabel, suggestion: sg }
+      return { lv, label, need: guaranteed ? '—' : need, diff, pr: ok ? '—' : ppr.toFixed(1), ok, cls: ok && !guaranteed ? 'hl' : '', ftCls, ftLabel, suggestion: sg }
     })
     const firstNeed = targets.find(t => !t.ok)
     return { controlRows: targets, controlNeedPerRing: firstNeed ? firstNeed.pr : '—' }
@@ -864,6 +952,49 @@ Page({
       },
       tierDist
     }
+  },
+
+  // ===== Record helpers (v1.2) =====
+  pushUndo(label) {
+    if (!this._cur || !this._undo) return
+    this._undo.push({ label, cur: JSON.parse(JSON.stringify(this._cur)) })
+    this.setData({ undoCount: this._undo.size })
+  },
+
+  undoLast() {
+    if (!this._undo || !this._undo.size) { this.showToast('没有可撤销的操作'); return }
+    const snapshot = this._undo.pop()
+    if (!snapshot || !snapshot.cur) { this.setData({ undoCount: this._undo.size }); return }
+    this._cur = snapshot.cur
+    S.savePetCur(this.data.activeUser, this._cur)
+    UI.vibrate()
+    this.loadData()
+    this.showToast('已撤销：' + snapshot.label)
+  },
+
+  toggleVibrate() {
+    const on = !this.data.vibrateOn
+    UI.setVibrate(on)
+    this.setData({ vibrateOn: on })
+    if (on) UI.vibrate()
+  },
+
+  toggleAllTasks() {
+    this.setData({ showAllTasks: !this.data.showAllTasks })
+    this.loadData()
+  },
+
+  batchToNextTen() {
+    const firstEmpty = this._cur ? this._cur.rings.findIndex(r => !r.t) + 1 : 1
+    const start = firstEmpty || 1
+    const end = Math.min(Math.max(1, Math.ceil(start / 10) * 10), 100)
+    this.setData({ batchStart: start, batchEnd: end, batchCount: end - start + 1 })
+  },
+
+  batchToFull() {
+    const firstEmpty = this._cur ? this._cur.rings.findIndex(r => !r.t) + 1 : 1
+    const start = firstEmpty || 1
+    this.setData({ batchStart: start, batchEnd: 100, batchCount: 100 - start + 1 })
   },
 
   // ===== Toast =====

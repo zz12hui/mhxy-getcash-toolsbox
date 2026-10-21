@@ -85,13 +85,33 @@ Page({
   },
 
   onChooseAvatar(e) {
-    const avatarUrl = e.detail.avatarUrl
-    if (!avatarUrl) return
-    this.setData({ avatarUrl })
+    const tempUrl = e.detail.avatarUrl
+    if (!tempUrl) return
     const profile = S.getWxProfile() || {}
-    profile.avatarUrl = avatarUrl
-    S.saveWxProfile(profile)
-    app.globalData.wxProfile = profile
+    this.setData({ avatarUrl: tempUrl })
+
+    const saveLocal = url => {
+      profile.avatarUrl = url
+      S.saveWxProfile(profile)
+      app.globalData.wxProfile = profile
+      this.setData({ avatarUrl: url })
+    }
+
+    // 头像先上传到云存储，避免临时路径在重启后失效
+    if (!wx.cloud || !profile.openid) { saveLocal(tempUrl); return }
+    wx.showLoading({ title: '上传头像...', mask: true })
+    wx.cloud.uploadFile({
+      cloudPath: 'avatars/' + profile.openid + '_' + Date.now() + '.png',
+      filePath: tempUrl
+    }).then(res => {
+      wx.hideLoading()
+      saveLocal(res.fileID || tempUrl)
+    }).catch(err => {
+      wx.hideLoading()
+      console.error('[login] upload avatar failed:', err)
+      saveLocal(tempUrl)
+      wx.showToast({ title: '头像已更换（未上传云端）', icon: 'none' })
+    })
   },
 
   doLogout() {
@@ -117,6 +137,14 @@ Page({
     profile.nickName = nickName
     S.saveWxProfile(profile)
     app.globalData.wxProfile = profile
+  },
+
+  onPrivacy() {
+    wx.navigateTo({ url: '/pages/privacy/privacy?tab=privacy' })
+  },
+
+  onTerms() {
+    wx.navigateTo({ url: '/pages/privacy/privacy?tab=terms' })
   },
 
   goBack() {

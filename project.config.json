@@ -5,6 +5,38 @@
             {
                 "type": "folder",
                 "value": "admin"
+            },
+            {
+                "type": "folder",
+                "value": "tests"
+            },
+            {
+                "type": "folder",
+                "value": ".github"
+            },
+            {
+                "type": "folder",
+                "value": ".claude"
+            },
+            {
+                "type": "file",
+                "value": "README.md"
+            },
+            {
+                "type": "file",
+                "value": "CLAUDE.md"
+            },
+            {
+                "type": "file",
+                "value": "LICENSE"
+            },
+            {
+                "type": "file",
+                "value": "package-lock.json"
+            },
+            {
+                "type": "file",
+                "value": ".eslintrc.js"
             }
         ]
     },

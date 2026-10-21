@@ -88,6 +88,7 @@ function pBookLevel(sc, lv) {
 
 function pGetTier(sc, lv) {
   const bl = pBookLevel(sc, lv)
+  if (bl <= 80) return REWARD_TIERS[0]
   for (let i = REWARD_TIERS.length - 1; i >= 0; i--) {
     if (bl >= REWARD_TIERS[i].minB) return REWARD_TIERS[i]
   }
@@ -112,8 +113,10 @@ function cRewardRange(lv) {
 function cBookLevels(lv) {
   const r = cRewardRange(lv)
   const lvls = []
-  for (let l = r.max; l >= Math.max(80, r.min); l -= 10) lvls.push(l)
-  if (r.has150 && !lvls.includes(150)) lvls.unshift(150)
+  const start = Math.floor(r.max / 10) * 10
+  const min = Math.ceil(Math.max(80, r.min) / 10) * 10
+  for (let l = start; l >= min; l -= 10) lvls.push(l)
+  if (r.has150 && lvls.indexOf(150) < 0) lvls.unshift(150)
   return lvls
 }
 

@@ -113,6 +113,79 @@ function saveLastSyncAt(ts) {
   try { wx.setStorageSync('mhxy_last_sync_at', ts); return true } catch (e) { logError('save', 'mhxy_last_sync_at', e); return false }
 }
 
+// ===== Whole account backup / restore (v1.2) =====
+// 云备份按角色整体导出/恢复：roles = [{ id, name, createdAt, pet, chain }]
+const ROLE_KEYS = [
+  'mhxy_cfg_', 'mhxy_cur_', 'mhxy_runs_', 'mhxy_prices_',
+  'mhxy3_cfg_', 'mhxy3_cur_', 'mhxy3_runs_', 'mhxy3_prices_',
+  'mhxy_task_usage_pet_', 'mhxy_task_usage_chain_', 'mhxy_items_',
+  'mhxy_guide_seen_pet_', 'mhxy_guide_seen_chain_'
+]
+
+function clearRoleData(uid) {
+  if (!uid) return
+  ROLE_KEYS.forEach(k => {
+    try { wx.removeStorageSync(k + uid) } catch (e) { logError('remove', k + uid, e) }
+  })
+}
+
+function exportAllRoles() {
+  return getUsers().map(u => ({
+    id: u.id,
+    name: u.name,
+    createdAt: u.createdAt,
+    pet: {
+      cfg: getPetCfg(u.id),
+      prices: getPetPrices(u.id),
+      runs: getPetRuns(u.id),
+      cur: getPetCur(u.id)
+    },
+    chain: {
+      cfg: getChainCfg(u.id),
+      prices: getChainPrices(u.id),
+      runs: getChainRuns(u.id),
+      cur: getChainCur(u.id)
+    }
+  }))
+}
+
+// 用云端快照整体替换本地角色与数据；返回是否成功
+function applyAllRoles(roles) {
+  if (!Array.isArray(roles) || !roles.length) return false
+  const oldUsers = getUsers()
+  const users = roles.map((r, idx) => ({
+    id: String(r.id || ('user_' + Date.now() + '_' + idx)),
+    name: String(r.name || '角色').slice(0, 12),
+    createdAt: Number(r.createdAt) || Date.now()
+  }))
+  // 先写角色列表；写失败则不动旧数据，避免解析到一半丢失
+  if (!saveUsers(users)) return false
+
+  const newIds = {}
+  users.forEach(u => { newIds[u.id] = true })
+  oldUsers.forEach(u => {
+    if (!newIds[u.id]) clearRoleData(u.id)
+  })
+
+  roles.forEach((r, idx) => {
+    const uid = users[idx].id
+    const pet = r.pet || {}
+    const chain = r.chain || {}
+    clearRoleData(uid)
+    if (pet.cfg) savePetCfg(uid, pet.cfg)
+    if (pet.prices) savePetPrices(uid, pet.prices)
+    if (Array.isArray(pet.runs)) savePetRuns(uid, pet.runs)
+    savePetCur(uid, pet.cur || null)
+    if (chain.cfg) saveChainCfg(uid, chain.cfg)
+    if (chain.prices) saveChainPrices(uid, chain.prices)
+    if (Array.isArray(chain.runs)) saveChainRuns(uid, chain.runs)
+    saveChainCur(uid, chain.cur || null)
+  })
+
+  saveActiveUser(users[0].id)
+  return true
+}
+
 module.exports = {
   getUsers, saveUsers, getActiveUser, saveActiveUser,
   getPetPrices, savePetPrices, getPetCfg, savePetCfg,
@@ -121,5 +194,6 @@ module.exports = {
   getChainCur, saveChainCur, getChainRuns, saveChainRuns,
   getWxProfile, saveWxProfile, clearWxProfile,
   getLastSyncAt, saveLastSyncAt,
+  clearRoleData, exportAllRoles, applyAllRoles,
   getLastError: () => _lastError
 }

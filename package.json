@@ -1,18 +1,23 @@
 {
   "name": "mhxy-getcash-toolsbox",
-  "version": "1.0.0",
-  "description": "微信小程序 — 梦幻西游跑环辅助工具。纯本地存储，无需后端服务。",
-  "main": ".eslintrc.js",
+  "version": "1.2.0",
+  "description": "微信小程序 — 梦幻西游跑环记录与收益统计工具（宠环 100 环 / 跑环 300 环，本地优先，可选微信云备份）。",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint pages/**/*.js utils/**/*.js app.js custom-tab-bar/index.js --format stylish",
+    "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/pet-page.test.js tests/chain-page.test.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://git.weixin.qq.com/getcashtoolsbox/getcashtoosbox.git"
+    "url": "https://github.com/zz12hui/mhxy-getcash-toolsbox.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "wechat-miniprogram",
+    "miniprogram",
+    "mhxy",
+    "game-tools"
+  ],
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "eslint": "^8.57.1"

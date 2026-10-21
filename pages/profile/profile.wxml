@@ -9,7 +9,7 @@
           <view wx:else class="profile-avatar profile-avatar-d">👤</view>
           <view class="profile-name-wrap">
             <text class="profile-name">{{isLoggedIn ? nickName : '未登录'}}</text>
-            <text class="profile-sub">{{isLoggedIn ? '已绑定微信账号' : '点击登录同步数据到云端'}}</text>
+            <text class="profile-sub">{{isLoggedIn ? '点击管理账号（资料/手机号/退出）' : '点击登录同步数据到云端'}}</text>
           </view>
         </view>
         <text class="profile-arrow">›</text>
@@ -22,7 +22,7 @@
       <view class="menu-list">
         <view class="menu-item" bindtap="backupToCloud">
           <text>☁️ 备份到云端</text>
-          <text class="menu-item-hint" wx:if="{{!isSyncing}}">{{lastSyncAtStr}}</text>
+          <text class="menu-item-hint" wx:if="{{!isSyncing}}">{{roleCount}} 个角色 · {{lastSyncAtStr}}</text>
           <text class="menu-item-hint" wx:else>同步中...</text>
         </view>
         <view class="menu-item" bindtap="restoreFromCloud">
@@ -49,13 +49,17 @@
     <view class="profile-section">
       <view class="section-title">服务</view>
       <view class="service-grid">
-        <button class="service-item" open-type="feedback">
+        <view class="service-item" bindtap="goFeedback">
           <text class="service-icon">💬</text>
           <text class="service-label">意见反馈</text>
-        </button>
+        </view>
         <view class="service-item" bindtap="goManual">
           <text class="service-icon">📋</text>
           <text class="service-label">操作手册</text>
+        </view>
+        <view class="service-item" bindtap="goPrivacy">
+          <text class="service-icon">🔒</text>
+          <text class="service-label">隐私与协议</text>
         </view>
       </view>
     </view>

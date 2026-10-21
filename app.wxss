@@ -340,6 +340,38 @@ page {
   width: 100%;
 }
 
+.qb-more {
+  padding: 14rpx 16rpx;
+  border-radius: 10rpx;
+  border: 1px dashed var(--border);
+  color: var(--text2);
+  font-size: 22rpx;
+  min-height: 72rpx;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.qb-chips {
+  display: flex;
+  gap: 8rpx;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.qb-chip {
+  padding: 8rpx 16rpx;
+  border-radius: 24rpx;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 22rpx;
+  max-width: 220rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ===== Grid ===== */
 .ring-grid-wrap {
   flex: 1;
@@ -363,6 +395,35 @@ page {
   color: var(--text2);
   flex-wrap: wrap;
   gap: 8rpx;
+}
+
+.grid-tools {
+  display: flex;
+  gap: 8rpx;
+  flex-wrap: wrap;
+}
+
+.jump-box {
+  display: flex;
+  gap: 8rpx;
+  align-items: center;
+}
+
+.jump-box input {
+  width: 150rpx;
+  padding: 10rpx 12rpx;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8rpx;
+  color: var(--text);
+  font-size: 22rpx;
+  min-height: 56rpx;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.btn-off {
+  opacity: 0.45;
 }
 
 .ring-grid {

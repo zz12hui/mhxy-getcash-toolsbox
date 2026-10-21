@@ -2,102 +2,83 @@
 
 ## 项目概述
 
-梦幻搞钱工具箱 — 微信小程序。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 用户系统 + 后台管理。微信云开发后端（云函数 + 云数据库），可选微信登录，登录后可云端备份数据。
+梦幻搞钱工具箱 — 微信小程序，梦幻西游跑环记录/预测/统计工具。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 可选微信登录与云备份。微信云开发后端（6 个云函数 + 云数据库），无后台管理端。
 
-基础库 2.19.4，AppID `<YOUR_APPID>`，云环境 `<YOUR_CLOUD_ENV>`。
+基础库 2.24.0，AppID `<YOUR_APPID>`，云环境 `<YOUR_CLOUD_ENV>`（作者自用，他人 fork 需替换）。
 
 ## 架构
 
 ```
-app.js / app.json / app.wxss       # 应用入口、云开发初始化、全局样式
-custom-tab-bar/                     # 自定义 TabBar 组件（首页 | 当前工具 | 我的）
+app.js / app.json / app.wxss      应用入口、云开发初始化、全局样式
+custom-tab-bar/                    自定义 TabBar（首页 | 当前工具 | 我的）
 utils/
-  constants.js                      # 游戏常量 + 计算公式
-  storage.js                        # 本地存储封装（按用户 ID 隔离）
-  cloud.js                          # 云开发 API 封装（callFunction + 数据库查询）
-  faq-cache.js                      # FAQ 本地缓存（1h TTL 离线可用）
-cloudfunctions/                     # 11 个云函数（login/getPhone/sync*/submitFeedback/init/admin*）
+  constants.js                     游戏常量 + 公式（纯函数，可 Node 单测）
+  storage.js                       本地存储（按 uid 隔离 + exportAllRoles/applyAllRoles）
+  cloud.js                         callFunction + FAQ 查询
+  faq-cache.js                     FAQ 本地缓存（1h TTL）
+  ring-cost.js                     价格/费用计算（0 价生效、显式传参）
+  task-usage.js                   常用任务排序
+  item-memory.js                  物品名记忆
+  undo.js                         UndoStack（最多 10 步）
+  ui.js                           震动开关
 pages/
-  index/                            # 首页 — 工具卡片 + 入口
-  pet/                              # 宠环助手（记录/预测/控分/历史/统计）
-  chain/                            # 跑环助手（记录/奖励/历史/统计）
-  profile/                          # 个人中心（登录/云同步/角色管理/反馈/后台入口）
-  faq/                              # 知识库列表（分类 Tab + 搜索）
-  faq-detail/                       # 知识库详情（rich-text 渲染）
-  login/                            # 微信登录/手机绑定
-  feedback/                         # 意见反馈表单
-  admin/                            # 后台管理（看板/FAQ CRUD/用户/反馈）
-admin/                              # PC 后台管理 React 项目（备用，当前未启用）
+  index/                           首页
+  pet/                             宠环（记录/预测/控分/历史/统计）
+  chain/                           跑环（记录/奖励/历史/统计）
+  profile/                         个人中心（账号/备份恢复/角色）
+  faq/ + faq-detail/               知识库
+  login/                           登录/账号设置（头像/昵称/手机号/退出）
+  feedback/                        意见反馈
+  manual/                          操作手册
+  privacy/                         隐私政策与用户协议
+cloudfunctions/                    login / getPhone / syncUpload / syncDownload
+                                   submitFeedback / init
+tests/                             Node 单测（npm test）
 ```
 
-### 导航结构
+### 云函数清单（实际 6 个）
 
-- **自定义 TabBar**：首页 | [宠环助手/跑环助手 动态切换] | 我的
-- 中间 Tab 根据 `app.globalData.currentToolTab` 动态显示宠环或跑环
-- 知识库、登录、反馈、后台管理为非 Tab 页面，通过 `wx.navigateTo` 进入
-
-### 数据流
-
-1. `app.js` onLaunch → 初始化云开发 + 用户系统 + 迁移旧数据 + 加载微信登录状态
-2. 每个页面 `onShow` → `loadData()` 从 storage 读取数据 → `buildXxxData()` 预计算显示值 → `setData()`
-3. 云数据：小程序通过 `wx.cloud.callFunction()` 调用云函数，FAQ 公开数据直接查云数据库
-4. 本地用户系统（`mhxy_users`/`mhxy_active`）保持不变，微信登录是附加层
-5. 登录可选，未登录用户体验与 v1.0 完全一致
+| 函数 | 说明 |
+|---|---|
+| login | 返回 openid / isAdmin；首次创建 users 记录 |
+| getPhone | `cloud.openapi.phonenumber.getPhoneNumber({code})`，权限 `phonenumber.getPhoneNumber` |
+| syncUpload | 入参 `roles[]`，按角色 + 数据类型分文档写入 `user_sync_data` |
+| syncDownload | 返回 `roles[]`（含 pet/chain），客户端整份恢复 |
+| submitFeedback | 反馈写入 `feedbacks` |
+| init | FAQ 初始化 + 绑定管理员；校验 openid（环境变量 `ADMIN_OPENIDS` 或 `admins` 集合），控制台调用可用 `INIT_SECRET` + `event.secret` |
 
 ### 云数据库集合
 
-| 集合 | 用途 | 权限 |
-|------|------|------|
-| `faq_categories` | FAQ 分类 | 所有用户可读，仅云函数可写 |
-| `faq_items` | FAQ 条目（含 contentHtml） | 所有用户可读，仅云函数可写 |
-| `users` | 微信登录用户 | 仅创建者可读写 |
-| `user_sync_data` | 用户云端备份数据 | 仅创建者可读写 |
-| `feedbacks` | 用户反馈 | 所有用户可写 |
-| `admins` | 管理员（含 openid 字段做白名单） | 仅云函数可读写 |
+`faq_categories`、`faq_items`、`users`、`user_sync_data`、`feedbacks`、`admins`。
+集合需在云控制台手动创建；FAQ 只读查询（isActive + orderBy）建议加索引。
 
-### 云函数清单
+### Storage key
 
-| 函数 | 用途 | 调用方 |
-|------|------|--------|
-| `login` | 微信登录，返回 openid + isAdmin | 小程序 callFunction |
-| `getPhone` | 手机号解密存储 | 小程序 callFunction |
-| `syncUpload` | 备份跑环数据 | 小程序 callFunction |
-| `syncDownload` | 恢复跑环数据 | 小程序 callFunction |
-| `submitFeedback` | 提交反馈 | 小程序 callFunction |
-| `init` | 环境初始化（管理员+示例 FAQ） | 手动调用一次 |
-| `adminLogin` | 管理员登录，返回 token | 小程序 callFunction |
-| `adminStats` | 数据统计 | 小程序 callFunction |
-| `adminUsers` | 用户列表/详情 | 小程序 callFunction |
-| `adminFaq` | FAQ 分类+条目 CRUD | 小程序 callFunction |
-| `adminFeedback` | 反馈列表+状态更新 | 小程序 callFunction |
+- `mhxy_users` / `mhxy_active`：角色列表 / 当前角色
+- `mhxy_{cfg,cur,runs,prices}_<uid>`：宠环数据；`mhxy3_*`：跑环数据
+- `mhxy_wx_profile`：登录信息；`mhxy_last_sync_at`：上次备份时间
+- `mhxy_task_usage_{pet,chain}_<uid>`、`mhxy_items_<uid>`、`mhxy_guide_seen_*_<uid>`、`mhxy_vibrate`
+- `mhxy_faq_*`：FAQ 缓存
 
-### Storage key 清单
+### 关键约定（改代码前必读）
 
-| Key | 用途 |
-|-----|------|
-| `mhxy_users` / `mhxy_active` | 本地用户列表和当前活跃用户 |
-| `mhxy_{k}_{uid}` | 宠环数据（cfg/cur/runs/prices） |
-| `mhxy3_{k}_{uid}` | 跑环数据（cfg/cur/runs/prices） |
-| `mhxy_wx_profile` | 微信登录信息（openid/nickName/avatarUrl/phoneNumber/isAdmin） |
-| `mhxy_last_sync_at` | 上次云端同步时间戳 |
-| `mhxy_admin_token` | 管理员登录 token（24h 过期） |
-| `mhxy_tool_tab` | 当前工具 Tab（'pet'/'chain'） |
-| `mhxy_faq_*` | FAQ 本地缓存 |
+1. **WXML 表达式不支持方法调用**：`indexOf`、`toFixed`、字符串拼接之外的复杂逻辑一律在 JS 里预计算，`setData` 传结果。
+2. 每个页面 `.json` 必须带 `"enable-flex": true`；WXSS 不支持 `inset`，用 `top/right/bottom/left`。
+3. 费用计算统一走 `utils/ring-cost.js`，**不要**写 `prices[tid] || DEFAULT[tid]`（0 价会被吞）；页面用 `this._prices`（已保存价格）计算，编辑框用 `data.prices`。
+4. 记录类操作（记录/编辑/批量/清除/奖励）先 `pushUndo(label)` 再改 `this._cur`，否则不能撤销。
+5. 角色数据清理用 `S.clearRoleData(uid)`，不要手写 key 列表。
+6. 新增页面：`app.json.pages` + 4 个文件（js/json/wxml/wxss），json 加 `enable-flex`。
 
-### 管理员白名单机制
+### 开发命令
 
-- 管理员通过 `admin`/`admin123` 登录后台 → 云函数将当前微信 openid 写入 `admins` 集合
-- 后续微信登录时，`login` 云函数检查 openid 是否在 `admins` 中 → 返回 `isAdmin` 标记
-- 仅 `isAdmin=true` 的用户在个人中心看到「后台管理」入口
-- 首次使用：开发者先微信登录 → 再进后台管理登录 → openid 自动绑定
+```bash
+npm install
+npm run lint
+npm test
+```
 
-### UI 模式
+### 注意事项
 
-- **弹窗**：统一底部弹出式（`.sheet-overlay` + `.sheet`），圆角 32rpx + 滑入动画 + `.sheet-handle`。遮罩可关闭，内部 `catchtap="noop"` 阻止冒泡
-- **自定义 TabBar**：`custom-tab-bar/` 组件，3 项动态显示。`pageLifetimes.show` 自动更新选中状态
-- **触摸目标**：标准按钮 ≥80rpx、小按钮 ≥64rpx、标签页 ≥80rpx
-
-### WXML 约束（重要）
-
-WXML 表达式**不支持方法调用**。`{{arr.indexOf(x)}}`、`{{num.toFixed(0)}}` 等均无效。必须在 JS 中预计算，通过 `setData` 传入。
-WXSS 不支持 `inset` 简写，需用 `top/right/bottom/left`。每个页面 `.json` 必须包含 `"enable-flex": true`。
+- 不要提交 `.claude/`、`node_modules/`、`tests/` 到小程序包（已在 `.gitignore` / `packOptions.ignore` 排除）。
+- 云函数依赖锁定 `wx-server-sdk@3.0.4`。
+- 隐私政策/用户协议内容在 `pages/privacy/privacy.wxml`，修改后同步更新 `README` 合规说明。

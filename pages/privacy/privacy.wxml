@@ -1,0 +1,75 @@
+<view class="app">
+  <view class="tabs" style="margin-bottom:12rpx;">
+    <view wx:for="{{tabs}}" wx:key="key" class="tab {{activeTab===item.key?'active':''}}" data-key="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
+  </view>
+
+  <scroll-view scroll-y class="scroll-wrap legal-scroll">
+    <view class="legal" wx:if="{{activeTab==='privacy'}}">
+      <view class="legal-title">梦幻搞钱工具箱 · 隐私政策</view>
+      <view class="legal-updated">更新日期：2026-10-21（v1.2）</view>
+
+      <view class="legal-h">1. 我们收集哪些信息</view>
+      <view class="legal-p">· 微信昵称、头像：仅在你主动设置时获取，用于在本小程序内展示账号信息。</view>
+      <view class="legal-p">· 手机号：仅在你主动点击「绑定手机号」并授权后获取，用于账号识别与问题排查。</view>
+      <view class="legal-p">· 工具数据：你录入的跑环记录、角色等级、物品价格、奖励记录等，用于本工具的计算与统计。</view>
+
+      <view class="legal-h">2. 数据保存在哪里</view>
+      <view class="legal-p">· 工具数据默认只保存在你的手机本地，不上传服务器。</view>
+      <view class="legal-p">· 仅当你登录并主动点击「备份到云端」时，当前所有角色的数据才会写入微信云开发数据库，且只存储在你自己的微信账号（openid）下。</view>
+      <view class="legal-p">· 换手机或删除小程序前，请自行完成云端备份或导出，否则本地数据会丢失。</view>
+
+      <view class="legal-h">3. 信息的使用与共享</view>
+      <view class="legal-p">· 收集的信息只用于：展示账号信息、云端备份与恢复、处理你提交的反馈。</view>
+      <view class="legal-p">· 我们不会向任何第三方出售、出租或共享你的个人信息，法律法规另有要求的除外。</view>
+
+      <view class="legal-h">4. 权限说明</view>
+      <view class="legal-p">· 手机号、头像、相册（保存战绩图）、剪贴板（导出/导入数据）等权限，均只在你主动操作时申请。</view>
+      <view class="legal-p">· 拒绝授权不影响本地记录、预测、统计等核心功能。</view>
+
+      <view class="legal-h">5. 数据安全与保留</view>
+      <view class="legal-p">· 云端数据保留至你主动覆盖、删除或申请删除为止。</view>
+      <view class="legal-p">· 如需删除云端备份，可通过「意见反馈」联系开发者处理。</view>
+
+      <view class="legal-h">6. 未成年人</view>
+      <view class="legal-p">· 未满 18 周岁的用户请在监护人同意和指导下使用本工具。</view>
+
+      <view class="legal-h">7. 政策更新</view>
+      <view class="legal-p">· 本政策更新后会显示在本页面，继续使用即表示接受更新后的内容。</view>
+
+      <view class="legal-h">8. 联系我们</view>
+      <view class="legal-p">· 如对本政策有疑问，请通过「我的 → 意见反馈」提交。</view>
+    </view>
+
+    <view class="legal" wx:if="{{activeTab==='terms'}}">
+      <view class="legal-title">梦幻搞钱工具箱 · 用户协议</view>
+      <view class="legal-updated">更新日期：2026-10-21（v1.2）</view>
+
+      <view class="legal-h">1. 工具性质</view>
+      <view class="legal-p">· 本小程序是玩家自制的跑环记录与收益统计辅助工具，与网易公司及《梦幻西游》官方无关，非官方产品。</view>
+      <view class="legal-p">· 游戏名称、美术素材等知识产权归权利人所有。</view>
+
+      <view class="legal-h">2. 数据准确性</view>
+      <view class="legal-p">· 积分、书铁等级、奖励区间与收益估算基于公开规则和你填写的价格，仅供参考，实际以游戏内为准。</view>
+      <view class="legal-p">· 因游戏版本更新导致的规则差异，我们会尽量更新，但不承担由此产生的损失。</view>
+
+      <view class="legal-h">3. 使用规范</view>
+      <view class="legal-p">· 禁止将本工具用于外挂、脚本、代练、交易撮合等违规用途，或从事任何违法活动。</view>
+      <view class="legal-p">· 因违规使用导致的游戏封号、财产损失等后果由使用者自行承担。</view>
+
+      <view class="legal-h">4. 账号与数据</view>
+      <view class="legal-p">· 本地数据由你自行管理；云备份依赖微信云服务，因删除小程序、换机未备份、误操作导致的数据丢失，开发者不承担赔偿责任。</view>
+      <view class="legal-p">· 微信登录为可选功能，不登录也可使用核心工具。</view>
+
+      <view class="legal-h">5. 收费</view>
+      <view class="legal-p">· 本工具当前免费；如未来增加增值服务，会提前在本页面说明。</view>
+
+      <view class="legal-h">6. 协议变更与终止</view>
+      <view class="legal-p">· 你可以随时停止使用；协议变更会在本页面公示，继续使用即视为接受。</view>
+
+      <view class="legal-h">7. 争议解决</view>
+      <view class="legal-p">· 本协议适用中华人民共和国法律；如发生争议，双方应友好协商解决。</view>
+    </view>
+
+    <view style="height:60rpx;"></view>
+  </scroll-view>
+</view>

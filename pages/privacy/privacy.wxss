@@ -1,0 +1,33 @@
+.legal-scroll {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12rpx;
+  padding: 28rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.legal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.legal-updated {
+  font-size: 22rpx;
+  color: var(--text2);
+  margin-bottom: 24rpx;
+}
+
+.legal-h {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 24rpx 0 10rpx;
+}
+
+.legal-p {
+  font-size: 26rpx;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 6rpx;
+}

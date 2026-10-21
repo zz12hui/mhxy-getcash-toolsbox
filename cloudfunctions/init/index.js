@@ -1,7 +1,34 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
-const crypto = require('crypto')
+
+// 允许执行初始化的管理员 openid（云函数环境变量，逗号分隔）。
+// 首次初始化前必须配置，或提前把 openid 写入 admins 集合。
+const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean)
+
+// 可选：控制台/脚本初始化用的密钥（云函数环境变量 INIT_SECRET）。
+// 控制台「云端测试」拿不到用户 openid，用 event.secret 走这条路径。
+const INIT_SECRET = process.env.INIT_SECRET || ''
+
+function isSecretValid(secret) {
+  return !!INIT_SECRET && typeof secret === 'string' && secret === INIT_SECRET
+}
+
+async function isOperator(openid) {
+  if (!openid) return false
+  if (ADMIN_OPENIDS.indexOf(openid) >= 0) return true
+  try {
+    const { total } = await db.collection('admins')
+      .where({ openid, isActive: true })
+      .count()
+    return total > 0
+  } catch (e) {
+    return false
+  }
+}
 
 // ═══════════════════════════════════════
 // FAQ Categories
@@ -27,7 +54,7 @@ const ITEMS = [
   { c:0, p:0, t:'变异宠怎么交最划算？', s:'指定/非指定/替变异的成本收益分析', g:'变异,成本,收益',
     d:'指定变异+10分约600万、非指定+5分约250万、替变异-15分约1万。冲刺高分时指定变异是最高效拉分手段；积分已稳时可用替变异降分省钱。' },
   { c:0, p:0, t:'宠环100环经验表', s:'每环经验递增规律与总计', g:'经验,修炼,EXP',
-    d:'1-10环每环+3经验，之后每10环递增1点，91-100环每环+12~13。100环累计约760修炼经验，约等于5个修炼果。' },
+    d:'1-10环每环+3经验，之后每10环递增1点，91-100环每环+12~13。100环累计751点修炼经验，约等于5个修炼果。' },
   { c:0, p:0, t:'不同等级跑宠环的差异', s:'等级对积分加成的影响', g:'等级,性价比',
     d:'175级+58分加成最优；170级+56差距不大；155级+51比175少7分；140级+46少12分；129级+43少15分。建议至少155级以上再跑宠环。' },
   { c:0, p:0, t:'跑宠环前需要准备什么？', s:'物品准备清单和资金预算', g:'准备,清单,新手',
@@ -51,7 +78,7 @@ const ITEMS = [
   { c:0, p:0, t:'宠环隐藏机制与冷知识', s:'你可能不知道的宠环细节', g:'隐藏,冷知识,技巧',
     d:'1)找人任务优先分配给当前地图NPC；2)变异任务在第50环后概率翻倍；3)积分>170有额外奖励概率；4)100环全完成后才能看到最终书铁等级。' },
   { c:0, p:0, t:'宠环对宠物修炼的影响', s:'跑宠环提升修炼的具体收益', g:'修炼,提升,收益',
-    d:'宠环提升召唤兽的物攻/法攻/物防/法防四项修炼。每轮宠环约760修炼经验，约提升修炼等级0.5-1级(视当前等级)。满修175角色跑宠环主要用于换修炼果出售。' },
+    d:'宠环提升召唤兽的物攻/法攻/物防/法防四项修炼。每轮宠环约751修炼经验，约提升修炼等级0.5-1级(视当前等级)。满修175角色跑宠环主要用于换修炼果出售。' },
   { c:0, p:0, t:'高级宠环玩家的一天流程', s:'效率最大化的跑环安排', g:'效率,流程,高阶',
     d:'1)上线先检查物价(商会+摆摊)；2)补货60/70/80环装；3)开始跑环(约40分钟一轮)；4)每轮结束后记录数据到工具箱；5)分析数据调整策略。一天3-5轮为佳。' },
   { c:0, p:0, t:'宠环新手常见错误', s:'新手最常犯的5个错误', g:'新手,错误,避坑',
@@ -250,6 +277,19 @@ exports.main = async (event, context) => {
   const now = Date.now()
   const force = event.force === true
   const results = { categories: 0, items: 0 }
+  const { OPENID } = cloud.getWXContext()
+  const bySecret = isSecretValid(event.secret)
+
+  if (!OPENID && !bySecret) {
+    return { code: -1, message: '获取用户身份失败（控制台测试请使用 secret 参数）' }
+  }
+
+  if (!bySecret && !(await isOperator(OPENID))) {
+    return {
+      code: 403,
+      message: '无权限：仅管理员可初始化。请配置 init 云函数环境变量 ADMIN_OPENIDS=<你的 openid>，或在控制台测试时传 secret'
+    }
+  }
 
   try {
     // ── Categories ──
@@ -296,13 +336,32 @@ exports.main = async (event, context) => {
       results.items++
     }
 
-    // ── Admin account ──
-    const { total: adminCount } = await db.collection('admins').count()
-    if (adminCount === 0) {
-      const hash = crypto.createHash('sha256').update('admin123').digest('hex')
-      await db.collection('admins').add({
-        data: { username: 'admin', passwordHash: hash, displayName: '管理员', isActive: true, createdAt: now }
-      })
+    // ── Admin whitelist ──
+    // 把当前初始化者写入 admins（openid 白名单），login 云函数据此返回 isAdmin。
+    // 不再生成默认口令账号；控制台 secret 模式没有 openid，跳过绑定。
+    if (OPENID) {
+      try {
+        const { data: existed } = await db.collection('admins')
+          .where({ openid: OPENID })
+          .get()
+        if (existed.length > 0) {
+          await db.collection('admins').doc(existed[0]._id).update({
+            data: { isActive: true, updatedAt: now }
+          })
+        } else {
+          await db.collection('admins').add({
+            data: {
+              openid: OPENID,
+              displayName: '管理员',
+              isActive: true,
+              createdAt: now,
+              updatedAt: now
+            }
+          })
+        }
+      } catch (e) {
+        console.error('[init] failed to bind admin:', e)
+      }
     }
 
     return { code: 0, data: { message: '初始化完成 (' + results.items + '条FAQ)', ...results } }
