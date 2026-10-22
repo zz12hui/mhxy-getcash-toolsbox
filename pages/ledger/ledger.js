@@ -34,6 +34,11 @@ Page({
     showMoneySettings: false,
     summary: {},
     runList: [],
+    pageSize: 20,
+    page: 1,
+    pageCount: 1,
+    listTotal: 0,
+    chartImage: '',
     unbookedCount: 0,
     hasRuns: false,
     sharing: false,
@@ -41,7 +46,12 @@ Page({
     statusBarHeight: 20,
     navRight: 90,
     reduceMotion: false,
+    scrollIntoView: '',
     docsLoading: false,
+    docsBound: false,
+    docsBindingTitle: '',
+    docsBindingUrl: '',
+    docsResultMode: '',
     showDocsResult: false,
     docsResultUrl: '',
     docsResultTitle: '',
@@ -89,18 +99,26 @@ Page({
 
     this._runMap = {}
     this._filtered = filtered
-    const runList = filtered
+    const allRows = filtered
       .slice()
       .sort((a, b) => (b.doneAt || b.startedAt || 0) - (a.doneAt || a.startedAt || 0))
-      .slice(0, 200)
       .map(r => {
         const key = r._tool + '_' + r.id
         this._runMap[key] = r
         return this.toRow(r, key, cfg, currency)
       })
+    this._allRows = allRows
+
+    const total = allRows.length
+    const pageSize = this.data.pageSize || 20
+    const pageCount = Math.max(1, Math.ceil(total / pageSize))
+    const page = Math.min(Math.max(1, this.data.page || 1), pageCount)
+    const pageRows = allRows.slice((page - 1) * pageSize, page * pageSize)
+    const binding = S.getDocsBinding(activeUser)
 
     this.setData({
       activeUserName: activeObj ? activeObj.name : '未创建角色',
+      activeUserId: activeUser || '',
       roleCount: users.length,
       moneyCfg: cfg,
       moneyInputs: {
@@ -109,12 +127,48 @@ Page({
         targetHourlyYuan: String(cfg.targetHourlyYuan)
       },
       summary: this.buildSummary(agg, cfg, currency),
-      runList,
+      runList: pageRows,
+      page,
+      pageCount,
+      listTotal: total,
+      docsBound: !!(binding && binding.fileID),
+      docsBindingTitle: binding && binding.title ? binding.title : '',
+      docsBindingUrl: binding && binding.url ? binding.url : '',
+      docsResultUrl: binding && binding.url ? binding.url : '',
       unbookedCount: agg.unbooked,
       hasRuns: filtered.length > 0
     })
     this._chartPoints = this.buildChartPoints(filtered)
-    setTimeout(() => this.drawChart(), 300)
+    if (!this._chartPoints.length) {
+      this.setData({ chartImage: '' })
+    } else {
+      setTimeout(() => this.drawChart(), 120)
+    }
+  },
+
+  applyPage() {
+    const all = this._allRows || []
+    const pageSize = this.data.pageSize || 20
+    const pageCount = Math.max(1, Math.ceil(all.length / pageSize))
+    const page = Math.min(Math.max(1, this.data.page || 1), pageCount)
+    this.setData({
+      page,
+      pageCount,
+      listTotal: all.length,
+      runList: all.slice((page - 1) * pageSize, page * pageSize)
+    })
+  },
+
+  prevPage() {
+    if (this.data.page <= 1) return
+    this.setData({ page: this.data.page - 1 })
+    this.applyPage()
+  },
+
+  nextPage() {
+    if (this.data.page >= this.data.pageCount) return
+    this.setData({ page: this.data.page + 1 })
+    this.applyPage()
   },
 
   buildSummary(agg, cfg, currency) {
@@ -216,17 +270,14 @@ Page({
     this._stopChartAnim()
     const points = this._chartPoints || []
     const query = wx.createSelectorQuery()
-    query.select('#ledgerChart').fields({ node: true, size: true }).exec(res => {
+    query.select('#chartCanvas').fields({ node: true, size: true }).exec(res => {
       if (!res || !res[0] || !res[0].node) return
       const canvas = res[0].node
       const ctx = canvas.getContext('2d')
-      const win = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
-      const dpr = win.pixelRatio || 1
-      canvas.width = res[0].width * dpr
-      canvas.height = res[0].height * dpr
-      ctx.scale(dpr, dpr)
-      const w = res[0].width
-      const h = res[0].height
+      canvas.width = 650
+      canvas.height = 320
+      const w = 650
+      const h = 320
 
       const drawAt = progress => {
         ctx.clearRect(0, 0, w, h)
@@ -333,26 +384,27 @@ Page({
         ctx.fillText((min / 10000).toFixed(0) + '万', 2, pad.t + ph)
       }
 
-      if (this.data.reduceMotion) {
-        drawAt(1)
-        return
-      }
-
-      let frame = 0
-      const total = 24
-      const tick = () => {
-        frame += 1
-        drawAt(Math.min(1, frame / total))
-        if (frame < total) this._chartTimer = setTimeout(tick, 22)
-      }
-      drawAt(0)
-      tick()
+      drawAt(1)
+      setTimeout(() => {
+        wx.canvasToTempFilePath({
+          canvas,
+          x: 0,
+          y: 0,
+          width: 650,
+          height: 320,
+          destWidth: 650,
+          destHeight: 320,
+          fileType: 'png',
+          success: r => this.setData({ chartImage: r.tempFilePath }),
+          fail: () => { /* 保底：保留上一张图 */ }
+        })
+      }, 80)
     })
   },
 
-  onScopeTap(e) { this.setData({ scope: e.currentTarget.dataset.s }); this.loadData() },
-  onToolTap(e) { this.setData({ tool: e.currentTarget.dataset.t }); this.loadData() },
-  onPeriodTap(e) { this.setData({ period: e.currentTarget.dataset.p }); this.loadData() },
+  onScopeTap(e) { this.setData({ scope: e.currentTarget.dataset.s, page: 1 }); this.loadData() },
+  onToolTap(e) { this.setData({ tool: e.currentTarget.dataset.t, page: 1 }); this.loadData() },
+  onPeriodTap(e) { this.setData({ period: e.currentTarget.dataset.p, page: 1 }); this.loadData() },
   onCurrencyTap(e) { this.setData({ currency: e.currentTarget.dataset.c }); this.loadData() },
 
   openMoneySettings() {
@@ -370,6 +422,17 @@ Page({
   closeMoneySettings() { this.setData({ showMoneySettings: false }) },
 
   createDocsReport() {
+    this.syncDocsReport(false)
+  },
+
+  regenerateDocsReport() {
+    const uid = this.data.activeUserId || S.getActiveUser()
+    S.clearDocsBinding(uid)
+    this.setData({ docsBound: false, docsBindingTitle: '' })
+    this.syncDocsReport(true)
+  },
+
+  syncDocsReport(forceCreate) {
     if (this.data.docsLoading) return
     const runs = this._filtered || []
     if (!runs.filter(r => LEDGER.isBooked(r)).length) {
@@ -381,25 +444,64 @@ Page({
       cfg: this.data.moneyCfg,
       currency: this.data.currency
     })
-    this.setData({ docsLoading: true, docsError: '' })
-    wx.cloud.callFunction({
+    const uid = this.data.activeUserId || S.getActiveUser()
+    const binding = forceCreate ? null : S.getDocsBinding(uid)
+    const rows = rep.rows
+
+    const call = extra => wx.cloud.callFunction({
       name: 'docsReport',
-      data: { action: 'create', title: rep.title, rows: rep.rows }
-    }).then(res => {
-      const r = (res && res.result) || {}
-      if (!r.ok) throw new Error(r.error || '生成失败')
+      data: Object.assign({ title: rep.title, rows }, extra)
+    })
+
+    const finish = (result, mode) => {
+      const data = result || {}
+      const record = {
+        fileID: data.fileID,
+        sheetID: data.sheetID,
+        url: data.url || (binding && binding.url) || '',
+        title: data.title || rep.title,
+        rowCount: rows.length,
+        updatedAt: Date.now()
+      }
+      S.saveDocsBinding(uid, record)
       this.setData({
         docsLoading: false,
         showDocsResult: true,
-        docsResultUrl: r.url || '',
-        docsResultTitle: r.title || rep.title,
-        docsResultWarning: r.shareWarning || ''
+        docsResultMode: mode,
+        docsResultUrl: record.url,
+        docsResultTitle: record.title,
+        docsResultWarning: data.shareWarning || '',
+        docsBound: true,
+        docsBindingTitle: record.title,
+        docsBindingUrl: record.url
       })
-    }).catch(err => {
+    }
+
+    const createNew = () => call({ action: 'create' }).then(res => {
+      const r = (res && res.result) || {}
+      if (!r.ok) throw new Error(r.error || '生成失败')
+      finish(r, '已生成')
+    })
+
+    this.setData({ docsLoading: true, docsError: '' })
+    const task = (binding && binding.fileID && binding.sheetID)
+      ? call({
+        action: 'update',
+        fileID: binding.fileID,
+        sheetID: binding.sheetID,
+        prevRows: binding.rowCount || 0
+      }).then(res => {
+        const r = (res && res.result) || {}
+        if (!r.ok) throw new Error(r.error || '更新失败')
+        finish(r, '已更新')
+      }).catch(() => createNew())
+      : createNew()
+
+    task.catch(err => {
       const msg = (err && err.message) || '请稍后重试'
       this.setData({ docsLoading: false, docsError: msg })
       wx.showModal({
-        title: '生成腾讯文档失败',
+        title: '同步腾讯文档失败',
         content: msg,
         showCancel: false
       })
@@ -601,21 +703,11 @@ Page({
         ctx.fillText('还没有已记账轮次，先去结算一轮', 50, 1075)
       }
 
-      // 页脚 + 小程序码占位
+      // 页脚
       ctx.textAlign = 'left'
       ctx.fillStyle = '#6b7d95'
       ctx.font = '21px sans-serif'
       ctx.fillText(model.footer, 50, 1145)
-      roundRect(620, 1040, 80, 80, 10)
-      ctx.setLineDash([4, 4])
-      ctx.strokeStyle = 'rgba(143,163,189,0.45)'
-      ctx.lineWidth = 1.5
-      ctx.stroke()
-      ctx.setLineDash([])
-      ctx.textAlign = 'center'
-      ctx.font = '16px sans-serif'
-      ctx.fillStyle = 'rgba(143,163,189,0.7)'
-      ctx.fillText('小程序码', 660, 1132)
       ctx.textAlign = 'left'
 
       setTimeout(() => {

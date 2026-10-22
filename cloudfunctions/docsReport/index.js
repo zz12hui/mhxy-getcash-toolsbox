@@ -135,6 +135,20 @@ async function writeValues(cfg, bookID, sheetID, rows) {
   )
 }
 
+async function clearRows(cfg, bookID, sheetID, fromRow, toRow, colCount) {
+  if (toRow < fromRow) return
+  const values = []
+  const blank = new Array(colCount).fill('')
+  for (let i = 0; i < toRow - fromRow + 1; i++) values.push(blank.slice())
+  const range = sheetID + '!A' + fromRow + ':' + colLetter(colCount) + toRow
+  await requestJson(
+    'PUT',
+    '/openapi/sheetbook/v2/' + bookID + '/values/' + encodeURIComponent(range),
+    Object.assign(authHeaders(cfg), { 'Content-Type': 'application/json' }),
+    { values }
+  )
+}
+
 async function setPublicRead(cfg, bookID) {
   await requestJson(
     'PATCH',
@@ -148,16 +162,42 @@ exports.main = async (event) => {
   const wxContext = cloud.getWXContext()
   try {
     if (!wxContext.OPENID) return { ok: false, error: '未登录' }
-    if (event && event.action && event.action !== 'create') {
-      return { ok: false, error: '不支持的操作' }
-    }
+    const action = (event && event.action) || 'create'
     const rows = sanitizeRows(event && event.rows)
     const title = String((event && event.title) || '梦幻收益报表').slice(0, 36)
     const cfg = getConfig()
 
+    if (action === 'update') {
+      const fileID = String((event && event.fileID) || '')
+      const sheetID = String((event && event.sheetID) || '')
+      if (!fileID || !sheetID) throw new Error('更新失败：缺少文档或工作表 ID')
+      const prevRows = Math.max(0, Number(event.prevRows) || 0)
+      await writeValues(cfg, fileID, sheetID, rows).catch(e => { throw new Error('更新数据步骤：' + e.message) })
+      if (prevRows > rows.length) {
+        await clearRows(cfg, fileID, sheetID, rows.length + 1, prevRows, rows[0].length)
+          .catch(e => { throw new Error('清理旧行步骤：' + e.message) })
+      }
+      let shareWarning = ''
+      try {
+        await setPublicRead(cfg, fileID)
+      } catch (e) {
+        shareWarning = '（已更新，但链接公开权限设置失败，可在腾讯文档里手动分享）'
+      }
+      return {
+        ok: true,
+        created: false,
+        fileID,
+        sheetID,
+        title,
+        rowCount: rows.length,
+        shareWarning
+      }
+    }
+
+    if (action !== 'create') return { ok: false, error: '不支持的操作' }
     const file = await createSheet(cfg, title).catch(e => { throw new Error('创建表格步骤：' + e.message) })
     const bookID = file.ID
-    const sheetID = await addSheet(cfg, bookID, '收益报表', Math.max(rows.length + 10, 100), Math.max(rows[0].length, 8))
+    const sheetID = await addSheet(cfg, bookID, '收益报表', Math.max(rows.length + 20, 1000), Math.max(rows[0].length, 12))
       .catch(e => { throw new Error('添加工作表步骤：' + e.message) })
     await writeValues(cfg, bookID, sheetID, rows).catch(e => { throw new Error('写入数据步骤：' + e.message) })
     let shareWarning = ''
@@ -168,8 +208,10 @@ exports.main = async (event) => {
     }
     return {
       ok: true,
+      created: true,
       url: file.url,
       fileID: bookID,
+      sheetID,
       title: file.title || title,
       rowCount: rows.length,
       shareWarning

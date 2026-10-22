@@ -12,7 +12,6 @@
         <view class="hub-brand">梦幻搞钱工具箱</view>
         <view class="hub-slogan">今天也在<text class="accent-text">搞钱</text></view>
       </view>
-      <view class="hub-avatar" bindtap="goProfile">我</view>
     </view>
 
     <view class="ledger-hero anim-up" style="animation-delay: 50ms;" bindtap="goLedger">

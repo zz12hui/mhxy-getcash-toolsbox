@@ -3,6 +3,7 @@ const S = require('../../utils/storage')
 const CLOUD = require('../../utils/cloud')
 const HOME = require('../../utils/ledger-home')
 const MOTION = require('../../utils/motion')
+const TABBAR = require('../../utils/tabbar')
 
 Page({
   data: {
@@ -27,6 +28,7 @@ Page({
 
   onShow() {
     this.loadData()
+    TABBAR.syncTabBar(this, 3)
   },
 
   loadData() {

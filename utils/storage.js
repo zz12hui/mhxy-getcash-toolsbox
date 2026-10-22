@@ -186,6 +186,19 @@ function applyAllRoles(roles) {
   return true
 }
 
+// 腾讯文档报表绑定（本机记录，换设备后需重新生成）
+function getDocsBinding(uid) {
+  try { return wx.getStorageSync('mhxy_docs_doc_' + uid) || null } catch (e) { return null }
+}
+
+function saveDocsBinding(uid, binding) {
+  try { wx.setStorageSync('mhxy_docs_doc_' + uid, binding); return true } catch (e) { return false }
+}
+
+function clearDocsBinding(uid) {
+  try { wx.removeStorageSync('mhxy_docs_doc_' + uid); return true } catch (e) { return false }
+}
+
 module.exports = {
   getUsers, saveUsers, getActiveUser, saveActiveUser,
   getPetPrices, savePetPrices, getPetCfg, savePetCfg,
@@ -194,6 +207,7 @@ module.exports = {
   getChainCur, saveChainCur, getChainRuns, saveChainRuns,
   getWxProfile, saveWxProfile, clearWxProfile,
   getLastSyncAt, saveLastSyncAt,
+  getDocsBinding, saveDocsBinding, clearDocsBinding,
   clearRoleData, exportAllRoles, applyAllRoles,
   getLastError: () => _lastError
 }

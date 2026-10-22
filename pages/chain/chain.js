@@ -7,6 +7,7 @@ const UI = require('../../utils/ui')
 const UNDO = require('../../utils/undo')
 const MOTION = require('../../utils/motion')
 const NAV = require('../../utils/home-nav')
+const TABBAR = require('../../utils/tabbar')
 const REWARD_PRICES = require('../../utils/reward-prices')
 const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
@@ -73,6 +74,7 @@ Page({
     const pending = NAV.takePending()
     this.loadData()
     this.setData({ vibrateOn: UI.isVibrateOn() })
+    TABBAR.syncTabBar(this, 2)
     if (pending && pending.indexOf('chain:') === 0) {
       const action = pending.slice(6)
       setTimeout(() => {

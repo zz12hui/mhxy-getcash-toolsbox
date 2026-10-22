@@ -4,6 +4,7 @@ const MOTION = require('../../utils/motion')
 const MONEY = require('../../utils/money')
 const GOLD = require('../../utils/gold-calc')
 const NAV = require('../../utils/home-nav')
+const TABBAR = require('../../utils/tabbar')
 
 Page({
   data: {
@@ -38,6 +39,7 @@ Page({
     this.loadLedgerSummary()
     this.loadGold()
     this.setData({ reduceMotion: MOTION.getReduceMotion() })
+    TABBAR.syncTabBar(this, 0)
     if (this._clockTimer) clearInterval(this._clockTimer)
     this._clockTimer = setInterval(() => this.updateClock(), 1000)
   },
@@ -167,7 +169,6 @@ Page({
     wx.setStorageSync('mhxy_tool_tab', 'pet')
     wx.switchTab({ url: '/pages/pet/pet' })
   },
-
   goChain() {
     app.globalData.currentToolTab = 'chain'
     wx.setStorageSync('mhxy_tool_tab', 'chain')
@@ -198,10 +199,6 @@ Page({
     if (!tool) return
     NAV.setPending('chain:' + tool)
     this.goChain()
-  },
-
-  goProfile() {
-    wx.switchTab({ url: '/pages/profile/profile' })
   },
 
   noop() {},

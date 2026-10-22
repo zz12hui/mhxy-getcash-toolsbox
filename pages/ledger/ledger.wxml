@@ -1,5 +1,5 @@
 <view class="app ledger-page {{reduceMotion ? 'reduce-motion' : ''}}">
-  <scroll-view scroll-y class="scroll-wrap page-scroll" style="flex:1;">
+  <scroll-view scroll-y class="scroll-wrap page-scroll" style="flex:1;" scroll-into-view="{{scrollIntoView}}" scroll-with-animation>
     <view class="ledger-content">
       <view class="ledger-nav anim-up" style="padding-top: {{statusBarHeight}}px; padding-right: {{navRight}}px;">
         <view class="nav-btn" bindtap="goBack">‹</view>
@@ -68,7 +68,7 @@
         <view wx:if="{{summary.unbooked}}" class="extra-row"><text>未记账轮次（只算投入）</text><text style="color: var(--warn);">{{summary.unbooked}} 轮</text></view>
       </view>
 
-      <view class="chart-card anim-up" style="animation-delay: 200ms;">
+      <view id="chart-card" class="chart-card anim-up" style="animation-delay: 200ms;">
         <view class="chart-head">
           <view>
             <view class="chart-title">累计净收益</view>
@@ -76,13 +76,16 @@
           </view>
           <view class="chart-tag">{{summary.roiStr}}</view>
         </view>
-        <canvas type="2d" id="ledgerChart" class="ledger-chart"></canvas>
+        <image wx:if="{{chartImage}}" class="ledger-chart chart-img" src="{{chartImage}}" mode="widthFix"></image>
+        <view wx:else class="chart-placeholder">还没有可绘制的数据</view>
+        <canvas type="2d" id="chartCanvas" class="chart-offscreen"></canvas>
       </view>
 
       <view class="action-row anim-up" style="animation-delay: 230ms;">
-        <view class="btn btn-grad action-btn" bindtap="createDocsReport">{{docsLoading ? '生成中…' : '📄 腾讯文档'}}</view>
+        <view class="btn btn-grad action-btn" bindtap="createDocsReport">{{docsLoading ? '同步中…' : (docsBound ? '🔄 更新腾讯文档' : '📄 腾讯文档')}}</view>
         <view class="btn btn-ghost action-btn" bindtap="shareReport">{{sharing ? '生成中…' : '📤 分享报表'}}</view>
       </view>
+      <view wx:if="{{docsBound}}" class="docs-bound" bindtap="openDocsMiniProgram">已绑定：{{docsBindingTitle}} · 再次同步会更新原表格 ›</view>
       <view class="save-link" bindtap="saveReportImage">保存报表海报到相册</view>
 
       <view class="list-head anim-up" style="animation-delay: 260ms;">
@@ -111,6 +114,12 @@
           <view class="btn btn-ghost btn-xs" bindtap="goChain">去跑环</view>
         </view>
       </view>
+
+      <view wx:if="{{pageCount > 1}}" class="pager">
+        <view class="pager-btn {{page <= 1 ? 'disabled' : ''}}" bindtap="prevPage">上一页</view>
+        <text class="pager-info">第 {{page}} / {{pageCount}} 页 · 共 {{listTotal}} 轮</text>
+        <view class="pager-btn {{page >= pageCount ? 'disabled' : ''}}" bindtap="nextPage">下一页</view>
+      </view>
       <view style="height: 40rpx;"></view>
     </view>
   </scroll-view>
@@ -124,7 +133,7 @@
   <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showDocsResult}}" bindtap="closeDocsResult">
     <view class="sheet" catchtap="noop">
       <view class="sheet-handle"></view>
-      <view class="sheet-title">📄 腾讯文档报表已生成</view>
+      <view class="sheet-title">{{docsResultMode}}腾讯文档报表</view>
       <view class="stat-row"><text>标题</text><text class="val" style="font-size:22rpx;max-width:60%;">{{docsResultTitle}}</text></view>
       <view class="doc-url">{{docsResultUrl}}</view>
       <view wx:if="{{docsResultWarning}}" class="doc-warn">{{docsResultWarning}}</view>
@@ -132,7 +141,8 @@
         <view class="btn" bindtap="copyDocsLink">复制链接</view>
         <view class="btn btn-grad" style="flex:1" bindtap="openDocsMiniProgram">打开腾讯文档</view>
       </view>
-      <view class="btn btn-ghost" style="margin-top:12rpx;" bindtap="closeDocsResult">关闭</view>
+      <view wx:if="{{docsBound}}" class="btn btn-ghost" style="margin-top:10rpx;" bindtap="regenerateDocsReport">重新生成新文档</view>
+      <view class="btn btn-ghost" style="margin-top:10rpx;" bindtap="closeDocsResult">关闭</view>
     </view>
   </view>
 

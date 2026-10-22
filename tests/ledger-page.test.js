@@ -132,6 +132,35 @@ test('账本：保存换算设置', () => {
   assert.equal(page.data.moneyCfg.targetHourlyYuan, 20)
 })
 
+test('账本：分页（超过 20 轮）', () => {
+  mock.reset()
+  const now = Date.now()
+  S.saveUsers([{ id: 'u1', name: '角色A', createdAt: 1 }])
+  S.saveActiveUser('u1')
+  const runs = []
+  for (let i = 0; i < 25; i++) {
+    runs.push({
+      id: 'p' + i, level: 175, startedAt: now - i * 3600000, doneAt: now - i * 3600000,
+      rings: [], costItems: [], cost: 1000000, incomeItems: [], income: 1200000,
+      profit: 200000, roi: 1.2, netRate: 0.2, durationMin: 30, ledgerVersion: 1
+    })
+  }
+  S.savePetRuns('u1', runs)
+  const page = createPage()
+  page.loadData()
+  assert.equal(page.data.listTotal, 25)
+  assert.equal(page.data.pageCount, 2)
+  assert.equal(page.data.runList.length, 20)
+  page.nextPage()
+  assert.equal(page.data.page, 2)
+  assert.equal(page.data.runList.length, 5)
+  page.nextPage()
+  assert.equal(page.data.page, 2)
+  page.prevPage()
+  assert.equal(page.data.page, 1)
+  assert.equal(page.data.runList.length, 20)
+})
+
 test('账本：打开轮次明细抽屉', () => {
   seed()
   const page = createPage()

@@ -204,3 +204,11 @@ cli cloud functions deploy --env <YOUR_CLOUD_ENV> --names docsReport --project .
 > 排查建议：环境变量要配在「云开发控制台 → 云函数 → docsReport → 函数配置 → 环境变量」，注意环境 ID 是 `<YOUR_CLOUD_ENV>`；保存后重新部署一次。配在「本地调试环境变量」里不会生效。
 
 > 2026-10-22 更新：环境变量已修好并验证生效；`cloudfunctions/docsReport/config.local.js` 已删除并重新部署（纯环境变量，3 个文件）。`scripts/gen-docs-config.js` 只作为他人/临时兜底保留，正常情况下不需要再生成。
+
+### 更新已有文档（不再重复生成）
+
+首次点击「腾讯文档」会创建表格，并把 `fileID / sheetID / url` 记录在本机（`mhxy_docs_doc_<uid>`）。之后按钮变成「更新腾讯文档」：
+- 云函数收到 `action=update` 时，按原 `fileID/sheetID` 覆盖写入当前全部轮次；
+- 如果轮次比上次少，会清理多余的旧行；
+- 换手机/清缓存后本地绑定丢失，会重新生成一份新文档；
+- 结果弹窗里提供「重新生成新文档」。
