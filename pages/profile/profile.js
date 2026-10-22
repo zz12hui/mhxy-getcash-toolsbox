@@ -1,6 +1,7 @@
 const app = getApp()
 const S = require('../../utils/storage')
 const CLOUD = require('../../utils/cloud')
+const HOME = require('../../utils/ledger-home')
 
 Page({
   data: {
@@ -18,7 +19,8 @@ Page({
     activeUser: '',
     activeUserIndex: -1,
     activeUserName: '',
-    userPickerRange: []
+    userPickerRange: [],
+    ledgerSummary: { hasData: false, profitStr: '0.0 万两', profitPos: true, roiStr: '—', costStr: '0.0 万两', incomeStr: '0.0 万两', count: 0, hourlyStr: '—' }
   },
 
   onShow() {
@@ -54,8 +56,17 @@ Page({
       activeUser,
       activeUserIndex,
       activeUserName: activeUserObj ? activeUserObj.name : '',
-      userPickerRange
+      userPickerRange,
+      ledgerSummary: this.getLedgerSummary()
     })
+  },
+
+  getLedgerSummary() {
+    try {
+      return HOME.getHomeSummary({ period: 'all' })
+    } catch (e) {
+      return { hasData: false, profitStr: '0.0 万两', profitPos: true, roiStr: '—', costStr: '0.0 万两', incomeStr: '0.0 万两', count: 0, hourlyStr: '—' }
+    }
   },
 
   formatTime(ts) {
@@ -154,5 +165,6 @@ Page({
   goManual() { wx.navigateTo({ url: '/pages/manual/manual' }) },
   goFeedback() { wx.navigateTo({ url: '/pages/feedback/feedback' }) },
   goPrivacy() { wx.navigateTo({ url: '/pages/privacy/privacy' }) },
+  goLedger() { wx.navigateTo({ url: '/pages/ledger/ledger' }) },
   noop() {}
 })

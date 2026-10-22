@@ -25,9 +25,11 @@
       </view>
 
       <view class="reward-rule-box">
-        <view style="display:flex;gap:12rpx;margin-bottom:16rpx;">
-          <view class="btn btn-a" style="flex:1" bindtap="createDocsReport">{{docsLoading ? '生成中…' : '📄 生成腾讯文档报表'}}</view>
+        <view style="display:flex;gap:12rpx;margin-bottom:10rpx;">
+          <view class="btn btn-a" style="flex:1" bindtap="createDocsReport">{{docsLoading ? '生成中…' : '📄 腾讯文档'}}</view>
+          <view class="btn" style="flex:1" bindtap="shareReport">{{sharing ? '生成中…' : '📤 分享报表'}}</view>
         </view>
+        <view style="font-size:20rpx;color:var(--text2);text-align:center;margin-bottom:14rpx;" bindtap="saveReportImage">保存报表海报到相册</view>
         <view class="stat-row" style="padding:4rpx 0;"><text>轮次 / 正收益率</text><text class="val">{{summary.count}} 轮 · {{summary.winRateStr}}</text></view>
         <view class="stat-row" style="padding:4rpx 0;"><text>总工时 / 平均时薪</text><text class="val" style="font-size:22rpx;">{{summary.totalHoursStr}} · {{summary.hourlyStr}}</text></view>
         <view class="stat-row" style="padding:4rpx 0;"><text>日均收益 / 月化收益</text><text class="val" style="font-size:22rpx;">{{summary.dailyStr}} · {{summary.monthStr}}</text></view>
@@ -67,6 +69,9 @@
   </scroll-view>
 
   <run-detail show="{{showDetail}}" run="{{detailRun}}" tool="{{detailRun._tool || 'pet'}}" money-cfg="{{moneyCfg}}" currency="{{currency}}" bind:close="closeDetail"/>
+
+  <!-- 分享海报离屏画布 -->
+  <canvas type="2d" id="shareCanvas" style="position:fixed;left:-9999px;top:0;width:375px;height:590px;pointer-events:none;"></canvas>
 
   <!-- 生成腾讯文档结果 -->
   <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showDocsResult}}" bindtap="closeDocsResult">

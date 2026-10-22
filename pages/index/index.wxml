@@ -42,15 +42,37 @@
         </view>
       </view>
 
+      <!-- 收益账本大栏目 -->
+      <view class="ledger-hero" bindtap="goLedger">
+        <view class="lh-head">
+          <view class="lh-title-wrap">
+            <text class="lh-icon">📊</text>
+            <text class="lh-title">收益账本</text>
+            <text class="lh-badge">ROI · 时薪 · 月化</text>
+          </view>
+          <text class="lh-arrow">查看 ›</text>
+        </view>
+        <view class="lh-main">
+          <view>
+            <text class="lh-label">累计净收益</text>
+            <text class="lh-value" style="color:{{ledgerSummary.profitPos ? 'var(--accent)' : 'var(--danger)'}};">{{ledgerSummary.profitStr}}</text>
+          </view>
+          <view style="text-align:right;">
+            <text class="lh-label">投入产出比</text>
+            <text class="lh-value-sm">{{ledgerSummary.roiStr}}</text>
+          </view>
+        </view>
+        <view class="lh-foot">
+          <text>{{ledgerSummary.costStr}} 投入 · {{ledgerSummary.incomeStr}} 产出 · {{ledgerSummary.count}} 轮已记账</text>
+          <text>时薪 {{ledgerSummary.hourlyStr}}</text>
+        </view>
+      </view>
+
       <!-- Quick modules — horizontal scroll -->
       <scroll-view scroll-x class="quick-row">
         <view class="quick-module" bindtap="goFaq">
           <text class="qm-icon">📖</text>
           <text class="qm-label">知识库</text>
-        </view>
-        <view class="quick-module" bindtap="goLedger">
-          <text class="qm-icon">📊</text>
-          <text class="qm-label">收益统计</text>
         </view>
         <view class="quick-module" bindtap="onComing">
           <text class="qm-icon">💎</text>

@@ -1,14 +1,23 @@
 const app = getApp()
+const HOME = require('../../utils/ledger-home')
 
 Page({
   data: {
-    clockStr: ''
+    clockStr: '',
+    ledgerSummary: { hasData: false, profitStr: '0.0 万两', profitPos: true, roiStr: '—', costStr: '0.0 万两', incomeStr: '0.0 万两', count: 0, hourlyStr: '—' }
   },
 
   onShow() {
     this.updateClock()
+    this.loadLedgerSummary()
     if (this._clockTimer) clearInterval(this._clockTimer)
     this._clockTimer = setInterval(() => this.updateClock(), 1000)
+  },
+
+  loadLedgerSummary() {
+    try {
+      this.setData({ ledgerSummary: HOME.getHomeSummary({ period: 'all' }) })
+    } catch (e) { /* 忽略首页摘要失败 */ }
   },
 
   onHide() {

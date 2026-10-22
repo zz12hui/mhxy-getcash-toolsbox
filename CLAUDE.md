@@ -21,6 +21,8 @@ utils/
   reward-prices.js                 奖励价目表（按角色，书/铁/灵饰/战魄/特殊奖励）
   money.js                         梦幻币↔人民币换算、点卡成本、目标时薪
   report-export.js                 收益报表行生成（腾讯文档导出）
+  share-report.js                  分享海报数据模型
+  ledger-home.js                   首页/我的页收益摘要
   task-usage.js                   常用任务排序
   item-memory.js                  物品名记忆
   undo.js                         UndoStack（最多 10 步）
@@ -84,7 +86,7 @@ npm test
 
 # 以下需要微信开发者工具已扫码登录 + 设置→安全设置→服务端口开启
 npm run smoke         # 核心路径冒烟（9 项）
-npm run accept        # A+B 功能验收（19 项）
+npm run accept        # A+B 功能验收（21 项）
 npm run accept:cloud  # 云函数/云数据验收（8 项，需已部署云函数）
 ```
 

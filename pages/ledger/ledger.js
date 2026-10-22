@@ -3,6 +3,7 @@ const S = require('../../utils/storage')
 const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
 const REPORT = require('../../utils/report-export')
+const SHARE = require('../../utils/share-report')
 
 Page({
   data: {
@@ -34,6 +35,7 @@ Page({
     runList: [],
     unbookedCount: 0,
     hasRuns: false,
+    sharing: false,
     docsLoading: false,
     showDocsResult: false,
     docsResultUrl: '',
@@ -285,6 +287,256 @@ Page({
 
   closeDocsResult() { this.setData({ showDocsResult: false }) },
 
+  // ===== 分享报表（生成账本风格海报） =====
+  renderShareImage(cb) {
+    const runs = this._filtered || []
+    if (!runs.filter(r => LEDGER.isBooked(r)).length) {
+      wx.showToast({ title: '没有已记账轮次，先结算一轮', icon: 'none' })
+      return
+    }
+    const tool = (this.data.tools.find(t => t.key === this.data.tool) || {}).label || '全部工具'
+    const period = (this.data.periods.find(p => p.key === this.data.period) || {}).label || '全部'
+    const model = SHARE.buildShareModel({
+      summary: this.data.summary,
+      roleName: this.data.scope === 'all' ? '全部角色' : this.data.activeUserName,
+      scopeLabel: this.data.scope === 'all' ? '全部角色' : '当前角色',
+      toolLabel: tool,
+      periodLabel: period,
+      chartPoints: this._chartPoints,
+      now: Date.now()
+    })
+    this.drawSharePoster(model, cb)
+  },
+
+  drawSharePoster(model, cb) {
+    const W = 750
+    const H = 1180
+    const query = wx.createSelectorQuery()
+    query.select('#shareCanvas').fields({ node: true, size: true }).exec(res => {
+      if (!res || !res[0] || !res[0].node) { cb(null); return }
+      const canvas = res[0].node
+      const ctx = canvas.getContext('2d')
+      canvas.width = W
+      canvas.height = H
+
+      const roundRect = (x, y, w, h, r) => {
+        ctx.beginPath()
+        ctx.moveTo(x + r, y)
+        ctx.arcTo(x + w, y, x + w, y + h, r)
+        ctx.arcTo(x + w, y + h, x, y + h, r)
+        ctx.arcTo(x, y + h, x, y, r)
+        ctx.arcTo(x, y, x + w, y, r)
+        ctx.closePath()
+      }
+
+      // 背景
+      const bg = ctx.createLinearGradient(0, 0, 0, H)
+      bg.addColorStop(0, '#0b1220')
+      bg.addColorStop(0.55, '#111c2e')
+      bg.addColorStop(1, '#0a111d')
+      ctx.fillStyle = bg
+      ctx.fillRect(0, 0, W, H)
+      const glow = ctx.createRadialGradient(620, 160, 20, 620, 160, 520)
+      glow.addColorStop(0, 'rgba(0,212,170,0.16)')
+      glow.addColorStop(1, 'rgba(0,212,170,0)')
+      ctx.fillStyle = glow
+      ctx.fillRect(0, 0, W, 760)
+
+      // 页头
+      ctx.textAlign = 'left'
+      ctx.fillStyle = '#8fa3bd'
+      ctx.font = '24px sans-serif'
+      ctx.fillText(model.brand, 50, 70)
+      ctx.textAlign = 'right'
+      ctx.fillText(model.dateStr, W - 50, 70)
+      ctx.textAlign = 'left'
+      ctx.fillStyle = '#e8eef7'
+      ctx.font = 'bold 58px sans-serif'
+      ctx.fillText(model.title, 50, 150)
+      ctx.fillStyle = '#8fa3bd'
+      ctx.font = '24px sans-serif'
+      ctx.fillText(model.subtitle, 50, 198)
+
+      // 主卡：累计净收益 + ROI
+      roundRect(50, 232, 650, 190, 24)
+      ctx.fillStyle = 'rgba(0,212,170,0.08)'
+      ctx.fill()
+      ctx.strokeStyle = 'rgba(0,212,170,0.35)'
+      ctx.lineWidth = 2
+      ctx.stroke()
+      ctx.fillStyle = '#8fa3bd'
+      ctx.font = '24px sans-serif'
+      ctx.fillText(model.heroLabel, 90, 288)
+      ctx.fillStyle = model.heroPos ? '#00d4aa' : '#ff6b6b'
+      ctx.font = 'bold 62px sans-serif'
+      ctx.fillText(model.heroValue, 90, 372)
+      ctx.textAlign = 'right'
+      ctx.fillStyle = '#8fa3bd'
+      ctx.font = '22px sans-serif'
+      ctx.fillText('投入产出比', W - 90, 288)
+      ctx.fillStyle = '#e8eef7'
+      ctx.font = 'bold 34px sans-serif'
+      ctx.fillText(model.roiStr, W - 90, 340)
+      ctx.textAlign = 'left'
+
+      // 4 张小卡
+      const cardW = 315
+      const cardH = 118
+      model.cards.forEach((c, i) => {
+        const x = i % 2 === 0 ? 50 : 385
+        const y = i < 2 ? 460 : 598
+        roundRect(x, y, cardW, cardH, 20)
+        ctx.fillStyle = 'rgba(255,255,255,0.04)'
+        ctx.fill()
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+        ctx.lineWidth = 1
+        ctx.stroke()
+        ctx.fillStyle = '#8fa3bd'
+        ctx.font = '22px sans-serif'
+        ctx.fillText(c.label, x + 24, y + 40)
+        ctx.fillStyle = c.color || '#e8eef7'
+        ctx.font = 'bold 30px sans-serif'
+        ctx.fillText(c.value, x + 24, y + 88)
+      })
+
+      // 指标
+      model.meta.forEach((m, i) => {
+        const col = i % 2
+        const row = Math.floor(i / 2)
+        const x = 50 + col * 340
+        const y = 790 + row * 68
+        ctx.fillStyle = '#8fa3bd'
+        ctx.font = '21px sans-serif'
+        ctx.fillText(m.label, x, y)
+        ctx.textAlign = 'right'
+        ctx.fillStyle = '#c9d6e8'
+        ctx.fillText(m.value, x + 300, y)
+        ctx.textAlign = 'left'
+      })
+
+      // 累计净收益折线
+      ctx.fillStyle = '#8fa3bd'
+      ctx.font = '22px sans-serif'
+      ctx.fillText('累计净收益趋势', 50, 1000)
+      const points = model.chartPoints || []
+      if (points.length >= 2) {
+        const max = Math.max.apply(null, points.concat([0]))
+        const min = Math.min.apply(null, points.concat([0]))
+        const range = max - min || 1
+        const cx0 = 50
+        const cy0 = 1030
+        const cw = 650
+        const ch = 90
+        const py = v => cy0 + ch - ((v - min) / range) * ch
+        // 零轴
+        ctx.strokeStyle = 'rgba(143,163,189,0.25)'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo(cx0, py(0))
+        ctx.lineTo(cx0 + cw, py(0))
+        ctx.stroke()
+        // 折线
+        ctx.strokeStyle = '#00d4aa'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        points.forEach((v, i) => {
+          const x = cx0 + (cw / (points.length - 1)) * i
+          if (i === 0) ctx.moveTo(x, py(v))
+          else ctx.lineTo(x, py(v))
+        })
+        ctx.stroke()
+        // 末点
+        ctx.fillStyle = '#00d4aa'
+        ctx.beginPath()
+        ctx.arc(cx0 + cw, py(points[points.length - 1]), 5, 0, Math.PI * 2)
+        ctx.fill()
+      } else {
+        ctx.fillStyle = '#6b7d95'
+        ctx.font = '22px sans-serif'
+        ctx.fillText('已记账轮次不足，多跑几轮后这里会显示趋势', 50, 1075)
+      }
+
+      // 页脚
+      ctx.textAlign = 'center'
+      ctx.fillStyle = '#6b7d95'
+      ctx.font = '21px sans-serif'
+      ctx.fillText(model.footer, W / 2, 1145)
+      ctx.textAlign = 'left'
+
+      setTimeout(() => {
+        wx.canvasToTempFilePath({
+          canvas,
+          x: 0,
+          y: 0,
+          width: W,
+          height: H,
+          destWidth: W,
+          destHeight: H,
+          fileType: 'png',
+          success: r => cb(r.tempFilePath),
+          fail: () => cb(null)
+        })
+      }, 150)
+    })
+  },
+
+  shareReport() {
+    if (this.data.sharing) return
+    this.setData({ sharing: true })
+    this.renderShareImage(path => {
+      this.setData({ sharing: false })
+      if (!path) {
+        wx.showModal({ title: '生成分享图失败', content: '请稍后重试', showCancel: false })
+        return
+      }
+      this._shareImagePath = path
+      if (wx.showShareImageMenu) {
+        wx.showShareImageMenu({
+          path,
+          fail: () => this.previewShareImage(path)
+        })
+      } else {
+        this.previewShareImage(path)
+      }
+    })
+  },
+
+  previewShareImage(path) {
+    wx.previewImage({
+      urls: [path],
+      success: () => wx.showToast({ title: '长按图片可保存/转发', icon: 'none' })
+    })
+  },
+
+  saveReportImage() {
+    if (this.data.sharing) return
+    this.setData({ sharing: true })
+    this.renderShareImage(path => {
+      this.setData({ sharing: false })
+      if (!path) {
+        wx.showModal({ title: '生成分享图失败', content: '请稍后重试', showCancel: false })
+        return
+      }
+      wx.saveImageToPhotosAlbum({
+        filePath: path,
+        success: () => wx.showToast({ title: '已保存到相册', icon: 'none' }),
+        fail: err => {
+          if (String(err.errMsg || '').indexOf('auth') >= 0 || String(err.errMsg || '').indexOf('deny') >= 0) {
+            wx.showModal({
+              title: '需要相册权限',
+              content: '请在设置中允许保存图片到相册',
+              confirmText: '去设置',
+              success: res => { if (res.confirm) wx.openSetting() }
+            })
+          } else {
+            wx.showToast({ title: '保存失败，可长按图片保存', icon: 'none' })
+          }
+        }
+      })
+    })
+  },
+
+
   copyDocsLink() {
     const url = this.data.docsResultUrl
     if (!url) return
@@ -349,5 +601,12 @@ Page({
   },
 
   goPet() { wx.switchTab({ url: '/pages/pet/pet' }) },
-  goChain() { wx.switchTab({ url: '/pages/chain/chain' }) }
+  goChain() { wx.switchTab({ url: '/pages/chain/chain' }) },
+
+  onShareAppMessage() {
+    return {
+      title: '我的梦幻收益报表',
+      path: '/pages/ledger/ledger'
+    }
+  }
 })

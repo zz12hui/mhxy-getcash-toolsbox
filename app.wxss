@@ -876,3 +876,94 @@ canvas {
   border-radius: 8rpx;
   background: var(--surface2);
 }
+
+/* ===== 收益账本大栏目（首页/我的） ===== */
+.ledger-hero {
+  margin: 24rpx 0;
+  padding: 28rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.14), rgba(15, 22, 35, 0.92) 58%, rgba(79, 110, 246, 0.12));
+  border: 1px solid rgba(0, 212, 170, 0.28);
+  box-shadow: 0 10rpx 34rpx rgba(0, 0, 0, 0.35);
+}
+
+.ledger-hero:active {
+  opacity: 0.9;
+}
+
+.lh-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lh-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.lh-icon { font-size: 34rpx; }
+
+.lh-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.lh-badge {
+  font-size: 18rpx;
+  color: var(--accent);
+  border: 1px solid rgba(0, 212, 170, 0.35);
+  border-radius: 999rpx;
+  padding: 2rpx 12rpx;
+}
+
+.lh-arrow {
+  font-size: 24rpx;
+  color: var(--text2);
+}
+
+.lh-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20rpx;
+  margin-top: 22rpx;
+}
+
+.lh-label {
+  display: block;
+  font-size: 20rpx;
+  color: var(--text2);
+}
+
+.lh-value {
+  display: block;
+  font-size: 52rpx;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 4rpx;
+  word-break: break-all;
+}
+
+.lh-value-sm {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 4rpx;
+}
+
+.lh-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-top: 20rpx;
+  padding-top: 16rpx;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 20rpx;
+  color: var(--text2);
+  flex-wrap: wrap;
+}

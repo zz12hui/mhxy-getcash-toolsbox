@@ -313,6 +313,22 @@ async function main() {
     await sleep(600)
     const ledgerYuan = await getData(miniProgram)
     record('账本人民币显示可切换', ledgerYuan.currency === 'yuan' && String(ledgerYuan.summary && ledgerYuan.summary.profitStr).indexOf('元') >= 0, 'currency=' + ledgerYuan.currency)
+
+    // ===== 13. 首页收益大栏目 & 我的页入口 =====
+    await miniProgram.reLaunch('/pages/index/index')
+    await sleep(1200)
+    const homeData = await getData(miniProgram)
+    const homeHero = await (await getPage(miniProgram)).$('.ledger-hero')
+    let homeHeroOk = !!(homeData.ledgerSummary && homeHero)
+    if (homeHero) { await homeHero.trigger('tap') ; await sleep(800) }
+    const homeLedgerRoute = await waitRoute(miniProgram, 'pages/ledger/ledger', 4000)
+    record('首页收益大栏目可进入账本', homeHeroOk && homeLedgerRoute, 'hasSummary=' + !!homeData.ledgerSummary)
+
+    await miniProgram.reLaunch('/pages/profile/profile')
+    await sleep(1200)
+    const profileData = await getData(miniProgram)
+    const profileHero = await (await getPage(miniProgram)).$('.ledger-hero')
+    record('我的页有收益账本入口', !!(profileData.ledgerSummary && profileHero), 'hasSummary=' + !!profileData.ledgerSummary)
   } catch (err) {
     console.error('验收脚本异常：' + (err && err.stack ? err.stack : err))
     record('执行完整性', false, err && err.message)
