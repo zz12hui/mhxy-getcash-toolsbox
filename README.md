@@ -127,7 +127,15 @@ npm test             # Node 单测（游戏公式、费用计算、存储、撤�
 ## 验收
 
 - 开发者工具 / 真机验收步骤见 [docs/ACCEPTANCE-v1.2.md](docs/ACCEPTANCE-v1.2.md)
-- 登录开发者工具并开启服务端口（设置 → 安全设置）后，可运行自动化冒烟：`npm run smoke`
+- 登录开发者工具并开启服务端口（设置 → 安全设置）后，可运行自动化验收：
+
+| 命令 | 覆盖 |
+|---|---|
+| `npm run smoke` | 核心路径冒烟（9 项） |
+| `npm run accept` | A+B 功能验收（14 项） |
+| `npm run accept:cloud` | 云函数/云数据验收（9 项，需已部署云函数） |
+
+> 本机 2026-10-22 实测：smoke 9/9、accept 14/14、accept:cloud 9/9 通过。
 
 ## v1.2 变更摘要
 

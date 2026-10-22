@@ -6,7 +6,9 @@
   "scripts": {
     "lint": "eslint pages/**/*.js utils/**/*.js app.js custom-tab-bar/index.js --format stylish",
     "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/pet-page.test.js tests/chain-page.test.js",
-    "smoke": "node scripts/devtools-smoke.js"
+    "smoke": "node scripts/devtools-smoke.js",
+    "accept": "node scripts/devtools-acceptance.js",
+    "accept:cloud": "node scripts/devtools-cloud-acceptance.js"
   },
   "repository": {
     "type": "git",

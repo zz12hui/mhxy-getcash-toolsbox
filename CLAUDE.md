@@ -75,10 +75,16 @@ tests/                             Node 单测（npm test）
 npm install
 npm run lint
 npm test
+
+# 以下需要微信开发者工具已扫码登录 + 设置→安全设置→服务端口开启
+npm run smoke         # 核心路径冒烟（9 项）
+npm run accept        # A+B 功能验收（14 项）
+npm run accept:cloud  # 云函数/云数据验收（9 项，需已部署云函数）
 ```
 
 ### 注意事项
 
-- 不要提交 `.claude/`、`node_modules/`、`tests/` 到小程序包（已在 `.gitignore` / `packOptions.ignore` 排除）。
+- 不要提交 `.claude/`、`node_modules/`、`tests/`、`scripts/`、`docs/` 到小程序包（已在 `.gitignore` / `packOptions.ignore` 排除）。
 - 云函数依赖锁定 `wx-server-sdk@3.0.4`。
 - 隐私政策/用户协议内容在 `pages/privacy/privacy.wxml`，修改后同步更新 `README` 合规说明。
+- 自动化脚本基于 `miniprogram-automator`；该工具版本下 `page.callMethod` 不可用，自动化里改用真实点击 + `page.setData`。

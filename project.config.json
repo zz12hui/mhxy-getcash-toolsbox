@@ -1,86 +1,98 @@
 {
-    "description": "梦幻搞钱工具箱 - 微信小程序",
-    "packOptions": {
-        "ignore": [
-            {
-                "type": "folder",
-                "value": "admin"
-            },
-            {
-                "type": "folder",
-                "value": "tests"
-            },
-            {
-                "type": "folder",
-                "value": ".github"
-            },
-            {
-                "type": "folder",
-                "value": ".claude"
-            },
-            {
-                "type": "folder",
-                "value": "docs"
-            },
-            {
-                "type": "folder",
-                "value": "scripts"
-            },
-            {
-                "type": "file",
-                "value": "README.md"
-            },
-            {
-                "type": "file",
-                "value": "CLAUDE.md"
-            },
-            {
-                "type": "file",
-                "value": "LICENSE"
-            },
-            {
-                "type": "file",
-                "value": "package-lock.json"
-            },
-            {
-                "type": "file",
-                "value": ".eslintrc.js"
-            }
-        ]
+  "description": "梦幻搞钱工具箱 - 微信小程序",
+  "packOptions": {
+    "ignore": [
+      {
+        "value": "admin",
+        "type": "folder"
+      },
+      {
+        "value": "tests",
+        "type": "folder"
+      },
+      {
+        "value": ".github",
+        "type": "folder"
+      },
+      {
+        "value": ".claude",
+        "type": "folder"
+      },
+      {
+        "value": "docs",
+        "type": "folder"
+      },
+      {
+        "value": "scripts",
+        "type": "folder"
+      },
+      {
+        "value": "README.md",
+        "type": "file"
+      },
+      {
+        "value": "CLAUDE.md",
+        "type": "file"
+      },
+      {
+        "value": "LICENSE",
+        "type": "file"
+      },
+      {
+        "value": "package-lock.json",
+        "type": "file"
+      },
+      {
+        "value": ".eslintrc.js",
+        "type": "file"
+      }
+    ],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "nodeModules": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "uglifyFileName": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "compileHotReLoad": false,
+    "lazyloadPlaceholderEnable": false,
+    "useMultiFrameRuntime": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
     },
-    "setting": {
-        "urlCheck": true,
-        "es6": true,
-        "enhance": true,
-        "postcss": true,
-        "preloadBackgroundData": false,
-        "minified": true,
-        "newFeature": true,
-        "coverView": true,
-        "nodeModules": false,
-        "autoAudits": false,
-        "showShadowRootInWxmlPanel": true,
-        "scopeDataCheck": false,
-        "uglifyFileName": false,
-        "checkInvalidKey": true,
-        "checkSiteMap": true,
-        "uploadWithSourceMap": true,
-        "compileHotReLoad": false,
-        "lazyloadPlaceholderEnable": false,
-        "useMultiFrameRuntime": true,
-        "useApiHook": true,
-        "useApiHostProcess": true,
-        "babelSetting": {
-            "ignore": [],
-            "disablePlugins": [],
-            "outputPath": ""
-        }
-    },
-    "compileType": "miniprogram",
-    "libVersion": "2.24.0",
-    "appid": "<YOUR_APPID>",
-    "projectname": "mhxy-getcash-toolsbox",
-    "cloudfunctionRoot": "cloudfunctions/",
-    "condition": {},
-    "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
+    "compileWorklet": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false
+  },
+  "compileType": "miniprogram",
+  "libVersion": "2.24.0",
+  "appid": "<YOUR_APPID>",
+  "projectname": "mhxy-getcash-toolsbox",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "condition": {},
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
 }

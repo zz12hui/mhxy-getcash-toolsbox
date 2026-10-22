@@ -10,13 +10,17 @@
  * 运行：
  *   npm run smoke
  *
+ * 脚本会先检测 9420 自动化端口；没有的话会调用 CLI 启动 `auto` 模式，然后连接。
  * 可选环境变量：
  *   WX_DEVTOOLS_CLI  开发者工具 cli.bat 路径（默认 C:\Program Files (x86)\Tencent\微信web开发者工具\cli.bat）
  *   WX_PROJECT       小程序项目路径（默认仓库根目录）
  *   WX_AUTO_PORT     自动化端口（默认 9420）
+ *   WX_WS_ENDPOINT   直接指定已存在的自动化 ws 地址（跳过启动）
  */
 const path = require('path')
 const fs = require('fs')
+const net = require('net')
+const { spawn } = require('child_process')
 const automator = require('miniprogram-automator')
 
 const DEFAULT_CLI = 'C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\cli.bat'
@@ -29,6 +33,47 @@ const results = []
 function record(name, ok, detail) {
   results.push({ name, ok })
   console.log((ok ? 'PASS' : 'FAIL') + '  ' + name + (detail ? '  -> ' + detail : ''))
+}
+
+function isPortOpen(port) {
+  return new Promise(resolve => {
+    const socket = net.connect({ port, host: '127.0.0.1' })
+    let done = false
+    const finish = ok => {
+      if (done) return
+      done = true
+      socket.destroy()
+      resolve(ok)
+    }
+    socket.setTimeout(1000)
+    socket.once('connect', () => finish(true))
+    socket.once('timeout', () => finish(false))
+    socket.once('error', () => finish(false))
+  })
+}
+
+async function waitPort(port, timeoutMs) {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    if (await isPortOpen(port)) return true
+    await new Promise(resolve => setTimeout(resolve, 1000))
+  }
+  return false
+}
+
+async function openAutomation() {
+  const wsEndpoint = process.env.WX_WS_ENDPOINT || ('ws://127.0.0.1:' + PORT)
+  if (process.env.WX_WS_ENDPOINT || await isPortOpen(PORT)) {
+    return automator.connect({ wsEndpoint })
+  }
+  console.log('未检测到自动化端口，正在通过 CLI 启动开发者工具自动化（首次约 20~40 秒）...')
+  const cmd = '"' + CLI + '" auto --project "' + PROJECT + '" --auto-port ' + PORT
+  const child = spawn(cmd, { shell: true, detached: true, stdio: 'ignore', windowsHide: true })
+  child.unref()
+  if (!(await waitPort(PORT, 90000))) {
+    throw new Error('等待自动化端口超时（' + PORT + '），请手动执行：cli auto --project "' + PROJECT + '"')
+  }
+  return automator.connect({ wsEndpoint })
 }
 
 async function tapByText(page, selector, text) {
@@ -52,11 +97,7 @@ async function main() {
 
   let miniProgram
   try {
-    miniProgram = await automator.launch({
-      cliPath: CLI,
-      projectPath: PROJECT,
-      port: PORT
-    })
+    miniProgram = await openAutomation()
   } catch (err) {
     console.error('启动开发者工具失败：' + (err && err.message))
     console.error('请确认：① 已扫码登录；② 设置 → 安全设置 → 服务端口已开启；③ 项目能正常编译')
@@ -123,7 +164,10 @@ async function main() {
     console.error('冒烟测试异常：' + (err && err.stack ? err.stack : err))
     record('执行完整性', false, err && err.message)
   } finally {
-    try { await miniProgram.close() } catch (e) { /* ignore */ }
+    try {
+      // close() 会关闭项目窗口并释放自动化端口，保证下次可重新启动
+      if (miniProgram) await miniProgram.close()
+    } catch (e) { /* ignore */ }
   }
 
   const failed = results.filter(r => !r.ok)
