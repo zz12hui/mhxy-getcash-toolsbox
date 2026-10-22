@@ -200,6 +200,42 @@ async function setPublicRead(cfg, bookID) {
   )
 }
 
+async function getSheetsInfo(cfg, bookID) {
+  const data = await requestJson(
+    'GET',
+    '/openapi/spreadsheet/v3/files/' + bookID + '?concise=1',
+    authHeaders(cfg)
+  )
+  return (data && data.properties) || []
+}
+
+async function deleteSheet(cfg, bookID, sheetId) {
+  await requestJson(
+    'POST',
+    '/openapi/spreadsheet/v3/files/' + bookID + '/batchUpdate',
+    Object.assign(authHeaders(cfg), { 'Content-Type': 'application/json' }),
+    { requests: [{ deleteSheetRequest: { sheetId } }] }
+  )
+}
+
+// 删除创建文档时自带的「工作表1 / Sheet1」空表；失败不阻断报表生成
+async function cleanupDefaultSheets(cfg, bookID, keepSheetIDs) {
+  try {
+    const keep = new Set((keepSheetIDs || []).filter(Boolean))
+    const sheets = await getSheetsInfo(cfg, bookID)
+    for (const sheet of sheets) {
+      if (keep.has(sheet.sheetId)) continue
+      if (/^(工作表\d*|Sheet\d*)$/i.test(String(sheet.title || ''))) {
+        await deleteSheet(cfg, bookID, sheet.sheetId)
+        await sleep(300)
+      }
+    }
+    return ''
+  } catch (e) {
+    return '（默认空表清理失败，可在腾讯文档手动删除）'
+  }
+}
+
 exports.main = async (event) => {
   const wxContext = cloud.getWXContext()
   try {
@@ -236,6 +272,8 @@ exports.main = async (event) => {
       })())
       const perm = setPublicRead(cfg, fileID).catch(() => { shareWarning = '（已更新，但链接公开权限设置失败，可在腾讯文档里手动分享）' })
       const out = await Promise.all(writes.concat([perm])).then(list => list.slice(0, prepared.length))
+      const cleanupWarning = await cleanupDefaultSheets(cfg, fileID, out.map(x => x.sheetID))
+      if (cleanupWarning) shareWarning = (shareWarning ? shareWarning + ' ' : '') + cleanupWarning
       const rowCount = out.reduce((s, x) => s + x.rowCount, 0)
       return {
         ok: true,
@@ -266,6 +304,8 @@ exports.main = async (event) => {
       .catch(e => { throw new Error('写入「' + sheet.title + '」步骤：' + e.message) }))
     const perm = setPublicRead(cfg, bookID).catch(() => { shareWarning = '（表格已生成，但链接公开权限设置失败，可在腾讯文档里手动分享）' })
     const out = await Promise.all(writes.concat([perm])).then(list => list.slice(0, added.length))
+    const cleanupWarning = await cleanupDefaultSheets(cfg, bookID, out.map(x => x.sheetID))
+    if (cleanupWarning) shareWarning = (shareWarning ? shareWarning + ' ' : '') + cleanupWarning
     return {
       ok: true,
       created: true,
