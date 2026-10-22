@@ -11,6 +11,7 @@ const TABBAR = require('../../utils/tabbar')
 const REWARD_PRICES = require('../../utils/reward-prices')
 const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
+const BATCH = require('../../utils/batch')
 const app = getApp()
 
 Page({
@@ -513,13 +514,13 @@ Page({
   closeBatchModal() { this.setData({ showBatchModal: false }) },
 
   onBatchStartInput(e) {
-    const v = parseInt(e.detail.value) || 1
-    this.setData({ batchStart: Math.max(1, Math.min(300, v)), batchCount: Math.max(0, this.data.batchEnd - Math.max(1, Math.min(300, v)) + 1) })
+    const raw = e.detail.value
+    this.setData({ batchStart: raw, batchCount: BATCH.count(raw, this.data.batchEnd, 300) })
   },
 
   onBatchEndInput(e) {
-    const v = parseInt(e.detail.value) || 1
-    this.setData({ batchEnd: Math.max(1, Math.min(300, v)), batchCount: Math.max(0, Math.max(1, Math.min(300, v)) - this.data.batchStart + 1) })
+    const raw = e.detail.value
+    this.setData({ batchEnd: raw, batchCount: BATCH.count(this.data.batchStart, raw, 300) })
   },
 
   quickBatchRange(e) {
@@ -531,16 +532,23 @@ Page({
 
   confirmBatch() {
     if (!this._cur) return
-    const { batchStart, batchEnd, batchSelTid } = this.data
-    let effEnd = batchEnd
+    const range = BATCH.normalize(this.data.batchStart, this.data.batchEnd, 300)
+    if (!range) {
+      this.showToast('请输入 1-300 的有效范围')
+      return
+    }
+    const { start, end, count } = range
+    const batchSelTid = this.data.batchSelTid
+    this.setData({ batchStart: start, batchEnd: end, batchCount: count })
+    let effEnd = end
     // Guard against crossing segment boundaries without recording reward
-    if (batchStart <= 100 && batchEnd > 100 && this._cur.rewards[100].length === 0) {
+    if (start <= 100 && end > 100 && this._cur.rewards[100].length === 0) {
       effEnd = 100; this.showToast('已限制到第100环，请先结算第100环奖励')
-    } else if (batchStart <= 200 && batchEnd > 200 && this._cur.rewards[200].length === 0) {
+    } else if (start <= 200 && end > 200 && this._cur.rewards[200].length === 0) {
       effEnd = 200; this.showToast('已限制到第200环，请先结算第200环奖励')
     }
-    this.pushUndo('批量填充 ' + batchStart + '-' + effEnd)
-    for (let i = batchStart; i <= effEnd; i++) {
+    this.pushUndo('批量填充 ' + start + '-' + effEnd)
+    for (let i = start; i <= effEnd; i++) {
       if (!this._cur.rings[i - 1].t) this._cur.rings[i - 1] = { t: batchSelTid, item: '' }
     }
     S.saveChainCur(this.data.activeUser, this._cur)
@@ -548,7 +556,7 @@ Page({
     UI.vibrate()
     this.setData({ showBatchModal: false })
     this.loadData()
-    this.showToast(`已填充${batchStart}-${effEnd}环`)
+    this.showToast(`已填充${start}-${effEnd}环`)
     this.checkSeg()
   },
 

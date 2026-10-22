@@ -324,7 +324,7 @@
     </view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeBatchModal">取消</view>
-      <view class="btn btn-a" style="flex:1" bindtap="confirmBatch">填充{{batchCount}}环</view>
+      <view class="btn btn-a" style="flex:1" bindtap="confirmBatch">{{batchCount > 0 ? '确认填充' : '请输入有效范围'}}</view>
     </view>
   </view>
 </view>

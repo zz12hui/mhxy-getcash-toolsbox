@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "lint": "eslint pages/**/*.js utils/**/*.js app.js custom-tab-bar/index.js components/**/*.js --format stylish",
-    "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/ledger.test.js tests/money.test.js tests/gold-calc.test.js tests/home-nav.test.js tests/reward-prices.test.js tests/ledger-page.test.js tests/ledger-home.test.js tests/prices-page.test.js tests/report-export.test.js tests/share-report.test.js tests/pet-page.test.js tests/chain-page.test.js",
+    "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/ledger.test.js tests/money.test.js tests/gold-calc.test.js tests/home-nav.test.js tests/batch.test.js tests/reward-prices.test.js tests/ledger-page.test.js tests/ledger-home.test.js tests/prices-page.test.js tests/report-export.test.js tests/share-report.test.js tests/pet-page.test.js tests/chain-page.test.js",
     "smoke": "node scripts/devtools-smoke.js",
     "accept": "node scripts/devtools-acceptance.js",
     "accept:fresh": "node scripts/devtools-acceptance.js --clean",

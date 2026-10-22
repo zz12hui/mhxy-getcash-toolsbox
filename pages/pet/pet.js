@@ -11,6 +11,7 @@ const TABBAR = require('../../utils/tabbar')
 const REWARD_PRICES = require('../../utils/reward-prices')
 const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
+const BATCH = require('../../utils/batch')
 const app = getApp()
 
 Page({
@@ -523,13 +524,13 @@ Page({
   closeBatchModal() { this.setData({ showBatchModal: false }) },
 
   onBatchStartInput(e) {
-    const v = parseInt(e.detail.value) || 1
-    this.setData({ batchStart: Math.max(1, Math.min(100, v)), batchCount: Math.max(0, this.data.batchEnd - Math.max(1, Math.min(100, v)) + 1) })
+    const raw = e.detail.value
+    this.setData({ batchStart: raw, batchCount: BATCH.count(raw, this.data.batchEnd, 100) })
   },
 
   onBatchEndInput(e) {
-    const v = parseInt(e.detail.value) || 1
-    this.setData({ batchEnd: Math.max(1, Math.min(100, v)), batchCount: Math.max(0, Math.max(1, Math.min(100, v)) - this.data.batchStart + 1) })
+    const raw = e.detail.value
+    this.setData({ batchEnd: raw, batchCount: BATCH.count(this.data.batchStart, raw, 100) })
   },
 
   quickBatchRange(e) {
@@ -544,10 +545,17 @@ Page({
 
   confirmBatch() {
     if (!this._cur) return
-    const { batchStart, batchEnd, batchSelTid } = this.data
+    const range = BATCH.normalize(this.data.batchStart, this.data.batchEnd, 100)
+    if (!range) {
+      this.showToast('请输入 1-100 的有效范围')
+      return
+    }
+    const { start, end, count } = range
+    const batchSelTid = this.data.batchSelTid
     const t = C.pGetT(batchSelTid)
-    this.pushUndo('批量填充 ' + batchStart + '-' + batchEnd)
-    for (let i = batchStart; i <= batchEnd; i++) {
+    this.setData({ batchStart: start, batchEnd: end, batchCount: count })
+    this.pushUndo('批量填充 ' + start + '-' + end)
+    for (let i = start; i <= end; i++) {
       if (!this._cur.rings[i - 1].t) {
         this._cur.rings[i - 1] = { t: batchSelTid, sc: t ? t.sc : 0, item: '' }
       }
@@ -557,7 +565,7 @@ Page({
     UI.vibrate()
     this.setData({ showBatchModal: false })
     this.loadData()
-    this.showToast(`已填充${batchStart}-${batchEnd}环`)
+    this.showToast(`已填充${start}-${end}环`)
     this.checkComplete()
   },
 
