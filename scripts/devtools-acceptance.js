@@ -309,7 +309,7 @@ async function main() {
     await sleep(600)
     const ledgerAll = await getData(miniProgram)
     record('账本周期筛选可切换', ledgerAll.period === 'all', 'period=' + ledgerAll.period)
-    await tapByText(miniProgram, '.chip', '人民币')
+    await tapByText(miniProgram, '.currency-switch .cur-item', '人民币')
     await sleep(600)
     const ledgerYuan = await getData(miniProgram)
     record('账本人民币显示可切换', ledgerYuan.currency === 'yuan' && String(ledgerYuan.summary && ledgerYuan.summary.profitStr).indexOf('元') >= 0, 'currency=' + ledgerYuan.currency)

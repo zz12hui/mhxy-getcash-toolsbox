@@ -1,70 +1,117 @@
-<view class="app">
-  <scroll-view scroll-y class="scroll-wrap" style="flex:1;">
-    <view class="section">
-      <view class="filter-row">
-        <view wx:for="{{scopes}}" wx:key="key" class="chip scope-chip {{scope===item.key?'on':''}}" bindtap="onScopeTap" data-s="{{item.key}}">{{item.label}}</view>
-        <text class="filter-hint">{{roleCount}} 个角色</text>
-        <view class="btn btn-xs" bindtap="openMoneySettings">⚙️</view>
+<view class="app ledger-page">
+  <scroll-view scroll-y class="scroll-wrap page-scroll" style="flex:1;">
+    <view class="ledger-content">
+      <view class="ledger-nav anim-up" style="padding-top: {{statusBarHeight}}px; padding-right: {{navRight}}px;">
+        <view class="nav-btn" bindtap="goBack">‹</view>
+        <view class="nav-title">收益账本</view>
+        <view class="nav-btn" bindtap="openMoneySettings">⋯</view>
       </view>
-      <view class="filter-row">
+
+      <view class="filter-row anim-up" style="animation-delay: 40ms;">
+        <view wx:for="{{scopes}}" wx:key="key" class="chip scope-chip {{scope===item.key?'on':''}}" bindtap="onScopeTap" data-s="{{item.key}}">{{item.label}}</view>
+        <view class="currency-switch">
+          <view class="cur-item {{currency==='wan'?'on':''}}" bindtap="onCurrencyTap" data-c="wan">万两</view>
+          <view class="cur-item {{currency==='yuan'?'on':''}}" bindtap="onCurrencyTap" data-c="yuan">人民币</view>
+        </view>
+      </view>
+      <view class="filter-row anim-up" style="animation-delay: 70ms;">
         <view wx:for="{{tools}}" wx:key="key" class="chip tool-chip {{tool===item.key?'on':''}}" bindtap="onToolTap" data-t="{{item.key}}">{{item.label}}</view>
       </view>
-      <view class="filter-row">
+      <view class="filter-row anim-up" style="animation-delay: 100ms;">
         <view wx:for="{{periods}}" wx:key="key" class="chip period-chip {{period===item.key?'on':''}}" bindtap="onPeriodTap" data-p="{{item.key}}">{{item.label}}</view>
-        <view style="margin-left:auto;display:flex;gap:8rpx;">
-          <view class="chip {{currency==='wan'?'on':''}}" bindtap="onCurrencyTap" data-c="wan">万两</view>
-          <view class="chip {{currency==='yuan'?'on':''}}" bindtap="onCurrencyTap" data-c="yuan">人民币</view>
+        <text class="filter-hint">{{roleCount}} 个角色</text>
+      </view>
+
+      <view class="stat-cards summary-grid anim-up" style="animation-delay: 130ms;">
+        <view class="stat-card s-cost">
+          <view class="lbl">总投入</view>
+          <view class="val cost">{{summary.totalCostStr}}</view>
+        </view>
+        <view class="stat-card s-income">
+          <view class="lbl">总产出</view>
+          <view class="val" style="color: var(--accent);">{{summary.totalIncomeStr}}</view>
+        </view>
+        <view class="stat-card s-profit">
+          <view class="lbl">净收益</view>
+          <view class="val" style="color:{{summary.profitPos ? 'var(--accent)' : 'var(--danger)'}};">{{summary.profitStr}}</view>
+        </view>
+        <view class="stat-card s-roi">
+          <view class="lbl">投入产出比</view>
+          <view class="val" style="color: var(--accent2);">{{summary.roiStr}}</view>
         </view>
       </view>
 
-      <view class="stat-cards" style="margin-top:12rpx;">
-        <view class="stat-card"><view class="lbl">总投入</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{summary.totalCostStr}}</view></view>
-        <view class="stat-card"><view class="lbl">总产出</view><view class="val" style="color:var(--accent);font-size:28rpx;">{{summary.totalIncomeStr}}</view></view>
-        <view class="stat-card"><view class="lbl">净收益</view><view class="val" style="color:{{summary.profitPos?'var(--accent)':'var(--danger)'}};font-size:28rpx;">{{summary.profitStr}}</view></view>
-        <view class="stat-card"><view class="lbl">投入产出比</view><view class="val" style="font-size:28rpx;">{{summary.roiStr}}</view></view>
-      </view>
-
-      <view class="reward-rule-box">
-        <view style="display:flex;gap:12rpx;margin-bottom:10rpx;">
-          <view class="btn btn-a" style="flex:1" bindtap="createDocsReport">{{docsLoading ? '生成中…' : '📄 腾讯文档'}}</view>
-          <view class="btn" style="flex:1" bindtap="shareReport">{{sharing ? '生成中…' : '📤 分享报表'}}</view>
+      <view class="metric-strip anim-up" style="animation-delay: 170ms;">
+        <view class="metric-item">
+          <text class="m-lbl">总工时</text>
+          <text class="m-val">{{summary.totalHoursStr}}</text>
         </view>
-        <view style="font-size:20rpx;color:var(--text2);text-align:center;margin-bottom:14rpx;" bindtap="saveReportImage">保存报表海报到相册</view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>轮次 / 正收益率</text><text class="val">{{summary.count}} 轮 · {{summary.winRateStr}}</text></view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>总工时 / 平均时薪</text><text class="val" style="font-size:22rpx;">{{summary.totalHoursStr}} · {{summary.hourlyStr}}</text></view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>日均收益 / 月化收益</text><text class="val" style="font-size:22rpx;">{{summary.dailyStr}} · {{summary.monthStr}}</text></view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>点卡成本 / 扣点卡净收益</text><text class="val" style="font-size:22rpx;">{{summary.pointStr}} · <text style="color:{{summary.netAfterPointPos?'var(--accent)':'var(--danger)'}};">{{summary.netAfterPointStr}}</text></text></view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>目标时薪 {{summary.targetHourlyYuan}} 元/时</text><text class="val" style="font-size:22rpx;">{{summary.targetStr}}</text></view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>平均每轮净收益</text><text class="val" style="font-size:22rpx;">{{summary.avgProfitStr}}</text></view>
-        <view wx:if="{{summary.unbooked}}" class="stat-row" style="padding:4rpx 0;"><text>未记账轮次（只算投入）</text><text class="val" style="color:var(--warn);">{{summary.unbooked}} 轮</text></view>
+        <view class="metric-item">
+          <text class="m-lbl">平均时薪</text>
+          <text class="m-val">{{summary.hourlyShortStr}}</text>
+        </view>
+        <view class="metric-item">
+          <text class="m-lbl">日均收益</text>
+          <text class="m-val">{{summary.dailyStr}}</text>
+        </view>
+        <view class="metric-item">
+          <text class="m-lbl">月化收益</text>
+          <text class="m-val">{{summary.monthStr}}</text>
+        </view>
       </view>
 
-      <view class="section-title" style="margin-top:16rpx;">累计净收益</view>
-      <canvas type="2d" id="ledgerChart" style="width:100%;height:320rpx;background:var(--surface2);border-radius:8rpx;"></canvas>
+      <view class="extra-strip anim-up" style="animation-delay: 190ms;">
+        <view class="extra-row"><text>点卡成本</text><text>{{summary.pointStr}}</text></view>
+        <view class="extra-row"><text>扣点卡净收益</text><text style="color:{{summary.netAfterPointPos ? 'var(--accent)' : 'var(--danger)'}};">{{summary.netAfterPointStr}}</text></view>
+        <view class="extra-row"><text>目标时薪 {{summary.targetHourlyYuan}} 元/时</text><text>{{summary.targetStr}}</text></view>
+        <view class="extra-row"><text>正收益率 / 平均每轮</text><text>{{summary.winRateStr}} · {{summary.avgProfitStr}}</text></view>
+        <view wx:if="{{summary.unbooked}}" class="extra-row"><text>未记账轮次（只算投入）</text><text style="color: var(--warn);">{{summary.unbooked}} 轮</text></view>
+      </view>
 
-      <view class="section-title" style="margin-top:16rpx;">轮次记录</view>
+      <view class="chart-card anim-up" style="animation-delay: 200ms;">
+        <view class="chart-head">
+          <view>
+            <view class="chart-title">累计净收益</view>
+            <view class="chart-sub">本周期 {{summary.profitStr}}</view>
+          </view>
+          <view class="chart-tag">{{summary.roiStr}}</view>
+        </view>
+        <canvas type="2d" id="ledgerChart" class="ledger-chart"></canvas>
+      </view>
+
+      <view class="action-row anim-up" style="animation-delay: 230ms;">
+        <view class="btn btn-grad action-btn" bindtap="createDocsReport">{{docsLoading ? '生成中…' : '📄 腾讯文档'}}</view>
+        <view class="btn btn-ghost action-btn" bindtap="shareReport">{{sharing ? '生成中…' : '📤 分享报表'}}</view>
+      </view>
+      <view class="save-link" bindtap="saveReportImage">保存报表海报到相册</view>
+
+      <view class="list-head anim-up" style="animation-delay: 260ms;">
+        <text class="list-title">轮次记录</text>
+        <text class="list-count">{{summary.count}} 轮</text>
+      </view>
+
       <block wx:if="{{hasRuns}}">
-        <view wx:for="{{runList}}" wx:key="key" class="ledger-row" data-key="{{item.key}}" bindtap="openDetail">
-          <view style="flex:1;min-width:0;">
-            <view class="ledger-title">{{item.toolLabel}} · Lv.{{item.level}} <text class="hist-sub">{{item.compStr}}</text></view>
+        <view wx:for="{{runList}}" wx:key="key" class="ledger-row anim-up" style="animation-delay: {{280 + index * 30}}ms;" data-key="{{item.key}}" bindtap="openDetail">
+          <view class="row-left">
+            <view class="ledger-title">{{item.toolLabel}} · Lv.{{item.level}} <text class="row-tag">{{item.compStr}}</text></view>
             <view class="ledger-sub">{{item.dateStr}}<text wx:if="{{item.roleName}}"> · {{item.roleName}}</text></view>
           </view>
-          <view style="text-align:right;">
-            <view wx:if="{{!item.unbooked}}" style="font-size:24rpx;color:{{item.profitPos?'var(--accent)':'var(--danger)'}};">{{item.profitStr}}</view>
-            <view wx:else style="font-size:22rpx;color:var(--warn);">未记账</view>
-            <view class="ledger-meta">投入产出比 {{item.roiStr}}<text wx:if="{{!item.unbooked}}"> · 产出 {{item.incomeStr}}</text></view>
+          <view class="row-right">
+            <view wx:if="{{!item.unbooked}}" class="row-profit" style="color:{{item.profitPos ? 'var(--accent)' : 'var(--danger)'}};">{{item.profitStr}}</view>
+            <view wx:else class="row-unbooked">未记账</view>
+            <view class="ledger-meta">ROI {{item.roiStr}}<text wx:if="{{!item.unbooked}}"> · {{item.incomeStr}}</text></view>
           </view>
         </view>
       </block>
-      <view wx:else class="empty-state" style="padding:40rpx 0;">
+      <view wx:else class="empty-state" style="padding: 50rpx 0;">
         <view class="icon">📒</view>
         <text>还没有可统计的轮次，先去结算一轮吧</text>
-        <view style="display:flex;gap:16rpx;margin-top:20rpx;">
-          <view class="btn btn-a btn-xs" bindtap="goPet">去宠环</view>
-          <view class="btn btn-xs" bindtap="goChain">去跑环</view>
+        <view class="empty-actions">
+          <view class="btn btn-grad btn-xs" bindtap="goPet">去宠环</view>
+          <view class="btn btn-ghost btn-xs" bindtap="goChain">去跑环</view>
         </view>
       </view>
-      <view style="height:40rpx;"></view>
+      <view style="height: 40rpx;"></view>
     </view>
   </scroll-view>
 
@@ -79,13 +126,13 @@
       <view class="sheet-handle"></view>
       <view class="sheet-title">📄 腾讯文档报表已生成</view>
       <view class="stat-row"><text>标题</text><text class="val" style="font-size:22rpx;max-width:60%;">{{docsResultTitle}}</text></view>
-      <view style="font-size:22rpx;color:var(--text2);word-break:break-all;margin:12rpx 0;line-height:1.6;">{{docsResultUrl}}</view>
-      <view wx:if="{{docsResultWarning}}" style="font-size:21rpx;color:var(--warn);line-height:1.6;margin-bottom:8rpx;">{{docsResultWarning}}</view>
+      <view class="doc-url">{{docsResultUrl}}</view>
+      <view wx:if="{{docsResultWarning}}" class="doc-warn">{{docsResultWarning}}</view>
       <view class="sheet-actions">
         <view class="btn" bindtap="copyDocsLink">复制链接</view>
-        <view class="btn btn-a" style="flex:1" bindtap="openDocsMiniProgram">打开腾讯文档</view>
+        <view class="btn btn-grad" style="flex:1" bindtap="openDocsMiniProgram">打开腾讯文档</view>
       </view>
-      <view class="btn" style="margin-top:12rpx;" bindtap="closeDocsResult">关闭</view>
+      <view class="btn btn-ghost" style="margin-top:12rpx;" bindtap="closeDocsResult">关闭</view>
     </view>
   </view>
 
@@ -94,28 +141,28 @@
     <view class="sheet" catchtap="noop">
       <view class="sheet-handle"></view>
       <view class="sheet-title">💱 收益换算设置</view>
-      <view class="stat-row"><text>梦幻币比例</text></view>
-      <view style="display:flex;align-items:center;gap:10rpx;margin:8rpx 0 16rpx;">
-        <text style="font-size:24rpx;color:var(--text2);">1 元 =</text>
-        <input type="digit" value="{{moneyInputs.wanPerYuan}}" data-k="wanPerYuan" bindinput="onMoneyInput" style="flex:1;padding:14rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:26rpx;text-align:right;"/>
-        <text style="font-size:24rpx;color:var(--text2);">万两</text>
+      <view class="setting-label">梦幻币比例</view>
+      <view class="setting-input-row">
+        <text class="setting-prefix">1 元 =</text>
+        <input type="digit" value="{{moneyInputs.wanPerYuan}}" data-k="wanPerYuan" bindinput="onMoneyInput" class="setting-input" />
+        <text class="setting-suffix">万两</text>
       </view>
-      <view class="stat-row"><text>点卡成本（元/小时）</text></view>
-      <view style="display:flex;align-items:center;gap:10rpx;margin:8rpx 0 16rpx;">
-        <input type="digit" value="{{moneyInputs.pointCostYuanPerHour}}" data-k="pointCostYuanPerHour" bindinput="onMoneyInput" style="flex:1;padding:14rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--warn);font-size:26rpx;text-align:right;"/>
-        <text style="font-size:24rpx;color:var(--text2);">元/小时（4点/小时≈0.4元）</text>
+      <view class="setting-label">点卡成本（元/小时）</view>
+      <view class="setting-input-row">
+        <input type="digit" value="{{moneyInputs.pointCostYuanPerHour}}" data-k="pointCostYuanPerHour" bindinput="onMoneyInput" class="setting-input" />
+        <text class="setting-suffix">元/小时（4点/小时≈0.4元）</text>
       </view>
-      <view class="stat-row"><text>目标时薪（元/小时）</text></view>
-      <view style="display:flex;align-items:center;gap:10rpx;margin:8rpx 0 16rpx;">
-        <input type="digit" value="{{moneyInputs.targetHourlyYuan}}" data-k="targetHourlyYuan" bindinput="onMoneyInput" style="flex:1;padding:14rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:26rpx;text-align:right;"/>
-        <text style="font-size:24rpx;color:var(--text2);">元/小时</text>
+      <view class="setting-label">目标时薪（元/小时）</view>
+      <view class="setting-input-row">
+        <input type="digit" value="{{moneyInputs.targetHourlyYuan}}" data-k="targetHourlyYuan" bindinput="onMoneyInput" class="setting-input" />
+        <text class="setting-suffix">元/小时</text>
       </view>
-      <view style="font-size:20rpx;color:var(--text2);line-height:1.6;margin-bottom:16rpx;">
+      <view class="setting-hint">
         换算比例只用于展示（万两 ↔ 人民币），不影响已有记账数据；可按你所在区服的金价调整。
       </view>
       <view class="sheet-actions">
         <view class="btn" bindtap="resetMoneySettings">恢复默认</view>
-        <view class="btn btn-a" style="flex:1" bindtap="saveMoneySettings">保存</view>
+        <view class="btn btn-grad" style="flex:1" bindtap="saveMoneySettings">保存</view>
       </view>
     </view>
   </view>

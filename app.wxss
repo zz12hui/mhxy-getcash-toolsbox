@@ -967,3 +967,146 @@ canvas {
   color: var(--text2);
   flex-wrap: wrap;
 }
+
+/* ============================================================
+   v1.4 深空霓虹 · 全息账本 —— 设计 token 与通用组件
+   ============================================================ */
+page {
+  --bg: #060a12;
+  --surface: #0d1728;
+  --surface2: #101d31;
+  --border: rgba(120, 180, 220, 0.10);
+  --text: #e8f0fa;
+  --text2: #8ba3bf;
+  --accent: #38f2c8;
+  --accent2: #3aa7ff;
+  --warn: #ffc857;
+  --danger: #ff6b6b;
+  --purple: #8b5cf6;
+  --pink: #ff6bcb;
+  background: #060a12;
+}
+
+/* 入场动效 */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.anim-up {
+  animation: fadeUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.anim-fade {
+  animation: fadeIn 240ms ease-out both;
+}
+
+/* 按钮体系 */
+.btn {
+  border-radius: 22rpx;
+  transition: transform 140ms ease-out, opacity 140ms ease-out;
+}
+
+.btn:active {
+  transform: scale(0.97);
+  opacity: 0.92;
+}
+
+.btn-grad {
+  background: linear-gradient(135deg, rgba(56, 242, 200, 0.22), rgba(58, 167, 255, 0.14));
+  border: 1rpx solid rgba(56, 242, 200, 0.55);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 0 24rpx rgba(56, 242, 200, 0.12), inset 0 1rpx 0 rgba(255, 255, 255, 0.08);
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1rpx solid rgba(255, 255, 255, 0.10);
+  color: var(--text2);
+  font-weight: 600;
+}
+
+/* 底部弹窗升级 */
+.sheet-overlay {
+  background: rgba(2, 6, 14, 0.72);
+}
+
+.sheet {
+  background: linear-gradient(180deg, #101c2f 0%, #0b1524 100%);
+  border: 1rpx solid rgba(120, 180, 220, 0.18);
+  border-bottom: 0;
+  border-radius: 34rpx 34rpx 0 0;
+  box-shadow: 0 -20rpx 60rpx rgba(0, 0, 0, 0.45), inset 0 1rpx 0 rgba(255, 255, 255, 0.06);
+  animation: sheetUp 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-handle {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sheet-title {
+  color: var(--text);
+}
+
+/* 统计卡升级（宠物/跑环/账本共用） */
+.stat-cards {
+  gap: 16rpx;
+  margin-bottom: 22rpx;
+}
+
+.stat-card {
+  background: rgba(18, 30, 50, 0.88);
+  border: 1rpx solid rgba(120, 180, 220, 0.10);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  text-align: left;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.22);
+}
+
+.stat-card .lbl {
+  font-size: 20rpx;
+  color: var(--text2);
+}
+
+.stat-card .val {
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-top: 8rpx;
+  word-break: break-all;
+}
+
+/* 我的页面收益大卡（首页用 index.wxss 的同名覆盖） */
+.ledger-hero {
+  margin: 24rpx 0;
+  padding: 30rpx;
+  border-radius: 30rpx;
+  background: linear-gradient(135deg, rgba(56, 242, 200, 0.13), rgba(13, 24, 40, 0.95) 55%, rgba(58, 167, 255, 0.10));
+  border: 1rpx solid rgba(56, 242, 200, 0.32);
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.38), inset 0 1rpx 0 rgba(255, 255, 255, 0.06);
+}
+
+.ledger-hero:active {
+  transform: scale(0.985);
+  transition: transform 150ms ease-out;
+}
+
+.lh-title {
+  color: var(--text);
+}
+
+.lh-value {
+  text-shadow: 0 0 32rpx rgba(56, 242, 200, 0.22);
+  word-break: break-all;
+}
+

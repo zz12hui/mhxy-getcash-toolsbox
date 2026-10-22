@@ -1,5 +1,6 @@
 {
   "navigationBarTitleText": "收益账本",
+  "navigationStyle": "custom",
   "enable-flex": true,
   "usingComponents": {
     "run-detail": "/components/run-detail/index"

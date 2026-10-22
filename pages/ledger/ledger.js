@@ -37,6 +37,8 @@ Page({
     hasRuns: false,
     sharing: false,
     docsError: '',
+    statusBarHeight: 20,
+    navRight: 90,
     docsLoading: false,
     showDocsResult: false,
     docsResultUrl: '',
@@ -46,8 +48,29 @@ Page({
     detailRun: null
   },
 
+  onLoad() {
+    try {
+      const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+      let navRight = 90
+      try {
+        const rect = wx.getMenuButtonBoundingClientRect()
+        if (rect && rect.left) navRight = Math.max(70, info.windowWidth - rect.left + 10)
+      } catch (e) { /* 忽略胶囊信息失败 */ }
+      this.setData({ statusBarHeight: info.statusBarHeight || 20, navRight })
+    } catch (e) { /* 忽略 */ }
+  },
+
   onShow() {
     this.loadData()
+  },
+
+  onHide() {
+    this._stopChartAnim()
+  },
+
+  goBack() {
+    if (getCurrentPages().length > 1) wx.navigateBack()
+    else wx.switchTab({ url: '/pages/index/index' })
   },
 
   loadData() {
@@ -112,6 +135,11 @@ Page({
       hourlyStr: agg.hourly != null
         ? MONEY.formatHourly(agg.hourly, cfg, currency) + '（≈ ' + MONEY.formatHourly(agg.hourly, cfg, alt) + '）'
         : '—',
+      hourlyShortStr: agg.hourly != null
+        ? (currency === 'wan'
+          ? (agg.hourly / 10000).toFixed(0) + ' 万/时'
+          : MONEY.wanToYuan(agg.hourly / 10000, cfg).toFixed(1) + ' 元/时')
+        : '—',
       hourlyYuanStr: hourlyYuan != null ? hourlyYuan.toFixed(1) + ' 元/时' : '—',
       dailyStr: fmt(agg.dailyAvgProfit),
       monthStr: fmt(agg.monthEstimate),
@@ -174,7 +202,15 @@ Page({
       }, [])
   },
 
+  _stopChartAnim() {
+    if (this._chartTimer) {
+      clearTimeout(this._chartTimer)
+      this._chartTimer = null
+    }
+  },
+
   drawChart() {
+    this._stopChartAnim()
     const points = this._chartPoints || []
     const query = wx.createSelectorQuery()
     query.select('#ledgerChart').fields({ node: true, size: true }).exec(res => {
@@ -188,46 +224,97 @@ Page({
       ctx.scale(dpr, dpr)
       const w = res[0].width
       const h = res[0].height
-      ctx.clearRect(0, 0, w, h)
-      if (points.length < 2) {
+
+      const drawAt = progress => {
+        ctx.clearRect(0, 0, w, h)
+        if (points.length < 2) {
+          ctx.fillStyle = '#6b7d95'
+          ctx.font = '12px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.fillText('已记账轮次不足，继续跑环并结算后查看趋势', w / 2, h / 2)
+          return
+        }
+        const pad = { l: 42, r: 14, t: 16, b: 24 }
+        const pw = w - pad.l - pad.r
+        const ph = h - pad.t - pad.b
+        const max = Math.max.apply(null, points.concat([0]))
+        const min = Math.min.apply(null, points.concat([0]))
+        const range = max - min || 1
+        const y = v => pad.t + ph - ((v - min) / range) * ph
+
+        ctx.strokeStyle = 'rgba(120,180,220,0.12)'
+        ctx.lineWidth = 1
+        for (let i = 0; i < 4; i++) {
+          const yy = pad.t + (ph * i) / 3
+          ctx.beginPath()
+          ctx.moveTo(pad.l, yy)
+          ctx.lineTo(w - pad.r, yy)
+          ctx.stroke()
+        }
+        if (min < 0 && max > 0) {
+          ctx.strokeStyle = 'rgba(139,163,191,0.35)'
+          ctx.beginPath()
+          ctx.moveTo(pad.l, y(0))
+          ctx.lineTo(w - pad.r, y(0))
+          ctx.stroke()
+        }
+
+        const n = points.length - 1
+        const pos = Math.max(0, Math.min(n, n * progress))
+        const idx = Math.floor(pos)
+        const frac = pos - idx
+        const xAt = i => pad.l + (pw / n) * i
+        const segs = []
+        for (let i = 0; i <= idx; i++) segs.push([xAt(i), y(points[i])])
+        if (idx < n) {
+          const x = pad.l + (pw / n) * pos
+          const vy = points[idx] + (points[idx + 1] - points[idx]) * frac
+          segs.push([x, y(vy)])
+        }
+
+        const areaGrad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ph)
+        areaGrad.addColorStop(0, 'rgba(56,242,200,0.30)')
+        areaGrad.addColorStop(1, 'rgba(56,242,200,0)')
+        ctx.beginPath()
+        ctx.moveTo(segs[0][0], pad.t + ph)
+        segs.forEach(s => ctx.lineTo(s[0], s[1]))
+        ctx.lineTo(segs[segs.length - 1][0], pad.t + ph)
+        ctx.closePath()
+        ctx.fillStyle = areaGrad
+        ctx.fill()
+
+        ctx.beginPath()
+        segs.forEach((s, i) => {
+          if (i === 0) ctx.moveTo(s[0], s[1])
+          else ctx.lineTo(s[0], s[1])
+        })
+        ctx.strokeStyle = '#38f2c8'
+        ctx.lineWidth = 2.5
+        ctx.lineJoin = 'round'
+        ctx.stroke()
+
+        const last = segs[segs.length - 1]
+        ctx.beginPath()
+        ctx.arc(last[0], last[1], 4, 0, Math.PI * 2)
+        ctx.fillStyle = '#38f2c8'
+        ctx.fill()
+
         ctx.fillStyle = '#6b7d95'
-        ctx.font = '12px sans-serif'
-        ctx.textAlign = 'center'
-        ctx.fillText('已记账轮次不足，继续跑环并结算后查看趋势', w / 2, h / 2)
-        return
+        ctx.font = '9px sans-serif'
+        ctx.textAlign = 'left'
+        ctx.fillText((max / 10000).toFixed(0) + '万', 2, pad.t + 8)
+        ctx.fillText((min / 10000).toFixed(0) + '万', 2, pad.t + ph)
       }
-      const pad = { l: 42, r: 12, t: 14, b: 22 }
-      const pw = w - pad.l - pad.r
-      const ph = h - pad.t - pad.b
-      const max = Math.max.apply(null, points.concat([0]))
-      const min = Math.min.apply(null, points.concat([0]))
-      const range = max - min || 1
-      const y = v => pad.t + ph - ((v - min) / range) * ph
-      ctx.strokeStyle = '#1a2740'
-      ctx.beginPath()
-      ctx.moveTo(pad.l, y(0))
-      ctx.lineTo(w - pad.r, y(0))
-      ctx.stroke()
-      ctx.strokeStyle = '#00d4aa'
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      points.forEach((v, i) => {
-        const x = pad.l + (pw / (points.length - 1)) * i
-        if (i === 0) ctx.moveTo(x, y(v))
-        else ctx.lineTo(x, y(v))
-      })
-      ctx.stroke()
-      const lastX = w - pad.r
-      const lastY = y(points[points.length - 1])
-      ctx.fillStyle = '#00d4aa'
-      ctx.beginPath()
-      ctx.arc(lastX, lastY, 3, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = '#6b7d95'
-      ctx.font = '9px sans-serif'
-      ctx.textAlign = 'left'
-      ctx.fillText((max / 10000).toFixed(0) + '万', 2, pad.t + 8)
-      ctx.fillText((min / 10000).toFixed(0) + '万', 2, pad.t + ph)
+
+      let frame = 0
+      const total = 24
+      const tick = () => {
+        frame += 1
+        drawAt(Math.min(1, frame / total))
+        if (frame < total) this._chartTimer = setTimeout(tick, 22)
+      }
+      drawAt(0)
+      tick()
     })
   },
 
@@ -551,15 +638,27 @@ Page({
   openDocsMiniProgram() {
     const url = this.data.docsResultUrl
     if (!url) return
-    if (!wx.navigateToMiniProgram) { this.copyDocsLink(); return }
-    wx.navigateToMiniProgram({
-      appId: 'wxd45c635d754dbf59',
-      path: 'pages/detail/detail?url=' + encodeURIComponent(url),
-      fail: () => {
-        wx.setClipboardData({ data: url })
-        wx.showToast({ title: '已复制链接，可粘贴打开', icon: 'none' })
-      }
-    })
+    const fallback = () => {
+      if (!wx.navigateToMiniProgram) { this.copyDocsLink(); return }
+      wx.navigateToMiniProgram({
+        appId: 'wxd45c635d754dbf59',
+        path: 'pages/detail/detail?url=' + encodeURIComponent(url),
+        fail: () => {
+          wx.setClipboardData({ data: url })
+          wx.showToast({ title: '已复制链接，可粘贴打开', icon: 'none' })
+        }
+      })
+    }
+    // 优先半屏（需在小程序后台「第三方设置 → 半屏小程序管理」申请通过）
+    if (wx.openEmbeddedMiniProgram) {
+      wx.openEmbeddedMiniProgram({
+        appId: 'wxd45c635d754dbf59',
+        path: 'pages/detail/detail?url=' + encodeURIComponent(url),
+        fail: fallback
+      })
+    } else {
+      fallback()
+    }
   },
 
   noop() {},

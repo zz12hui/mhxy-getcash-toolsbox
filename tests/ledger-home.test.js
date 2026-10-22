@@ -37,3 +37,17 @@ test('首页摘要：无数据', () => {
   assert.equal(sum.count, 0)
   assert.equal(sum.profitStr, '0.0 万两')
 })
+
+test('首页迷你趋势：按累计净收益归一化', () => {
+  mock.reset()
+  const now = Date.now()
+  S.saveUsers([{ id: 'u1', name: '角色A', createdAt: 1 }])
+  S.saveActiveUser('u1')
+  S.savePetRuns('u1', [
+    { id: 1, level: 175, doneAt: now - 7200000, rings: [], costItems: [], cost: 100, incomeItems: [], income: 200, profit: 100, roi: 2, netRate: 1, durationMin: 30, ledgerVersion: 1 },
+    { id: 2, level: 175, doneAt: now - 3600000, rings: [], costItems: [], cost: 100, incomeItems: [], income: 50, profit: -50, roi: 0.5, netRate: -0.5, durationMin: 30, ledgerVersion: 1 }
+  ])
+  const bars = HOME.getHomeChart()
+  assert.equal(bars.length, 2)
+  bars.forEach(v => assert.ok(v >= 10 && v <= 92))
+})

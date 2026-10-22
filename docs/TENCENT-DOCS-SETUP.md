@@ -202,3 +202,5 @@ cli cloud functions deploy --env <YOUR_CLOUD_ENV> --names docsReport --project .
 优先级：**环境变量 > 本地兜底**。等确认环境变量生效后，删除 `cloudfunctions/docsReport/config.local.js` 并重新部署，即可回到纯环境变量。
 
 > 排查建议：环境变量要配在「云开发控制台 → 云函数 → docsReport → 函数配置 → 环境变量」，注意环境 ID 是 `<YOUR_CLOUD_ENV>`；保存后重新部署一次。配在「本地调试环境变量」里不会生效。
+
+> 2026-10-22 更新：环境变量已修好并验证生效；`cloudfunctions/docsReport/config.local.js` 已删除并重新部署（纯环境变量，3 个文件）。`scripts/gen-docs-config.js` 只作为他人/临时兜底保留，正常情况下不需要再生成。

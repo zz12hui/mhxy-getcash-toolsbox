@@ -1,49 +1,22 @@
-<scroll-view scroll-y style="flex:1;height:100%;padding-bottom:130rpx;">
-  <view class="hub-view">
+<scroll-view scroll-y class="home-scroll">
+  <view class="hub-view" style="padding-top: {{statusBarHeight + 8}}px;">
     <view class="hub-bg">
       <view class="orb orb1"></view>
       <view class="orb orb2"></view>
       <view class="orb orb3"></view>
+      <view class="grid-mask"></view>
     </view>
 
     <view class="hub-main">
-      <view class="hub-header">
-        <view class="hub-icon">💰</view>
-        <text class="hub-title">梦幻搞钱工具箱</text>
-        <view class="hub-sub">跑环助手 · 宠环助手 — 更多工具持续更新</view>
+      <view class="hub-top anim-up" style="padding-right: {{navRight}}px;">
+        <view>
+          <view class="hub-brand">梦幻搞钱工具箱</view>
+          <view class="hub-slogan">今天也在<text class="accent-text">搞钱</text></view>
+        </view>
+        <view class="hub-avatar" bindtap="goProfile">我</view>
       </view>
 
-      <!-- Main tools — horizontal layout -->
-      <view class="tool-grid">
-        <view class="tool-card" bindtap="goPet">
-          <view class="tool-card-icon pet-icon">🐾</view>
-          <view class="tool-card-info">
-            <view class="tool-card-title">宠环助手</view>
-            <view class="tool-card-desc">100环召唤兽修炼 · 积分追踪 · 奖励预测 · 控分策略</view>
-            <view class="tool-card-tags">
-              <text class="tool-tag">100环</text>
-              <text class="tool-tag">积分制</text>
-              <text class="tool-tag">多角色</text>
-            </view>
-          </view>
-        </view>
-
-        <view class="tool-card" bindtap="goChain">
-          <view class="tool-card-icon chain-icon">📜</view>
-          <view class="tool-card-info">
-            <view class="tool-card-title">跑环助手</view>
-            <view class="tool-card-desc">300环任务链记录 · 三段奖励结算 · 等级预测书铁区间</view>
-            <view class="tool-card-tags">
-              <text class="tool-tag">300环</text>
-              <text class="tool-tag">三段奖励</text>
-              <text class="tool-tag">多角色</text>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 收益账本大栏目 -->
-      <view class="ledger-hero" bindtap="goLedger">
+      <view class="ledger-hero anim-up" style="animation-delay: 60ms;" bindtap="goLedger">
         <view class="lh-head">
           <view class="lh-title-wrap">
             <text class="lh-icon">📊</text>
@@ -57,19 +30,44 @@
             <text class="lh-label">累计净收益</text>
             <text class="lh-value" style="color:{{ledgerSummary.profitPos ? 'var(--accent)' : 'var(--danger)'}};">{{ledgerSummary.profitStr}}</text>
           </view>
-          <view style="text-align:right;">
+          <view class="lh-roi">
             <text class="lh-label">投入产出比</text>
             <text class="lh-value-sm">{{ledgerSummary.roiStr}}</text>
           </view>
         </view>
+        <view wx:if="{{sparkBars.length}}" class="lh-spark">
+          <view wx:for="{{sparkBars}}" wx:key="index" class="lh-bar" style="height:{{item}}%; animation-delay:{{index * 28}}ms;"></view>
+        </view>
         <view class="lh-foot">
-          <text>{{ledgerSummary.costStr}} 投入 · {{ledgerSummary.incomeStr}} 产出 · {{ledgerSummary.count}} 轮已记账</text>
+          <text>{{ledgerSummary.costStr}} 投入 · {{ledgerSummary.incomeStr}} 产出 · {{ledgerSummary.count}} 轮</text>
           <text>时薪 {{ledgerSummary.hourlyStr}}</text>
         </view>
       </view>
 
-      <!-- Quick modules — horizontal scroll -->
-      <scroll-view scroll-x class="quick-row">
+      <view class="section-label anim-up" style="animation-delay: 120ms;">核心工具</view>
+
+      <view class="tool-card anim-up" style="animation-delay: 160ms;" bindtap="goPet">
+        <view class="tool-ico pet-ico">🐾</view>
+        <view class="tool-info">
+          <view class="tool-title">宠环助手</view>
+          <view class="tool-desc">100 环 · 积分追踪 · 奖励预测</view>
+          <view class="tool-tags"><text class="tool-tag">100环</text><text class="tool-tag">积分制</text></view>
+        </view>
+        <text class="tool-arrow">›</text>
+      </view>
+
+      <view class="tool-card anim-up" style="animation-delay: 210ms;" bindtap="goChain">
+        <view class="tool-ico chain-ico">📜</view>
+        <view class="tool-info">
+          <view class="tool-title">跑环助手</view>
+          <view class="tool-desc">300 环 · 三段奖励 · 书铁区间</view>
+          <view class="tool-tags"><text class="tool-tag">300环</text><text class="tool-tag">三段奖励</text></view>
+        </view>
+        <text class="tool-arrow">›</text>
+      </view>
+
+      <view class="section-label anim-up" style="animation-delay: 260ms;">快捷工具</view>
+      <view class="quick-grid anim-up" style="animation-delay: 300ms;">
         <view class="quick-module" bindtap="goFaq">
           <text class="qm-icon">📖</text>
           <text class="qm-label">知识库</text>
@@ -86,14 +84,10 @@
           <text class="qm-icon">⏱️</text>
           <text class="qm-label">传说计时</text>
         </view>
-        <view class="quick-module" bindtap="onComing">
-          <text class="qm-icon">🔮</text>
-          <text class="qm-label">更多工具</text>
-        </view>
-      </scroll-view>
+      </view>
 
       <view class="hub-ft">
-        <text>梦幻搞钱工具箱 · 数据本地存储 · </text>
+        <text>梦幻搞钱工具箱 · 本地存储 · </text>
         <text>{{clockStr}}</text>
       </view>
     </view>

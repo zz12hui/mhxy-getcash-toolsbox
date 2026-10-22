@@ -35,4 +35,24 @@ function getHomeSummary(opts) {
   }
 }
 
-module.exports = { getRoleRuns, getHomeSummary }
+// 首页大卡里的迷你柱状趋势：最近 N 轮累计净收益，归一化到 8~92（百分比高度）
+function getHomeChart(opts) {
+  const o = opts || {}
+  const uid = o.uid || S.getActiveUser()
+  const count = o.count || 12
+  const booked = getRoleRuns(uid)
+    .filter(r => LEDGER.isBooked(r) && (r.doneAt || r.startedAt))
+    .sort((a, b) => (a.doneAt || a.startedAt) - (b.doneAt || b.startedAt))
+  if (booked.length < 2) return []
+  let acc = 0
+  const points = booked.map(r => {
+    acc += Number(r.profit) || 0
+    return acc
+  }).slice(-count)
+  const min = Math.min.apply(null, points.concat([0]))
+  const max = Math.max.apply(null, points.concat([0]))
+  const range = max - min || 1
+  return points.map(v => Math.round(10 + ((v - min) / range) * 82))
+}
+
+module.exports = { getRoleRuns, getHomeSummary, getHomeChart }
