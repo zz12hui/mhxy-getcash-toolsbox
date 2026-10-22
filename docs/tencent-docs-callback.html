@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>腾讯文档授权回调</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0f1623; color: #e8eef7; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card {
+      width: 100%; max-width: 520px;
+      background: #16202f; border: 1px solid #243149; border-radius: 14px;
+      padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    h1 { font-size: 19px; margin: 0 0 8px; }
+    .sub { font-size: 13px; color: #8fa3bd; line-height: 1.6; margin: 0 0 18px; }
+    .row { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; color: #8fa3bd; margin-bottom: 6px; }
+    input, textarea {
+      width: 100%; padding: 10px 12px; font-size: 13px; color: #e8eef7;
+      background: #0f1623; border: 1px solid #2a3a55; border-radius: 8px;
+      word-break: break-all; resize: vertical;
+    }
+    textarea { min-height: 70px; }
+    button {
+      margin-top: 8px; padding: 9px 16px; font-size: 13px; cursor: pointer;
+      background: #00d4aa; color: #05221c; border: 0; border-radius: 8px; font-weight: 600;
+    }
+    button.secondary { background: #243149; color: #e8eef7; font-weight: 400; margin-left: 8px; }
+    .tips {
+      font-size: 12px; color: #f0b45c; line-height: 1.7;
+      background: rgba(240,180,92,.08); border: 1px solid rgba(240,180,92,.25);
+      border-radius: 8px; padding: 10px 12px; margin-top: 18px;
+    }
+    .error { color: #ff6b6b; }
+    .ok { color: #00d4aa; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>腾讯文档授权完成</h1>
+    <p class="sub" id="hint">正在读取授权结果…</p>
+
+    <div class="row">
+      <label>绑定码（回调参数 code）</label>
+      <textarea id="code" readonly placeholder="未收到 code"></textarea>
+      <button type="button" onclick="copyField('code')">复制绑定码</button>
+    </div>
+
+    <div class="row">
+      <label>state（校验用，一并带回小程序）</label>
+      <input id="state" readonly placeholder="未收到 state">
+      <button type="button" class="secondary" onclick="copyField('state')">复制 state</button>
+    </div>
+
+    <p class="tips">
+      把「绑定码」和「state」复制回小程序「收益账本 → 绑定腾讯文档」页面粘贴。<br>
+      绑定码一次有效、几分钟内过期；不要截图或转发给他人。
+    </p>
+  </div>
+
+  <script>
+    (function () {
+      var q = new URLSearchParams(window.location.search);
+      var code = q.get('code') || '';
+      var state = q.get('state') || '';
+      var error = q.get('error') || q.get('error_description') || '';
+      var hint = document.getElementById('hint');
+      var codeEl = document.getElementById('code');
+      var stateEl = document.getElementById('state');
+
+      codeEl.value = code;
+      stateEl.value = state;
+
+      if (error) {
+        hint.className = 'sub error';
+        hint.textContent = '授权失败：' + error;
+      } else if (!code) {
+        hint.className = 'sub error';
+        hint.textContent = '没有拿到 code。请确认开放平台登记的 redirect_uri 与当前页面地址完全一致，并重新发起授权。';
+      } else {
+        hint.className = 'sub ok';
+        hint.textContent = '授权成功，请把下面的绑定码 + state 复制回小程序。';
+      }
+    })();
+
+    function copyField(id) {
+      var el = document.getElementById(id);
+      var text = el.value || '';
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        el.removeAttribute('readonly');
+        el.select();
+        document.execCommand('copy');
+        el.setAttribute('readonly', 'readonly');
+      }
+      var btn = event && event.target;
+      if (btn) {
+        var old = btn.textContent;
+        btn.textContent = '已复制';
+        setTimeout(function () { btn.textContent = old; }, 1200);
+      }
+    }
+  </script>
+</body>
+</html>

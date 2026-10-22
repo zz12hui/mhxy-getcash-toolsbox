@@ -1,94 +1,129 @@
-# 腾讯文档接入 · 准备与密钥约定
+# 腾讯文档接入 · 准备与联调
 
 > 关联方案：[PLAN-v1.3.1-tencent-docs-sync.md](PLAN-v1.3.1-tencent-docs-sync.md)
-> 当前状态：开放平台已注册、开发者权限已开通；走 OAuth 正式绑定路线，等待 AppID / 回调地址 / AppSecret 配置完成。
+> 状态：已拿到 client_id；待补 access_token / open_id / 回调地址 /（如有）client_secret，然后先做 API 连通性测试。
 
 ---
 
-## 1. 安全约定（先看这个）
+## 1. 后台那三个字段分别是什么
 
-- ✅ **AppID（client_id）可以发我**，它是公开标识。
-- ❌ **AppSecret / access_token / refresh_token 不要贴在聊天里**（会话有日志、截图也可能外泄）。
-- ❌ 不要写进代码、不要提交到 git。
-- 放在 **`.secrets/tencent-docs.json`**（已在 `.gitignore` 忽略），或环境变量 `TENCENT_DOCS_CLIENT_ID` / `TENCENT_DOCS_CLIENT_SECRET` / `TENCENT_DOCS_REDIRECT_URI`。
-- 如果你已经不小心发过 secret/token：去开放平台**重置 AppSecret**、重新生成 token；旧的就当泄露处理。
-- 我这边不会打印 secret，也不会把它写进日志/提交记录；`.secrets/` 已加入 `.gitignore`。
+你在开发者后台看到的 `client_id` / `access_token` / `open_id` 是调用 OpenAPI 的**请求头三元组**：
 
----
-
-## 2. 需要你准备/确认的 4 件事
-
-| # | 事项 | 怎么给 |
+| 字段 | 用途 | 敏感度 |
 |---|---|---|
-| 1 | **AppID（client_id）** | 直接发我即可 |
-| 2 | **AppSecret** | 复制到 `.secrets/tencent-docs.json`（见下方模板），然后跟我说「放好了」 |
-| 3 | **回调地址 redirect_uri** | 在腾讯文档开放平台应用配置里登记的那个 HTTPS 地址，发我 |
-| 4 | **已获批的权限 scope** | 开放平台应用详情页截图或文字列一下（文档读取 / 文档编辑 / 创建文档 / 表格读写等），以及 API 免费额度 |
+| client_id | 应用标识（请求头 `Client-Id`） | 公开 |
+| access_token | 调用凭证（请求头 `Access-Token`） | 敏感，会过期 |
+| open_id | 用户标识（请求头 `Open-Id`，与 token 匹配） | 半敏感 |
 
-### 第 2 项模板
+调用示例（新建在线表格）：
 
-把 `.secrets/tencent-docs.example.json` 复制成 `.secrets/tencent-docs.json`，填好：
+```http
+POST /openapi/drive/v2/files
+Host: docs.qq.com
+Access-Token: <access_token>
+Client-Id: <client_id>
+Open-Id: <open_id>
+Content-Type: application/x-www-form-urlencoded
 
-```json
-{
-  "clientId": "你的 AppID",
-  "clientSecret": "你的 AppSecret",
-  "redirectUri": "https://你的回调地址/tencent-docs-callback",
-  "scope": "all"
-}
+type=sheet&title=梦幻收益报表
 ```
 
----
+### 但「每个用户绑定自己的文档」还需要 OAuth
 
-## 3. 回调地址怎么解决（关键）
+- 上面这套三元组是**某个账号自己的调用凭证**（大概率是你开发者账号的），用它只能操作你自己的文档，不能代表其他用户。
+- 要让每个用户绑定自己的腾讯文档，需要 **OAuth2 授权码流程**：用户在腾讯文档授权页同意 → 回调 `code` → 服务端用 `client_id + client_secret + code` 换该用户的 `access_token + open_id`。
+- 所以请再确认一下后台有没有 **client_secret / AppSecret / 应用密钥**（通常在「应用详情 → 凭证管理 / 重置密钥」）。如果确实只有三个字段，说明当前应用是 Token 模式，那就退回 B 路线（每个用户粘贴自己的 token），或者只同步到你自己的文档。
 
-腾讯文档 OAuth 授权完成后会跳转到你登记的 `redirect_uri`（带 `code` 参数）。小程序内直接跳 OAuth 受限（web-view 业务域名），所以建议：
-
-**方案 A：有自己的 HTTPS 域名（已备案）**
-- 直接把回调地址配成该域名下的页面，最省事。
-
-**方案 B：没有域名 → GitHub Pages 静态回调页（推荐先用这个）**
-- 我在仓库里加一个 `docs/tencent-docs-callback.html`，开启 GitHub Pages；
-- 回调地址形如 `https://zz12hui.github.io/mhxy-getcash-toolsbox/tencent-docs-callback.html`；
-- 页面显示 `code`（复制按钮），用户回小程序粘贴绑定码；
-- 你在开放平台应用里把这个 URL 登记为 redirect_uri 即可。
-
-**方案 C：微信云开发静态托管**
-- 用云开发默认域名（`*.tcloudbaseapp.com`）托管回调页；
-- 需要确认该环境已开通静态托管。
-
-> 你回我一下：**你有没有可用的 HTTPS 域名/回调地址？** 没有的话我按方案 B 先把回调页和 Pages 配好。
+> 你现在的三元组可以**立刻用来做 API 连通测试**（建测试表、写数据），不需要等 OAuth。
 
 ---
 
-## 4. 本地 OAuth 联调（你填好密钥后执行）
+## 2. 绑定流程（用户侧）
+
+目标：用户点一次「绑定」，之后点「同步」就能把收益报表写进自己的腾讯文档。
+
+```
+账本页「绑定腾讯文档」
+   ↓
+云函数 docsOauthStart 生成 state + 授权链接
+   ↓
+小程序展示「复制授权链接」
+   ↓
+用户复制到浏览器打开 → 腾讯文档登录 → 同意授权
+   ↓
+跳转回调页 https://你的域名/tencent-docs-callback.html?code=...&state=...
+   ↓
+回调页显示「绑定码(code) + state」，用户复制回小程序
+   ↓
+小程序调云函数 docsBind(code, state)
+   ↓
+云函数：校验 state → client_secret + code 换用户 token → 创建/绑定在线表格 → 加密保存
+   ↓
+账本页显示「已绑定：XX报表」+「同步到腾讯文档」按钮
+```
+
+同步时：`docsSync` 读绑定 token → 把「已记账轮次 + 汇总」写进用户表格（按 runId 去重）→ 返回文档链接。
+
+### 回调页已经帮你写好
+
+- 文件：`docs/tencent-docs-callback.html`（纯静态，无任何密钥）
+- 你只需要：
+  1. 把它放到你的域名下，例如 `https://你的域名/tencent-docs-callback.html`
+  2. 在腾讯文档开放平台应用配置里，把它登记为 `redirect_uri`（必须完全一致，含 https 和路径）
+  3. 把完整地址发我
+
+> 如果域名不方便放文件，也可以直接用 GitHub Pages 的同一份页面，我这边会配好。
+
+---
+
+## 3. 现在需要你做的 4 件事
+
+1. **把三元组放进 `.secrets/tencent-docs.json`**（模板已更新）：
+   ```json
+   {
+     "clientId": "<TENCENT_DOCS_CLIENT_ID>",
+     "accessToken": "后台的 access_token",
+     "openId": "后台的 open_id",
+     "redirectUri": "https://你的域名/tencent-docs-callback.html",
+     "clientSecret": "有就填；没有留空",
+     "scope": "all"
+   }
+   ```
+   放好回我「放好了」，我立刻跑 API 测试（建一张测试表，不碰你的正式文档）。
+2. **告诉我域名 + 回调路径**，并在开放平台把 `https://域名/tencent-docs-callback.html` 登记为 redirect_uri。
+3. **确认后台有没有 client_secret**（有就一并放上面文件；没有就告诉我，我们改方案）。
+4. **同意我创建一张测试表格**（标题类似「梦幻收益报表-测试」），联调完可以删。
+
+---
+
+## 4. 本地测试命令
 
 ```bash
-# 1) 生成授权链接，浏览器打开并授权
+# 1) 用三元组验证 API：创建一张测试在线表格
+node scripts/tencent-docs-api-test.js
+
+# 2) 如果之后拿到 client_secret，再走 OAuth 授权换 token
 node scripts/tencent-docs-oauth.js auth
-
-# 2) 授权后浏览器地址栏会跳到 redirect_uri?code=...，复制整段 URL 回来
 node scripts/tencent-docs-oauth.js exchange "<回调URL或code>"
-
-# 3) 查看本地 token 状态（脱敏显示）
 node scripts/tencent-docs-oauth.js status
-
-# 4) token 过期时续期
-node scripts/tencent-docs-oauth.js refresh
 ```
 
-token 会保存到 `.secrets/tencent-docs-token.json`（已忽略），不会进 git。
+所有 token/密钥只读 `.secrets/`（已 gitignore），不会打印、不会提交。
 
 ---
 
-## 5. 联调通过后我继续做
+## 5. 额度和同步策略
 
-1. 用本地 token 调 OpenAPI：创建一张测试在线表格 → 写入表头 + 两行测试数据 → 返回文档链接（不碰你的正式文件）；
-2. 云函数：
-   - `docsOauthStart`：生成授权链接/state
-   - `docsOauthCallback` / `docsBind`：code 换 token、校验文档、加密保存绑定
-   - `docsSync`：把账本数据追加/覆盖到用户自己的表格（按 runId 去重）
-   - `docsUnbind`：解绑并删除 token
-3. 账本页加「绑定腾讯文档 / 同步」入口 + 同步状态；
-4. 隐私政策补充腾讯文档授权信息说明；
-5. 验收脚本 + 真机验证（用测试文档）。
+- 你现在是 **2000 次/天限免**。按我们的设计：
+  - 每个用户绑定：约 2 次调用（换 token + 建表）
+  - 每次手动同步：约 1~3 次调用（读表 + 写表）
+  - 2000 次/天够几十个用户正常用；**同步做成手动触发**，不做后台自动轮询。
+- 如果以后用户量上来，再考虑申请提额/付费；同步失败会提示原因，不会静默失败。
+
+---
+
+## 6. 安全提醒
+
+- `access_token` 会过期（通常 2 小时左右），过期后重新生成即可；**不要贴到聊天里**，只放 `.secrets`。
+- `client_secret` 如果存在，更不要发聊天/截图；万一发过，去后台重置。
+- 云函数上线后，`client_id` 放环境变量、`client_secret` 放云函数环境变量，用户 token 加密存云数据库，客户端永远拿不到。
