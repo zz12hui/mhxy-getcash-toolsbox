@@ -610,3 +610,41 @@ page {
   .mt-label { font-size: 14px; }
 }
 
+/* iPad 横屏等「宽但矮」的设备：压缩高度，保证一屏不截断 */
+@media (min-width: 768px) and (max-height: 820px) {
+  .home-inner {
+    padding: 8px 24px 0;
+    gap: 10px;
+  }
+
+  .hub-brand { font-size: 12px; }
+  .hub-slogan { font-size: 28px; }
+  .ledger-hero { padding: 14px 18px; border-radius: 18px; }
+  .lh-title { font-size: 16px; }
+  .lh-value { font-size: 32px; }
+  .lh-spark { height: 26px; margin-top: 6px; }
+  .lh-foot { font-size: 11px; padding-top: 6px; }
+
+  .tool-card { padding: 10px 14px; gap: 10px; }
+  .tool-ico { width: 40px; height: 40px; min-width: 40px; font-size: 20px; }
+  .tool-title { font-size: 15px; }
+  .tool-desc { font-size: 11px; }
+
+  .gold-card { padding: 12px 16px; }
+  .gold-title { font-size: 15px; }
+  .gold-ratio { font-size: 11px; }
+  .gold-label { font-size: 11px; }
+  .gold-input-row { padding: 6px 10px; }
+  .gold-input { font-size: 18px; }
+  .gold-presets { margin-top: 4px; }
+  .gold-chip { font-size: 11px; padding: 2px 8px; }
+  .gold-hint { display: none; }
+
+  .section-label { font-size: 13px; margin-bottom: 6px; }
+  .mini-grid { gap: 8px; }
+  .mini-tool { height: 64px; border-radius: 12px; gap: 3px; }
+  .mt-icon { font-size: 18px; }
+  .mt-label { font-size: 11px; }
+  .hub-ft { display: none; }
+}
+

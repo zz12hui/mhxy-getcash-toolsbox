@@ -93,3 +93,15 @@
   }
 }
 
+@media (min-width: 1100px) {
+  .tab-bar {
+    max-width: 1180px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .tab-bar {
+    max-width: 1320px;
+  }
+}
+

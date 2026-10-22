@@ -26,6 +26,14 @@ Page({
   },
 
   onLoad() {
+    this.initNavMetrics()
+  },
+
+  onResize() {
+    this.initNavMetrics()
+  },
+
+  initNavMetrics() {
     try {
       const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
       let navRight = 90

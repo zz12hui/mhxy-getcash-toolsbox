@@ -674,6 +674,8 @@ page {
   font-size: 36rpx;
   font-weight: 700;
   margin-top: 4rpx;
+  word-break: break-all;
+  line-height: 1.25;
 }
 
 /* ===== Stat row ===== */
@@ -1181,7 +1183,7 @@ page {
   .hub-main,
   .ledger-content,
   .tab-bar {
-    max-width: 780px;
+    max-width: 900px;
   }
 
   .app {
@@ -1230,11 +1232,24 @@ page {
   .hub-main,
   .ledger-content,
   .tab-bar {
-    max-width: 920px;
+    max-width: 1180px;
   }
 
   .ledger-chart {
     height: 360rpx;
+  }
+}
+
+@media (min-width: 1400px) {
+  .app,
+  .hub-main,
+  .ledger-content,
+  .tab-bar {
+    max-width: 1320px;
+  }
+
+  .sheet {
+    max-width: 960px;
   }
 }
 

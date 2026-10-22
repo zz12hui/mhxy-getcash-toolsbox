@@ -390,11 +390,15 @@
 
 .row-right {
   text-align: right;
+  min-width: 0;
+  max-width: 46%;
+  flex-shrink: 0;
 }
 
 .row-profit {
   font-size: 24rpx;
   font-weight: 700;
+  word-break: break-all;
 }
 
 .row-unbooked {

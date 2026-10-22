@@ -61,6 +61,14 @@ Page({
   },
 
   onLoad() {
+    this.initNavMetrics()
+  },
+
+  onResize() {
+    this.initNavMetrics()
+  },
+
+  initNavMetrics() {
     try {
       const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
       let navRight = 90
@@ -714,9 +722,21 @@ Page({
         ctx.font = '22px sans-serif'
         ctx.fillText(ellipsis(c.label, cardW - 48), x + 24, y + 40)
         ctx.fillStyle = c.color || '#e8eef7'
-        const valSize = fitSize(c.value, cardW - 48, 30, 20, true)
+        const valMax = cardW - 48
+        let valSize = fitSize(c.value, valMax, 30, 22, true)
         ctx.font = 'bold ' + valSize + 'px sans-serif'
-        ctx.fillText(ellipsis(c.value, cardW - 48), x + 24, y + 88)
+        let valLines = wrapText(c.value, valMax, 2, 'bold ' + valSize + 'px sans-serif')
+        if (valLines.length > 1 && valSize > 24) {
+          valSize = 24
+          ctx.font = 'bold ' + valSize + 'px sans-serif'
+          valLines = wrapText(c.value, valMax, 2, 'bold ' + valSize + 'px sans-serif')
+        }
+        if (valLines.length > 1) {
+          ctx.font = 'bold ' + valSize + 'px sans-serif'
+          valLines.forEach((line, li) => ctx.fillText(line, x + 24, y + 72 + li * (valSize + 6)))
+        } else {
+          ctx.fillText(valLines[0] || '', x + 24, y + 88)
+        }
       })
 
       // 指标
@@ -726,11 +746,14 @@ Page({
         const x = 50 + col * 340
         const y = 790 + row * 68
         ctx.fillStyle = '#8fa3bd'
+        const labelLines = wrapText(m.label, 140, 2, '21px sans-serif')
         ctx.font = '21px sans-serif'
-        ctx.fillText(ellipsis(m.label, 140), x, y)
+        labelLines.forEach((line, li) => ctx.fillText(line, x, y - (labelLines.length > 1 ? 6 : 0) + li * 20))
         ctx.textAlign = 'right'
         ctx.fillStyle = '#c9d6e8'
-        ctx.fillText(ellipsis(m.value, 155), x + 300, y)
+        const valueLines = wrapText(m.value, 155, 2, '19px sans-serif')
+        ctx.font = '19px sans-serif'
+        valueLines.forEach((line, li) => ctx.fillText(line, x + 300, y - (valueLines.length > 1 ? 6 : 0) + li * 20))
         ctx.textAlign = 'left'
       })
 
@@ -803,8 +826,9 @@ Page({
       // 页脚 + 小程序码
       ctx.textAlign = 'left'
       ctx.fillStyle = '#6b7d95'
-      ctx.font = '21px sans-serif'
-      ctx.fillText(ellipsis(model.footer, 500), 50, 1145)
+      const footerLines = wrapText(model.footer, 500, 2, '20px sans-serif')
+      ctx.font = '20px sans-serif'
+      footerLines.forEach((line, i) => ctx.fillText(line, 50, 1130 + i * 22))
       ctx.textAlign = 'left'
 
       const drawQr = img => {
