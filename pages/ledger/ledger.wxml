@@ -48,7 +48,8 @@
         </view>
         <view class="metric-item">
           <text class="m-lbl">平均时薪</text>
-          <text class="m-val">{{summary.hourlyShortStr}}</text>
+          <text class="m-val">{{summary.hourlyWanStr}}</text>
+          <text class="m-sub">≈ {{summary.hourlyYuanStr}}</text>
         </view>
         <view class="metric-item">
           <text class="m-lbl">日均收益</text>
@@ -135,6 +136,7 @@
       <view class="sheet-handle"></view>
       <view class="sheet-title">{{docsResultMode}}腾讯文档报表</view>
       <view class="stat-row"><text>标题</text><text class="val" style="font-size:22rpx;max-width:60%;">{{docsResultTitle}}</text></view>
+      <view wx:if="{{docsResultSheets}}" class="docs-result-sheets">共 {{docsResultRows}} 行 · 工作表：{{docsResultSheets}}</view>
       <view class="doc-url">{{docsResultUrl}}</view>
       <view wx:if="{{docsResultWarning}}" class="doc-warn">{{docsResultWarning}}</view>
       <view class="sheet-actions">

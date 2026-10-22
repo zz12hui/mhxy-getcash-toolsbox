@@ -21,7 +21,15 @@ function buildShareModel(input) {
       { label: '总投入', value: s.totalCostStr || '—', color: '#ff6bcb' },
       { label: '总产出', value: s.totalIncomeStr || '—', color: '#38f2c8' },
       { label: '净收益率', value: s.netRateStr || '—', color: '#8ba3bf' },
-      { label: '平均时薪', value: s.hourlyStr || '—', color: '#ffc857' }
+      {
+        label: '平均时薪',
+        lines: [
+          s.hourlyWanStr || (s.hourlyStr ? String(s.hourlyStr).split('（')[0] : '—'),
+          s.hourlyYuanStr ? '≈ ' + s.hourlyYuanStr : ''
+        ].filter(Boolean),
+        value: s.hourlyStr || '—',
+        color: '#ffc857'
+      }
     ],
     meta: [
       { label: '轮次', value: (s.count || 0) + ' 轮' },

@@ -5,6 +5,10 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const API_HOST = 'docs.qq.com'
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 function requestJson(method, path, headers, body) {
   return new Promise((resolve, reject) => {
     const payload = body === undefined || body === null
@@ -29,7 +33,8 @@ function requestJson(method, path, headers, body) {
           return reject(new Error('腾讯文档接口 HTTP ' + res.statusCode + '：' + (data.msg || data.raw || '')))
         }
         if (!data || data.ret !== 0) {
-          return reject(new Error('腾讯文档接口失败：' + ((data && data.msg) || '未知错误')))
+          const detail = (data && (data.msg || data.message || data.error || data.ret)) || JSON.stringify(data || {}).slice(0, 200)
+          return reject(new Error('腾讯文档接口失败：' + detail))
         }
         resolve(data)
       })
@@ -78,7 +83,7 @@ function colLetter(n) {
 
 function sanitizeRows(input) {
   if (!Array.isArray(input) || !input.length) throw new Error('没有可写入的报表数据')
-  if (input.length > 500) throw new Error('单次最多 500 行，请缩小筛选范围')
+  if (input.length > 2000) throw new Error('单表最多 2000 行，请缩小筛选范围')
   const maxCols = input.reduce((m, row) => Math.max(m, Array.isArray(row) ? row.length : 0), 0)
   const colCount = Math.min(Math.max(maxCols, 1), 20)
   return input.map(row => {
@@ -89,6 +94,26 @@ function sanitizeRows(input) {
       return s.slice(0, 300)
     })
   })
+}
+
+function sanitizeSheets(input) {
+  if (!Array.isArray(input) || !input.length) throw new Error('没有可写入的工作表')
+  if (input.length > 6) throw new Error('单次最多 6 个工作表')
+  return input.map((sheet, i) => {
+    const rows = sanitizeRows(sheet && sheet.rows)
+    return {
+      title: String((sheet && sheet.title) || ('明细' + (i + 1))).slice(0, 31),
+      rows,
+      sheetID: String((sheet && sheet.sheetID) || ''),
+      prevRows: Math.max(0, Number(sheet && sheet.prevRows) || 0)
+    }
+  })
+}
+
+function readSheets(event) {
+  if (event && Array.isArray(event.sheets)) return sanitizeSheets(event.sheets)
+  // 兼容旧客户端：单表 rows
+  return sanitizeSheets([{ title: '收益报表', rows: event && event.rows }])
 }
 
 async function createSheet(cfg, title) {
@@ -104,16 +129,10 @@ async function createSheet(cfg, title) {
   return info
 }
 
-async function addSheet(cfg, bookID, title, rowCount, columnCount) {
-  const body = {
-    addSheet: {
-      properties: {
-        title,
-        index: 0,
-        gridProperties: { rowCount, columnCount }
-      }
-    }
-  }
+async function addSheet(cfg, bookID, title, rowCount, columnCount, index) {
+  const properties = { title, gridProperties: { rowCount, columnCount } }
+  if (typeof index === 'number') properties.index = index
+  const body = { addSheet: { properties } }
   const data = await requestJson(
     'POST',
     '/openapi/sheetbook/v2/' + bookID + ':batchUpdate',
@@ -133,6 +152,29 @@ async function writeValues(cfg, bookID, sheetID, rows) {
     Object.assign(authHeaders(cfg), { 'Content-Type': 'application/json' }),
     { values: rows }
   )
+}
+
+async function addSheetForRows(cfg, bookID, sheet) {
+  const rowCount = Math.max(sheet.rows.length + 50, 300)
+  const columnCount = Math.max(sheet.rows[0].length, 8)
+  const sheetID = await addSheet(cfg, bookID, sheet.title, rowCount, columnCount)
+    .catch(e => { throw new Error('添加「' + sheet.title + '」工作表步骤：' + e.message) })
+  await writeValues(cfg, bookID, sheetID, sheet.rows).catch(e => { throw new Error('写入「' + sheet.title + '」步骤：' + e.message) })
+  return sheetID
+}
+
+async function updateSheetRows(cfg, bookID, sheet) {
+  let sheetID = sheet.sheetID
+  if (!sheetID) {
+    sheetID = await addSheetForRows(cfg, bookID, sheet)
+    return { title: sheet.title, sheetID, rowCount: sheet.rows.length }
+  }
+  await writeValues(cfg, bookID, sheetID, sheet.rows).catch(e => { throw new Error('更新「' + sheet.title + '」步骤：' + e.message) })
+  if (sheet.prevRows > sheet.rows.length) {
+    await clearRows(cfg, bookID, sheetID, sheet.rows.length + 1, sheet.prevRows, sheet.rows[0].length)
+      .catch(e => { throw new Error('清理「' + sheet.title + '」旧行步骤：' + e.message) })
+  }
+  return { title: sheet.title, sheetID, rowCount: sheet.rows.length }
 }
 
 async function clearRows(cfg, bookID, sheetID, fromRow, toRow, colCount) {
@@ -163,33 +205,46 @@ exports.main = async (event) => {
   try {
     if (!wxContext.OPENID) return { ok: false, error: '未登录' }
     const action = (event && event.action) || 'create'
-    const rows = sanitizeRows(event && event.rows)
+    const sheets = readSheets(event)
     const title = String((event && event.title) || '梦幻收益报表').slice(0, 36)
     const cfg = getConfig()
 
     if (action === 'update') {
       const fileID = String((event && event.fileID) || '')
-      const sheetID = String((event && event.sheetID) || '')
-      if (!fileID || !sheetID) throw new Error('更新失败：缺少文档或工作表 ID')
-      const prevRows = Math.max(0, Number(event.prevRows) || 0)
-      await writeValues(cfg, fileID, sheetID, rows).catch(e => { throw new Error('更新数据步骤：' + e.message) })
-      if (prevRows > rows.length) {
-        await clearRows(cfg, fileID, sheetID, rows.length + 1, prevRows, rows[0].length)
-          .catch(e => { throw new Error('清理旧行步骤：' + e.message) })
+      if (!fileID) throw new Error('更新失败：缺少文档 ID')
+      const prepared = []
+      for (let i = 0; i < sheets.length; i++) {
+        const sheet = sheets[i]
+        let sheetID = sheet.sheetID
+        if (!sheetID) {
+          if (prepared.some(p => p.added)) await sleep(700)
+          sheetID = await addSheet(cfg, fileID, sheet.title, Math.max(sheet.rows.length + 50, 300), Math.max(sheet.rows[0].length, 8))
+            .catch(e => { throw new Error('添加「' + sheet.title + '」工作表步骤：' + e.message) })
+          prepared.push({ sheet, sheetID, added: true })
+        } else {
+          prepared.push({ sheet, sheetID, added: false })
+        }
       }
       let shareWarning = ''
-      try {
-        await setPublicRead(cfg, fileID)
-      } catch (e) {
-        shareWarning = '（已更新，但链接公开权限设置失败，可在腾讯文档里手动分享）'
-      }
+      const writes = prepared.map(({ sheet, sheetID }) => (async () => {
+        await writeValues(cfg, fileID, sheetID, sheet.rows).catch(e => { throw new Error('更新「' + sheet.title + '」步骤：' + e.message) })
+        if (sheet.prevRows > sheet.rows.length) {
+          await clearRows(cfg, fileID, sheetID, sheet.rows.length + 1, sheet.prevRows, sheet.rows[0].length)
+            .catch(e => { throw new Error('清理「' + sheet.title + '」旧行步骤：' + e.message) })
+        }
+        return { title: sheet.title, sheetID, rowCount: sheet.rows.length }
+      })())
+      const perm = setPublicRead(cfg, fileID).catch(() => { shareWarning = '（已更新，但链接公开权限设置失败，可在腾讯文档里手动分享）' })
+      const out = await Promise.all(writes.concat([perm])).then(list => list.slice(0, prepared.length))
+      const rowCount = out.reduce((s, x) => s + x.rowCount, 0)
       return {
         ok: true,
         created: false,
         fileID,
-        sheetID,
+        sheetID: out[0] && out[0].sheetID,
+        sheets: out,
         title,
-        rowCount: rows.length,
+        rowCount,
         shareWarning
       }
     }
@@ -197,23 +252,29 @@ exports.main = async (event) => {
     if (action !== 'create') return { ok: false, error: '不支持的操作' }
     const file = await createSheet(cfg, title).catch(e => { throw new Error('创建表格步骤：' + e.message) })
     const bookID = file.ID
-    const sheetID = await addSheet(cfg, bookID, '收益报表', Math.max(rows.length + 20, 1000), Math.max(rows[0].length, 12))
-      .catch(e => { throw new Error('添加工作表步骤：' + e.message) })
-    await writeValues(cfg, bookID, sheetID, rows).catch(e => { throw new Error('写入数据步骤：' + e.message) })
-    let shareWarning = ''
-    try {
-      await setPublicRead(cfg, bookID)
-    } catch (e) {
-      shareWarning = '（表格已生成，但链接公开权限设置失败，可在腾讯文档里手动分享）'
+    const added = []
+    for (let i = 0; i < sheets.length; i++) {
+      if (i > 0) await sleep(700)
+      const sheet = sheets[i]
+      const sheetID = await addSheet(cfg, bookID, sheet.title, Math.max(sheet.rows.length + 50, 300), Math.max(sheet.rows[0].length, 8), i)
+        .catch(e => { throw new Error('添加「' + sheet.title + '」工作表步骤：' + e.message) })
+      added.push({ sheet, sheetID })
     }
+    let shareWarning = ''
+    const writes = added.map(({ sheet, sheetID }) => writeValues(cfg, bookID, sheetID, sheet.rows)
+      .then(() => ({ title: sheet.title, sheetID, rowCount: sheet.rows.length }))
+      .catch(e => { throw new Error('写入「' + sheet.title + '」步骤：' + e.message) }))
+    const perm = setPublicRead(cfg, bookID).catch(() => { shareWarning = '（表格已生成，但链接公开权限设置失败，可在腾讯文档里手动分享）' })
+    const out = await Promise.all(writes.concat([perm])).then(list => list.slice(0, added.length))
     return {
       ok: true,
       created: true,
       url: file.url,
       fileID: bookID,
-      sheetID,
+      sheetID: out[0] && out[0].sheetID,
+      sheets: out,
       title: file.title || title,
-      rowCount: rows.length,
+      rowCount: out.reduce((s, x) => s + x.rowCount, 0),
       shareWarning
     }
   } catch (err) {

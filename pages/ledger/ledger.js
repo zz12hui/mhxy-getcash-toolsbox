@@ -52,6 +52,8 @@ Page({
     docsBindingTitle: '',
     docsBindingUrl: '',
     docsResultMode: '',
+    docsResultSheets: '',
+    docsResultRows: 0,
     showDocsResult: false,
     docsResultUrl: '',
     docsResultTitle: '',
@@ -206,6 +208,7 @@ Page({
           : MONEY.wanToYuan(agg.hourly / 10000, cfg).toFixed(1) + ' 元/时')
         : '—',
       hourlyYuanStr: hourlyYuan != null ? hourlyYuan.toFixed(1) + ' 元/时' : '—',
+      hourlyWanStr: agg.hourly != null ? (agg.hourly / 10000).toFixed(1) + ' 万两/时' : '—',
       dailyStr: fmt(agg.dailyAvgProfit),
       monthStr: fmt(agg.monthEstimate),
       avgProfitStr: fmt(agg.avgProfit),
@@ -447,28 +450,47 @@ Page({
       wx.showToast({ title: '没有已记账轮次，先结算一轮', icon: 'none' })
       return
     }
+    const toolLabel = (this.data.tools.find(t => t.key === this.data.tool) || {}).label || '全部工具'
+    const periodLabel = (this.data.periods.find(p => p.key === this.data.period) || {}).label || '全部'
+    const roleName = this.data.scope === 'all' ? '全部角色' : this.data.activeUserName
     const rep = REPORT.buildReport(runs, {
-      roleName: this.data.scope === 'all' ? '全部角色' : this.data.activeUserName,
+      roleName,
+      scopeLabel: this.data.scope === 'all' ? '全部角色' : '当前角色',
+      toolLabel,
+      periodLabel,
       cfg: this.data.moneyCfg,
-      currency: this.data.currency
+      now: Date.now()
     })
     const uid = this.data.activeUserId || S.getActiveUser()
     const binding = forceCreate ? null : S.getDocsBinding(uid)
-    const rows = rep.rows
+    const canUpdate = !!(binding && binding.fileID && Array.isArray(binding.sheets) && binding.sheets.length)
+    const sentSheets = rep.sheets.map(sheet => {
+      const old = canUpdate ? binding.sheets.find(x => x && x.title === sheet.title) : null
+      return {
+        title: sheet.title,
+        rows: sheet.rows,
+        sheetID: old ? old.sheetID : '',
+        prevRows: old ? (old.rowCount || 0) : 0
+      }
+    })
 
     const call = extra => wx.cloud.callFunction({
       name: 'docsReport',
-      data: Object.assign({ title: rep.title, rows }, extra)
+      data: Object.assign({ title: rep.title }, extra)
     })
 
     const finish = (result, mode) => {
       const data = result || {}
+      const outSheets = Array.isArray(data.sheets) && data.sheets.length
+        ? data.sheets
+        : sentSheets.map(s => ({ title: s.title, sheetID: s.sheetID, rowCount: s.rows.length }))
       const record = {
-        fileID: data.fileID,
-        sheetID: data.sheetID,
+        fileID: data.fileID || (binding && binding.fileID) || '',
+        sheetID: data.sheetID || (outSheets[0] && outSheets[0].sheetID) || '',
         url: data.url || (binding && binding.url) || '',
         title: data.title || rep.title,
-        rowCount: rows.length,
+        sheets: outSheets,
+        rowCount: outSheets.reduce((sum, s) => sum + (Number(s.rowCount) || 0), 0),
         updatedAt: Date.now()
       }
       S.saveDocsBinding(uid, record)
@@ -478,6 +500,8 @@ Page({
         docsResultMode: mode,
         docsResultUrl: record.url,
         docsResultTitle: record.title,
+        docsResultSheets: outSheets.map(s => s.title).join(' / '),
+        docsResultRows: record.rowCount,
         docsResultWarning: data.shareWarning || '',
         docsBound: true,
         docsBindingTitle: record.title,
@@ -485,19 +509,26 @@ Page({
       })
     }
 
-    const createNew = () => call({ action: 'create' }).then(res => {
+    const createNew = () => call({
+      action: 'create',
+      sheets: rep.sheets.map(s => ({ title: s.title, rows: s.rows }))
+    }).then(res => {
       const r = (res && res.result) || {}
       if (!r.ok) throw new Error(r.error || '生成失败')
       finish(r, '已生成')
     })
 
     this.setData({ docsLoading: true, docsError: '' })
-    const task = (binding && binding.fileID && binding.sheetID)
+    const task = canUpdate
       ? call({
         action: 'update',
         fileID: binding.fileID,
-        sheetID: binding.sheetID,
-        prevRows: binding.rowCount || 0
+        sheets: sentSheets.map(s => ({
+          title: s.title,
+          rows: s.rows,
+          sheetID: s.sheetID,
+          prevRows: s.prevRows
+        }))
       }).then(res => {
         const r = (res && res.result) || {}
         if (!r.ok) throw new Error(r.error || '更新失败')
@@ -722,20 +753,29 @@ Page({
         ctx.font = '22px sans-serif'
         ctx.fillText(ellipsis(c.label, cardW - 48), x + 24, y + 40)
         ctx.fillStyle = c.color || '#e8eef7'
-        const valMax = cardW - 48
-        let valSize = fitSize(c.value, valMax, 30, 22, true)
-        ctx.font = 'bold ' + valSize + 'px sans-serif'
-        let valLines = wrapText(c.value, valMax, 2, 'bold ' + valSize + 'px sans-serif')
-        if (valLines.length > 1 && valSize > 24) {
-          valSize = 24
-          ctx.font = 'bold ' + valSize + 'px sans-serif'
-          valLines = wrapText(c.value, valMax, 2, 'bold ' + valSize + 'px sans-serif')
-        }
-        if (valLines.length > 1) {
-          ctx.font = 'bold ' + valSize + 'px sans-serif'
-          valLines.forEach((line, li) => ctx.fillText(line, x + 24, y + 72 + li * (valSize + 6)))
+        const cardLines = (Array.isArray(c.lines) && c.lines.length ? c.lines : [c.value]).filter(Boolean)
+        if (cardLines.length > 1) {
+          cardLines.forEach((line, li) => {
+            const size = fitSize(line, cardW - 48, 22, 16, true)
+            ctx.font = 'bold ' + size + 'px sans-serif'
+            ctx.fillText(ellipsis(line, cardW - 48), x + 24, y + 72 + li * 26)
+          })
         } else {
-          ctx.fillText(valLines[0] || '', x + 24, y + 88)
+          const valMax = cardW - 48
+          let valSize = fitSize(cardLines[0] || '', valMax, 30, 22, true)
+          ctx.font = 'bold ' + valSize + 'px sans-serif'
+          let valLines = wrapText(cardLines[0] || '', valMax, 2, 'bold ' + valSize + 'px sans-serif')
+          if (valLines.length > 1 && valSize > 24) {
+            valSize = 24
+            ctx.font = 'bold ' + valSize + 'px sans-serif'
+            valLines = wrapText(cardLines[0] || '', valMax, 2, 'bold ' + valSize + 'px sans-serif')
+          }
+          if (valLines.length > 1) {
+            ctx.font = 'bold ' + valSize + 'px sans-serif'
+            valLines.forEach((line, li) => ctx.fillText(line, x + 24, y + 72 + li * (valSize + 6)))
+          } else {
+            ctx.fillText(valLines[0] || '', x + 24, y + 88)
+          }
         }
       })
 
