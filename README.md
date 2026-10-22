@@ -151,6 +151,11 @@ npm test             # Node 单测（游戏公式、费用计算、存储、撤�
 - 游戏公式基于公开资料，游戏版本更新后可能需要调整（统一在 `utils/constants.js` 修改）。
 - 云函数与云数据库需自行开通，仓库不包含云环境配置。
 
+## 路线图
+
+- **v1.3：收益记账**（成本 + 收益 + 投入产出比、历史投入、轮次收益明细、收益账本页）— 规划见 [docs/PLAN-v1.3-bookkeeping.md](docs/PLAN-v1.3-bookkeeping.md)
+- v1.4：后台管理、全角色云同步、订阅消息（待排期）
+
 ## License
 
 [MIT](LICENSE)
