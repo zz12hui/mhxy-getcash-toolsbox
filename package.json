@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "lint": "eslint pages/**/*.js utils/**/*.js app.js custom-tab-bar/index.js --format stylish",
-    "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/pet-page.test.js tests/chain-page.test.js"
+    "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/pet-page.test.js tests/chain-page.test.js",
+    "smoke": "node scripts/devtools-smoke.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,7 @@
   "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
-    "eslint": "^8.57.1"
+    "eslint": "^8.57.1",
+    "miniprogram-automator": "^0.13.0"
   }
 }

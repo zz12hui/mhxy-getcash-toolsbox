@@ -19,6 +19,14 @@
                 "value": ".claude"
             },
             {
+                "type": "folder",
+                "value": "docs"
+            },
+            {
+                "type": "folder",
+                "value": "scripts"
+            },
+            {
                 "type": "file",
                 "value": "README.md"
             },
