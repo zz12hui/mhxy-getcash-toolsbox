@@ -162,7 +162,7 @@ page {
 }
 
 .lh-badge {
-  font-size: 16rpx;
+  font-size: 17rpx;
   color: var(--accent);
   border: 1rpx solid rgba(56, 242, 200, 0.35);
   border-radius: 999rpx;
@@ -171,7 +171,7 @@ page {
 }
 
 .lh-arrow {
-  font-size: 20rpx;
+  font-size: 21rpx;
   color: var(--text2);
 }
 
@@ -185,13 +185,13 @@ page {
 
 .lh-label {
   display: block;
-  font-size: 18rpx;
+  font-size: 20rpx;
   color: var(--text2);
 }
 
 .lh-value {
   display: block;
-  font-size: 46rpx;
+  font-size: 48rpx;
   font-weight: 800;
   line-height: 1.15;
   margin-top: 2rpx;
@@ -237,9 +237,10 @@ page {
   margin-top: 10rpx;
   padding-top: 8rpx;
   border-top: 1rpx solid rgba(255, 255, 255, 0.06);
-  font-size: 17rpx;
+  font-size: 18rpx;
   color: var(--text2);
   flex-wrap: wrap;
+  word-break: break-all;
 }
 
 /* 工具卡（两列） */
@@ -303,7 +304,7 @@ page {
 
 .tool-desc {
   margin-top: 2rpx;
-  font-size: 17rpx;
+  font-size: 19rpx;
   color: var(--text2);
   white-space: nowrap;
   overflow: hidden;
@@ -333,16 +334,17 @@ page {
 }
 
 .gold-title {
-  font-size: 24rpx;
+  font-size: 25rpx;
   font-weight: 700;
   color: var(--text);
 }
 
 .gold-ratio {
   margin-top: 2rpx;
-  font-size: 16rpx;
+  font-size: 18rpx;
   color: var(--warn);
   line-height: 1.4;
+  word-break: break-all;
 }
 
 .gold-setting {
@@ -369,7 +371,7 @@ page {
 
 .gold-label {
   display: block;
-  font-size: 17rpx;
+  font-size: 19rpx;
   color: var(--text2);
   margin-bottom: 5rpx;
 }
@@ -387,7 +389,7 @@ page {
 .gold-input {
   flex: 1;
   min-width: 0;
-  font-size: 27rpx;
+  font-size: 29rpx;
   font-weight: 700;
   color: var(--text);
   text-align: right;
@@ -395,7 +397,7 @@ page {
 
 .gold-unit {
   flex-shrink: 0;
-  font-size: 17rpx;
+  font-size: 18rpx;
   color: var(--text2);
 }
 
@@ -416,7 +418,7 @@ page {
 .gold-chip {
   padding: 3rpx 12rpx;
   border-radius: 12rpx;
-  font-size: 17rpx;
+  font-size: 18rpx;
   color: var(--text2);
   background: rgba(255, 255, 255, 0.04);
   border: 1rpx solid rgba(255, 255, 255, 0.08);
@@ -429,14 +431,14 @@ page {
 
 .gold-hint {
   margin-left: auto;
-  font-size: 16rpx;
+  font-size: 17rpx;
   color: var(--text2);
 }
 
 /* 工具网格 */
 .section-label {
   margin: 4rpx 4rpx 8rpx;
-  font-size: 21rpx;
+  font-size: 22rpx;
   font-weight: 700;
   color: var(--text);
   letter-spacing: 1rpx;
@@ -456,7 +458,7 @@ page {
   align-items: center;
   justify-content: center;
   gap: 4rpx;
-  height: 88rpx;
+  height: 92rpx;
   border-radius: 18rpx;
   background: rgba(255, 255, 255, 0.03);
   border: 1rpx solid rgba(255, 255, 255, 0.06);
@@ -470,11 +472,11 @@ page {
 }
 
 .mt-icon {
-  font-size: 26rpx;
+  font-size: 28rpx;
 }
 
 .mt-label {
-  font-size: 16rpx;
+  font-size: 18rpx;
   color: var(--text2);
   text-align: center;
   line-height: 1.2;
@@ -484,7 +486,7 @@ page {
 .hub-ft {
   padding-top: 10rpx;
   text-align: center;
-  font-size: 16rpx;
+  font-size: 17rpx;
   color: rgba(139, 163, 191, 0.45);
   line-height: 1.6;
   flex-shrink: 0;
@@ -542,22 +544,69 @@ page {
   .hub-ft { display: none; }
 }
 
-/* PC / 大屏 */
+/* PC / 大屏：高分辨率下放大字号与触控区，固定间距，避免字体过小/间隙过大 */
 @media (min-width: 768px) {
+  .home-page {
+    padding-bottom: 88px;
+  }
+
   .home-inner {
-    max-width: 782px;
+    max-width: 900px;
     margin: 0 auto;
+    padding: 12px 32px 0;
+    justify-content: flex-start;
+    gap: 18px;
   }
 
-  .mini-grid {
-    grid-template-columns: repeat(8, 1fr);
-  }
+  .hub-brand { font-size: 14px; }
+  .hub-slogan { font-size: 36px; margin-top: 2px; }
 
-  .mini-tool {
-    height: 96rpx;
-  }
+  .ledger-hero { padding: 22px 26px; border-radius: 22px; }
+  .lh-title { font-size: 20px; }
+  .lh-badge { font-size: 12px; }
+  .lh-arrow { font-size: 13px; }
+  .lh-label { font-size: 13px; }
+  .lh-value { font-size: 42px; }
+  .lh-value-sm { font-size: 20px; }
+  .lh-spark { height: 44px; margin-top: 12px; }
+  .lh-foot { font-size: 13px; padding-top: 10px; }
 
-  .gold-card {
-    max-width: none;
-  }
+  .tool-card { padding: 18px 20px; gap: 14px; border-radius: 18px; }
+  .tool-ico { width: 52px; height: 52px; min-width: 52px; font-size: 26px; border-radius: 14px; }
+  .tool-title { font-size: 18px; }
+  .tool-desc { font-size: 13px; }
+  .tool-arrow { font-size: 18px; }
+
+  .gold-card { padding: 20px 24px; border-radius: 20px; }
+  .gold-title { font-size: 18px; }
+  .gold-ratio { font-size: 13px; }
+  .gold-label { font-size: 13px; }
+  .gold-input-row { padding: 10px 14px; }
+  .gold-input { font-size: 24px; }
+  .gold-unit { font-size: 13px; }
+  .gold-eq { font-size: 16px; padding-bottom: 18px; }
+  .gold-chip { font-size: 13px; padding: 4px 12px; }
+  .gold-hint { font-size: 12px; }
+  .gold-setting { font-size: 13px; padding: 5px 14px; }
+
+  .section-label { font-size: 15px; margin: 0 4px 10px; }
+  .mini-grid { gap: 12px; }
+  .mini-tool { height: 86px; border-radius: 14px; gap: 6px; }
+  .mt-icon { font-size: 24px; }
+  .mt-label { font-size: 13px; }
+  .hub-ft { font-size: 12px; padding-top: 8px; }
 }
+
+@media (min-width: 1200px) {
+  .home-inner {
+    max-width: 1080px;
+    padding: 16px 56px 0;
+    gap: 22px;
+  }
+
+  .hub-slogan { font-size: 40px; }
+  .lh-value { font-size: 48px; }
+  .mini-tool { height: 96px; }
+  .mt-label { font-size: 14px; }
+}
+

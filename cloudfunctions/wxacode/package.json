@@ -1,0 +1,9 @@
+{
+  "name": "wxacode",
+  "version": "1.0.0",
+  "description": "生成小程序码（分享海报用）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "3.0.4"
+  }
+}

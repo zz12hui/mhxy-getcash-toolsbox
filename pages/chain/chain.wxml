@@ -2,7 +2,7 @@
   <!-- Header -->
   <view class="header">
     <view class="header-l">
-      <view class="header-title">跑环助手</view>
+      <view class="header-title">人环助手</view>
     </view>
     <view class="header-r">
       <picker bindchange="onUserChange" value="{{userIdx}}" range="{{userNames}}">

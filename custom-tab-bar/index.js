@@ -24,7 +24,7 @@ Component({
       const list = [
         { pagePath: '/pages/index/index', text: '首页', icon: '🏠' },
         { pagePath: '/pages/pet/pet', text: '宠环', icon: '🐾' },
-        { pagePath: '/pages/chain/chain', text: '跑环', icon: '📜' },
+        { pagePath: '/pages/chain/chain', text: '人环', icon: '📜' },
         { pagePath: '/pages/profile/profile', text: '我的', icon: '👤' }
       ]
       let selected = 0

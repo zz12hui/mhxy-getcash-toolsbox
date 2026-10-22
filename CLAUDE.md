@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-梦幻搞钱工具箱 — 微信小程序，梦幻西游跑环记录/预测/统计工具。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 可选微信登录与云备份。微信云开发后端（6 个云函数 + 云数据库），无后台管理端。
+梦幻搞钱工具箱 — 微信小程序，梦幻西游人环记录/预测/统计工具。宠环助手（100 环）+ 人环助手（300 环）+ 知识库 + 可选微信登录与云备份。微信云开发后端（7 个云函数 + 云数据库），无后台管理端。
 
 基础库 2.24.0，AppID `<YOUR_APPID>`，云环境 `<YOUR_CLOUD_ENV>`（作者自用，他人 fork 需替换）。
 
@@ -10,7 +10,7 @@
 
 ```
 app.js / app.json / app.wxss      应用入口、云开发初始化、全局样式
-custom-tab-bar/                    自定义 TabBar（首页 | 当前工具 | 我的）
+custom-tab-bar/                    自定义 TabBar（首页 | 宠环 | 人环 | 我的）
 utils/
   constants.js                     游戏常量 + 公式（纯函数，可 Node 单测）
   storage.js                       本地存储（按 uid 隔离 + exportAllRoles/applyAllRoles）
@@ -32,7 +32,7 @@ utils/
 pages/
   index/                           首页
   pet/                             宠环（记录/预测/控分/历史/统计）
-  chain/                           跑环（记录/奖励/历史/统计）
+  chain/                           人环（记录/奖励/历史/统计）
   profile/                         个人中心（账号/备份恢复/角色）
   faq/ + faq-detail/               知识库
   login/                           登录/账号设置（头像/昵称/退出）
@@ -42,11 +42,11 @@ pages/
   ledger/                          收益账本（筛选/汇总/累计净收益折线/轮次列表）
   prices/                          物品参考价（任务物品 + 奖励价目）
 components/run-detail/             轮次明细抽屉（成本/收益/ROI）
-cloudfunctions/                    login / syncUpload / syncDownload / submitFeedback / init / docsReport
+cloudfunctions/                    login / syncUpload / syncDownload / submitFeedback / init / docsReport / wxacode
 tests/                             Node 单测（npm test）
 ```
 
-### 云函数清单（实际 6 个）
+### 云函数清单（实际 7 个）
 
 | 函数 | 说明 |
 |---|---|
@@ -54,7 +54,8 @@ tests/                             Node 单测（npm test）
 | syncUpload | 入参 `roles[]`，按角色 + 数据类型分文档写入 `user_sync_data` |
 | syncDownload | 返回 `roles[]`（含 pet/chain），客户端整份恢复 |
 | submitFeedback | 反馈写入 `feedbacks` |
-| docsReport | 生成腾讯文档收益报表：建表→加子表→写数据→设链接可读；Token 优先读环境变量 `TENCENT_DOCS_CLIENT_ID/ACCESS_TOKEN/OPEN_ID`，环境变量读不到时用 `scripts/gen-docs-config.js` 生成的本地兜底（已 gitignore） |
+| docsReport | 生成腾讯文档收益报表：建表→加子表→写数据→设链接可读；`action=update` 时更新已有文档并清理旧行；Token 优先读环境变量 `TENCENT_DOCS_CLIENT_ID/ACCESS_TOKEN/OPEN_ID`，环境变量读不到时用 `scripts/gen-docs-config.js` 生成的本地兜底（已 gitignore） |
+| wxacode | 生成小程序码（分享海报用）：cloud.openapi.wxacode.getUnlimited，返回 base64 PNG |
 | init | FAQ 初始化 + 绑定管理员；校验 openid（环境变量 `ADMIN_OPENIDS` 或 `admins` 集合），控制台调用可用 `INIT_SECRET` + `event.secret` |
 
 ### 云数据库集合
@@ -65,7 +66,7 @@ tests/                             Node 单测（npm test）
 ### Storage key
 
 - `mhxy_users` / `mhxy_active`：角色列表 / 当前角色
-- `mhxy_{cfg,cur,runs,prices}_<uid>`：宠环数据；`mhxy3_*`：跑环数据
+- `mhxy_{cfg,cur,runs,prices}_<uid>`：宠环数据；`mhxy3_*`：人环数据
 - `mhxy_wx_profile`：登录信息；`mhxy_last_sync_at`：上次备份时间
 - `mhxy_task_usage_{pet,chain}_<uid>`、`mhxy_items_<uid>`、`mhxy_guide_seen_*_<uid>`、`mhxy_vibrate`
 - `mhxy_faq_*`：FAQ 缓存

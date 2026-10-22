@@ -205,14 +205,14 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: '梦幻搞钱工具箱 — 跑环记录 · 积分预测 · 奖励结算',
+      title: '梦幻搞钱工具箱 — 人环记录 · 积分预测 · 奖励结算',
       path: '/pages/index/index'
     }
   },
 
   onShareTimeline() {
     return {
-      title: '梦幻搞钱工具箱 — 跑环记录一站式工具'
+      title: '梦幻搞钱工具箱 — 人环记录一站式工具'
     }
   }
 })

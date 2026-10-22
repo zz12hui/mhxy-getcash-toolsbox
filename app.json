@@ -40,7 +40,7 @@
       },
       {
         "pagePath": "pages/chain/chain",
-        "text": "跑环助手",
+        "text": "人环助手",
         "iconPath": "images/chain.png",
         "selectedIconPath": "images/chain-active.png"
       },

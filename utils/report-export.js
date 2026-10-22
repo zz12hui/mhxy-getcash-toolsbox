@@ -4,7 +4,7 @@ const LEDGER = require('./ledger')
 const MONEY = require('./money')
 
 function toolLabel(tool) {
-  return tool === 'chain' ? '跑环' : '宠环'
+  return tool === 'chain' ? '人环' : '宠环'
 }
 
 function pct(v) {

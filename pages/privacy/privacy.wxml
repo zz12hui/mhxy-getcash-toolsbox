@@ -10,7 +10,7 @@
 
       <view class="legal-h">1. 我们收集哪些信息</view>
       <view class="legal-p">· 微信昵称、头像：仅在你主动设置时获取，用于在本小程序内展示账号信息。</view>
-      <view class="legal-p">· 工具数据：你录入的跑环记录、角色等级、物品价格、奖励记录等，用于本工具的计算与统计。</view>
+      <view class="legal-p">· 工具数据：你录入的人环记录、角色等级、物品价格、奖励记录等，用于本工具的计算与统计。</view>
       <view class="legal-p">· 腾讯文档授权信息：仅当你主动使用「生成腾讯文档」或「打开腾讯文档」时，才会把当前收益报表（角色名、轮次、金额等）发送给腾讯文档以创建在线表格。本工具不保存你的腾讯文档账号密码。</view>
 
       <view class="legal-h">2. 数据保存在哪里</view>
@@ -46,7 +46,7 @@
       <view class="legal-updated">更新日期：2026-10-22（v1.4）</view>
 
       <view class="legal-h">1. 工具性质</view>
-      <view class="legal-p">· 本小程序是玩家自制的跑环记录与收益统计辅助工具，与网易公司及《梦幻西游》官方无关，非官方产品。</view>
+      <view class="legal-p">· 本小程序是玩家自制的人环记录与收益统计辅助工具，与网易公司及《梦幻西游》官方无关，非官方产品。</view>
       <view class="legal-p">· 游戏名称、美术素材等知识产权归权利人所有。</view>
 
       <view class="legal-h">2. 数据准确性</view>

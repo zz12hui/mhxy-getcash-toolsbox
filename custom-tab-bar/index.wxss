@@ -64,3 +64,32 @@
 .tab-bar-item.active .tab-bar-label {
   color: #38f2c8;
 }
+
+/* 大屏 / 高分辨率：固定 px 尺寸，避免 rpx 随窗口放大后比例失衡 */
+@media (min-width: 768px) {
+  .tab-bar {
+    height: 64px;
+    padding-bottom: 0;
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 18px 18px 0 0;
+    border: 1px solid rgba(120, 180, 220, 0.12);
+    border-bottom: 0;
+  }
+
+  .tab-active-bg {
+    width: 92px;
+    height: 48px;
+    top: 6px;
+    border-radius: 14px;
+  }
+
+  .tab-bar-icon {
+    font-size: 22px;
+  }
+
+  .tab-bar-label {
+    font-size: 12px;
+  }
+}
+

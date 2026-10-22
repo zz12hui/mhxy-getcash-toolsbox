@@ -19,7 +19,7 @@ Page({
     tools: [
       { key: 'all', label: '全部工具' },
       { key: 'pet', label: '宠环' },
-      { key: 'chain', label: '跑环' }
+      { key: 'chain', label: '人环' }
     ],
     periods: [
       { key: '7d', label: '近7天' },
@@ -235,7 +235,7 @@ Page({
     return {
       key,
       tool: run._tool,
-      toolLabel: run._tool === 'pet' ? '宠环' : '跑环',
+      toolLabel: run._tool === 'pet' ? '宠环' : '人环',
       roleName: run._roleName || '',
       level: run.level || '-',
       dateStr: doneAt ? C.fmtDate(doneAt).slice(5, 16) : '',
@@ -528,10 +528,48 @@ Page({
       chartPoints: this._chartPoints,
       now: Date.now()
     })
-    this.drawSharePoster(model, cb)
+    this.ensureWxacode().then(qrPath => this.drawSharePoster(model, qrPath, cb))
   },
 
-  drawSharePoster(model, cb) {
+  ensureWxacode() {
+    if (this._wxacodePath) return Promise.resolve(this._wxacodePath)
+    try {
+      const cached = wx.getStorageSync('mhxy_wxacode_file')
+      if (cached) {
+        try {
+          wx.getFileSystemManager().accessSync(cached)
+          this._wxacodePath = cached
+          return Promise.resolve(cached)
+        } catch (e) {
+          wx.removeStorageSync('mhxy_wxacode_file')
+        }
+      }
+    } catch (e) { /* 忽略 */ }
+    if (!wx.cloud || !wx.cloud.callFunction) return Promise.resolve(null)
+    return wx.cloud.callFunction({
+      name: 'wxacode',
+      data: { page: 'pages/index/index', scene: 'share' }
+    }).then(res => {
+      const r = (res && res.result) || {}
+      if (!r.ok || !r.buffer) throw new Error(r.error || '生成小程序码失败')
+      const filePath = wx.env.USER_DATA_PATH + '/share_wxacode.png'
+      return new Promise((resolve, reject) => {
+        wx.getFileSystemManager().writeFile({
+          filePath,
+          data: r.buffer,
+          encoding: 'base64',
+          success: () => {
+            this._wxacodePath = filePath
+            try { wx.setStorageSync('mhxy_wxacode_file', filePath) } catch (e) { /* 忽略 */ }
+            resolve(filePath)
+          },
+          fail: reject
+        })
+      })
+    }).catch(() => null)
+  },
+
+  drawSharePoster(model, qrPath, cb) {
     const W = 750
     const H = 1180
     const query = wx.createSelectorQuery()
@@ -550,6 +588,61 @@ Page({
         ctx.arcTo(x, y + h, x, y, r)
         ctx.arcTo(x, y, x + w, y, r)
         ctx.closePath()
+      }
+
+      // 文字宽度自适应：缩字号 / 换行 / 省略号
+      const fitSize = (text, maxWidth, start, min, bold) => {
+        let size = start
+        while (size > min) {
+          ctx.font = (bold ? 'bold ' : '') + size + 'px sans-serif'
+          if (ctx.measureText(text).width <= maxWidth) break
+          size -= 2
+        }
+        return size
+      }
+      const ellipsis = (text, maxWidth) => {
+        const str = String(text)
+        if (ctx.measureText(str).width <= maxWidth) return str
+        let out = str
+        while (out.length > 1 && ctx.measureText(out + '…').width > maxWidth) out = out.slice(0, -1)
+        return out + '…'
+      }
+      const wrapText = (text, maxWidth, maxLines, font) => {
+        ctx.font = font
+        const chars = Array.from(String(text))
+        const lines = []
+        let cur = ''
+        for (let i = 0; i < chars.length; i++) {
+          const ch = chars[i]
+          if (lines.length >= maxLines) break
+          if (cur && ctx.measureText(cur + ch).width > maxWidth) {
+            lines.push(cur)
+            cur = ch
+          } else {
+            cur += ch
+          }
+        }
+        if (cur && lines.length < maxLines) lines.push(cur)
+        if (lines.length === maxLines && lines.join('').length < chars.length) {
+          lines[maxLines - 1] = ellipsis(lines[maxLines - 1] + '…', maxWidth)
+        }
+        return lines
+      }
+      const exportImage = () => {
+        setTimeout(() => {
+          wx.canvasToTempFilePath({
+            canvas,
+            x: 0,
+            y: 0,
+            width: W,
+            height: H,
+            destWidth: W,
+            destHeight: H,
+            fileType: 'png',
+            success: r => cb(r.tempFilePath),
+            fail: () => cb(null)
+          })
+        }, 100)
       }
 
       // 背景
@@ -574,11 +667,12 @@ Page({
       ctx.fillText(model.dateStr, W - 50, 70)
       ctx.textAlign = 'left'
       ctx.fillStyle = '#e8eef7'
-      ctx.font = 'bold 58px sans-serif'
-      ctx.fillText(model.title, 50, 150)
+      const titleSize = fitSize(model.title, 650, 58, 38, true)
+      ctx.font = 'bold ' + titleSize + 'px sans-serif'
+      ctx.fillText(ellipsis(model.title, 650), 50, 150)
       ctx.fillStyle = '#8fa3bd'
-      ctx.font = '24px sans-serif'
-      ctx.fillText(model.subtitle, 50, 198)
+      const subLines = wrapText(model.subtitle, 650, 2, '24px sans-serif')
+      subLines.forEach((line, i) => ctx.fillText(line, 50, 198 + i * 28))
 
       // 主卡：累计净收益 + ROI
       roundRect(50, 232, 650, 190, 24)
@@ -591,15 +685,17 @@ Page({
       ctx.font = '24px sans-serif'
       ctx.fillText(model.heroLabel, 90, 288)
       ctx.fillStyle = model.heroPos ? '#38f2c8' : '#ff6b6b'
-      ctx.font = 'bold 62px sans-serif'
-      ctx.fillText(model.heroValue, 90, 372)
+      const heroSize = fitSize(model.heroValue, 400, 62, 36, true)
+      ctx.font = 'bold ' + heroSize + 'px sans-serif'
+      ctx.fillText(ellipsis(model.heroValue, 400), 90, 372)
       ctx.textAlign = 'right'
       ctx.fillStyle = '#8fa3bd'
       ctx.font = '22px sans-serif'
       ctx.fillText('投入产出比', W - 90, 288)
       ctx.fillStyle = '#e8eef7'
-      ctx.font = 'bold 34px sans-serif'
-      ctx.fillText(model.roiStr, W - 90, 340)
+      const roiSize = fitSize(model.roiStr, 180, 34, 22, true)
+      ctx.font = 'bold ' + roiSize + 'px sans-serif'
+      ctx.fillText(ellipsis(model.roiStr, 180), W - 90, 340)
       ctx.textAlign = 'left'
 
       // 4 张小卡
@@ -616,10 +712,11 @@ Page({
         ctx.stroke()
         ctx.fillStyle = '#8fa3bd'
         ctx.font = '22px sans-serif'
-        ctx.fillText(c.label, x + 24, y + 40)
+        ctx.fillText(ellipsis(c.label, cardW - 48), x + 24, y + 40)
         ctx.fillStyle = c.color || '#e8eef7'
-        ctx.font = 'bold 30px sans-serif'
-        ctx.fillText(c.value, x + 24, y + 88)
+        const valSize = fitSize(c.value, cardW - 48, 30, 20, true)
+        ctx.font = 'bold ' + valSize + 'px sans-serif'
+        ctx.fillText(ellipsis(c.value, cardW - 48), x + 24, y + 88)
       })
 
       // 指标
@@ -630,10 +727,10 @@ Page({
         const y = 790 + row * 68
         ctx.fillStyle = '#8fa3bd'
         ctx.font = '21px sans-serif'
-        ctx.fillText(m.label, x, y)
+        ctx.fillText(ellipsis(m.label, 140), x, y)
         ctx.textAlign = 'right'
         ctx.fillStyle = '#c9d6e8'
-        ctx.fillText(m.value, x + 300, y)
+        ctx.fillText(ellipsis(m.value, 155), x + 300, y)
         ctx.textAlign = 'left'
       })
 
@@ -648,7 +745,7 @@ Page({
         const range = max - min || 1
         const cx0 = 50
         const cy0 = 1030
-        const cw = 560
+        const cw = 520
         const ch = 90
         const py = v => cy0 + ch - ((v - min) / range) * ch
         ctx.strokeStyle = 'rgba(56,242,200,0.55)'
@@ -672,7 +769,7 @@ Page({
         const range = max - min || 1
         const cx0 = 50
         const cy0 = 1030
-        const cw = 560
+        const cw = 520
         const ch = 90
         const py = v => cy0 + ch - ((v - min) / range) * ch
         // 零轴
@@ -703,27 +800,36 @@ Page({
         ctx.fillText('还没有已记账轮次，先去结算一轮', 50, 1075)
       }
 
-      // 页脚
+      // 页脚 + 小程序码
       ctx.textAlign = 'left'
       ctx.fillStyle = '#6b7d95'
       ctx.font = '21px sans-serif'
-      ctx.fillText(model.footer, 50, 1145)
+      ctx.fillText(ellipsis(model.footer, 500), 50, 1145)
       ctx.textAlign = 'left'
 
-      setTimeout(() => {
-        wx.canvasToTempFilePath({
-          canvas,
-          x: 0,
-          y: 0,
-          width: W,
-          height: H,
-          destWidth: W,
-          destHeight: H,
-          fileType: 'png',
-          success: r => cb(r.tempFilePath),
-          fail: () => cb(null)
-        })
-      }, 150)
+      const drawQr = img => {
+        roundRect(582, 990, 138, 138, 16)
+        ctx.fillStyle = '#ffffff'
+        ctx.fill()
+        ctx.drawImage(img, 590, 998, 122, 122)
+        ctx.fillStyle = '#8fa3bd'
+        ctx.font = '18px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('长按识别小程序', 651, 1150)
+        ctx.textAlign = 'left'
+      }
+
+      if (qrPath) {
+        const qrImg = canvas.createImage()
+        qrImg.onload = () => {
+          drawQr(qrImg)
+          exportImage()
+        }
+        qrImg.onerror = () => exportImage()
+        qrImg.src = qrPath
+      } else {
+        exportImage()
+      }
     })
   },
 

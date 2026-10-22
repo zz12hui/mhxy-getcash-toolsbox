@@ -36,8 +36,8 @@
       <view class="ring-grid-wrap">
         <view class="empty-state">
           <view class="icon">📋</view>
-          <text>还没有开始跑环记录</text>
-          <view class="btn btn-a" bindtap="startNew">+ 开始新跑环</view>
+          <text>还没有开始宠环记录</text>
+          <view class="btn btn-a" bindtap="startNew">+ 开始新宠环</view>
         </view>
       </view>
     </block>
@@ -138,7 +138,7 @@
       <view class="ring-grid-wrap">
         <view class="empty-state">
           <view class="icon">🎯</view>
-          <text>请先开始跑环记录</text>
+          <text>请先开始宠环记录</text>
         </view>
       </view>
     </block>
@@ -183,7 +183,7 @@
       <view class="ring-grid-wrap">
         <view class="empty-state">
           <view class="icon">📜</view>
-          <text>暂无跑环记录</text>
+          <text>暂无宠环记录</text>
         </view>
       </view>
     </block>
@@ -269,7 +269,7 @@
     <view class="more-menu-item" bindtap="showPricesSheet">💰 物品价格设置</view>
     <view class="more-menu-item" bindtap="showGuideSheet">📖 使用引导</view>
     <view class="more-menu-item" bindtap="toggleVibrate">📳 震动反馈：{{vibrateOn ? '开' : '关'}}</view>
-    <view wx:if="{{hasCur}}" class="more-menu-item" bindtap="abandonFromMenu" style="color:var(--danger);">🗑️ 放弃当前跑环</view>
+    <view wx:if="{{hasCur}}" class="more-menu-item" bindtap="abandonFromMenu" style="color:var(--danger);">🗑️ 放弃当前宠环</view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeMoreMenu" style="flex:1">关闭</view>
     </view>
@@ -381,7 +381,7 @@
   <view class="sheet sheet-flex" catchtap="noop">
     <view class="sheet-handle"></view>
     <view class="sheet-body">
-    <view class="sheet-title">🏆 跑环结算 — 实际奖励</view>
+    <view class="sheet-title">🏆 宠环结算 — 实际奖励</view>
     <view class="stat-row"><text>总分</text><text class="val" style="color:var(--accent);">{{settleScore}}分</text></view>
     <view class="stat-row"><text>预测书铁等级</text><text class="val" style="color:var(--warn);">{{settleBookLv}}级</text></view>
     <view class="stat-row"><text>额外奖励资格</text><text class="val" style="color:{{settleHasBonus?'var(--accent)':'var(--danger)'}};">{{settleHasBonus?'≥170分，有资格':'<170分，无额外奖励'}}</text></view>

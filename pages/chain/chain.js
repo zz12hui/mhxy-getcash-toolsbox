@@ -222,7 +222,7 @@ Page({
     if (users.length <= 1) { this.showToast('至少保留一个角色'); return }
     wx.showModal({
       title: '确认删除',
-      content: '该角色的所有跑环数据将被永久删除。',
+      content: '该角色的所有人环数据将被永久删除。',
       success: res => {
         if (res.confirm) {
           S.clearRoleData(uid)
@@ -1027,14 +1027,14 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: '跑环助手 · 300环任务链记录与奖励结算 | 梦幻搞钱工具箱',
+      title: '人环助手 · 300环任务链记录与奖励结算 | 梦幻搞钱工具箱',
       path: '/pages/chain/chain'
     }
   },
 
   onShareTimeline() {
     return {
-      title: '跑环助手 — 300环三段奖励结算 · 等级预测书铁区间'
+      title: '人环助手 — 300环三段奖励结算 · 等级预测书铁区间'
     }
   }
 })

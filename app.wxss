@@ -1238,3 +1238,33 @@ page {
   }
 }
 
+
+/* 全局长文本防溢出（昵称/金额/报表字段/说明文案） */
+.lh-value,
+.lh-foot,
+.ledger-title,
+.ledger-sub,
+.ledger-meta,
+.row-profit,
+.chart-sub,
+.chart-tag,
+.docs-bound,
+.sheet-title,
+.stat-row,
+.stat-row text,
+.reward-row,
+.reward-rule-box,
+.price-name,
+.price-val,
+.ratio-line,
+.prices-note,
+.legal-p,
+.faq-title,
+.faq-answer,
+.tool-desc,
+.gold-ratio,
+.gold-hint,
+.detail-row {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

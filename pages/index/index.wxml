@@ -54,7 +54,7 @@
       <view class="tool-card" bindtap="goChain">
         <view class="tool-ico chain-ico">📜</view>
         <view class="tool-info">
-          <view class="tool-title">跑环助手</view>
+          <view class="tool-title">人环助手</view>
           <view class="tool-desc">300 环 · 三段奖励</view>
         </view>
         <text class="tool-arrow">›</text>
@@ -118,11 +118,11 @@
       </view>
       <view class="mini-tool" bindtap="goChainTool" data-tool="history">
         <text class="mt-icon">📜</text>
-        <text class="mt-label">跑环历史</text>
+        <text class="mt-label">人环历史</text>
       </view>
       <view class="mini-tool" bindtap="goChainTool" data-tool="stats">
         <text class="mt-icon">📈</text>
-        <text class="mt-label">跑环统计</text>
+        <text class="mt-label">人环统计</text>
       </view>
       <view class="mini-tool" bindtap="goChainTool" data-tool="reward">
         <text class="mt-icon">🏆</text>

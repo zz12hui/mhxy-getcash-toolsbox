@@ -111,7 +111,7 @@
         <text>还没有可统计的轮次，先去结算一轮吧</text>
         <view class="empty-actions">
           <view class="btn btn-grad btn-xs" bindtap="goPet">去宠环</view>
-          <view class="btn btn-ghost btn-xs" bindtap="goChain">去跑环</view>
+          <view class="btn btn-ghost btn-xs" bindtap="goChain">去人环</view>
         </view>
       </view>
 
