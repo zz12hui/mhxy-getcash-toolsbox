@@ -13,6 +13,7 @@
         <input type="number" value="{{cfg.level}}" bindblur="onLevelChange" min="60" max="175"/>
       </view>
       <block wx:if="{{hasCur}}">
+        <view class="btn btn-xs" bindtap="togglePause">{{isPaused ? '▶' : '⏸'}}</view>
         <view class="btn btn-xs btn-a" bindtap="complete">结算</view>
       </block>
       <view wx:else class="btn btn-xs btn-a" bindtap="startNew">+新</view>
@@ -424,4 +425,4 @@
 <!-- Toast -->
 <view class="toast" wx:if="{{toastMsg}}">{{toastMsg}}</view>
 
-<run-detail show="{{showRunDetail}}" run="{{runDetailRun}}" tool="chain" bind:close="closeRunDetail"/>
+<run-detail show="{{showRunDetail}}" run="{{runDetailRun}}" tool="chain" money-cfg="{{moneyCfg}}" currency="wan" bind:close="closeRunDetail"/>

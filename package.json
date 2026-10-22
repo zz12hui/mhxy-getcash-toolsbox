@@ -1,11 +1,11 @@
 {
   "name": "mhxy-getcash-toolsbox",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "微信小程序 — 梦幻西游跑环记录与收益统计工具（宠环 100 环 / 跑环 300 环，本地优先，可选微信云备份，v1.3 收益记账）。",
   "main": "app.js",
   "scripts": {
     "lint": "eslint pages/**/*.js utils/**/*.js app.js custom-tab-bar/index.js components/**/*.js --format stylish",
-    "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/ledger.test.js tests/reward-prices.test.js tests/ledger-page.test.js tests/pet-page.test.js tests/chain-page.test.js",
+    "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/ledger.test.js tests/money.test.js tests/reward-prices.test.js tests/ledger-page.test.js tests/pet-page.test.js tests/chain-page.test.js",
     "smoke": "node scripts/devtools-smoke.js",
     "accept": "node scripts/devtools-acceptance.js",
     "accept:fresh": "node scripts/devtools-acceptance.js --clean",

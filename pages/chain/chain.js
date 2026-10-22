@@ -7,6 +7,7 @@ const UI = require('../../utils/ui')
 const UNDO = require('../../utils/undo')
 const REWARD_PRICES = require('../../utils/reward-prices')
 const LEDGER = require('../../utils/ledger')
+const MONEY = require('../../utils/money')
 const app = getApp()
 
 Page({
@@ -15,7 +16,7 @@ Page({
     // User
     users: [], activeUser: '', currentUserName: '', userIdx: 0, userNames: [],
     // Config
-    cfg: { level: 175 }, hasCur: false,
+    cfg: { level: 175 }, hasCur: false, isPaused: false, moneyCfg: {},
     // Record
     chainTypes: [], quickTasks: [], showAllTasks: false,
     itemChips: [], modalTask: '', qbItem: '', jumpRing: '', undoCount: 0, vibrateOn: true,
@@ -79,6 +80,21 @@ Page({
     if (this._checkTimer) { clearTimeout(this._checkTimer); this._checkTimer = null }
   },
 
+  togglePause() {
+    if (!this._cur) return
+    if (this._cur.pausedAt) {
+      this._cur.pausedMs = (this._cur.pausedMs || 0) + (Date.now() - this._cur.pausedAt)
+      this._cur.pausedAt = null
+      this.showToast('继续计时')
+    } else {
+      this._cur.pausedAt = Date.now()
+      this.showToast('已暂停计时')
+    }
+    S.saveChainCur(this.data.activeUser, this._cur)
+    UI.vibrate()
+    this.loadData()
+  },
+
   loadData() {
     const users = S.getUsers()
     const activeUser = S.getActiveUser()
@@ -117,6 +133,8 @@ Page({
       userNames: users.map(u => u.name),
       currentUserName: users[userIdx] ? users[userIdx].name : '',
       cfg, hasCur, prices: { ...prices }, chainTypes,
+      isPaused: !!(cur && cur.pausedAt),
+      moneyCfg: MONEY.getMoneyCfg(),
       quickTasks, itemChips, undoCount: this._undo ? this._undo.size : 0,
       ...recordData, ...rewardData,
       history: historyData, ...statsData
@@ -290,7 +308,9 @@ Page({
       incomeItems,
       extraCost: 0,
       startedAt: cur.startedAt,
-      doneAt: cur.doneAt
+      doneAt: cur.doneAt,
+      pausedMs: cur.pausedMs,
+      pausedAt: cur.pausedAt
     })
     cur.ledgerVersion = 1
     cur.costItems = summary.costItems

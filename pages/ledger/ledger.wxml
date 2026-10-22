@@ -4,25 +4,33 @@
       <view class="filter-row">
         <view wx:for="{{scopes}}" wx:key="key" class="chip scope-chip {{scope===item.key?'on':''}}" bindtap="onScopeTap" data-s="{{item.key}}">{{item.label}}</view>
         <text class="filter-hint">{{roleCount}} 个角色</text>
+        <view class="btn btn-xs" bindtap="openMoneySettings">⚙️</view>
       </view>
       <view class="filter-row">
         <view wx:for="{{tools}}" wx:key="key" class="chip tool-chip {{tool===item.key?'on':''}}" bindtap="onToolTap" data-t="{{item.key}}">{{item.label}}</view>
       </view>
       <view class="filter-row">
         <view wx:for="{{periods}}" wx:key="key" class="chip period-chip {{period===item.key?'on':''}}" bindtap="onPeriodTap" data-p="{{item.key}}">{{item.label}}</view>
+        <view style="margin-left:auto;display:flex;gap:8rpx;">
+          <view class="chip {{currency==='wan'?'on':''}}" bindtap="onCurrencyTap" data-c="wan">万两</view>
+          <view class="chip {{currency==='yuan'?'on':''}}" bindtap="onCurrencyTap" data-c="yuan">人民币</view>
+        </view>
       </view>
 
       <view class="stat-cards" style="margin-top:12rpx;">
-        <view class="stat-card"><view class="lbl">总投入</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{summary.totalCostWan}}万</view></view>
-        <view class="stat-card"><view class="lbl">总产出</view><view class="val" style="color:var(--accent);font-size:28rpx;">{{summary.totalIncomeWan}}万</view></view>
-        <view class="stat-card"><view class="lbl">净收益</view><view class="val" style="color:{{summary.profitPos?'var(--accent)':'var(--danger)'}};font-size:28rpx;">{{summary.profitWan}}万</view></view>
+        <view class="stat-card"><view class="lbl">总投入</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{summary.totalCostStr}}</view></view>
+        <view class="stat-card"><view class="lbl">总产出</view><view class="val" style="color:var(--accent);font-size:28rpx;">{{summary.totalIncomeStr}}</view></view>
+        <view class="stat-card"><view class="lbl">净收益</view><view class="val" style="color:{{summary.profitPos?'var(--accent)':'var(--danger)'}};font-size:28rpx;">{{summary.profitStr}}</view></view>
         <view class="stat-card"><view class="lbl">投入产出比</view><view class="val" style="font-size:28rpx;">{{summary.roiStr}}</view></view>
       </view>
 
       <view class="reward-rule-box">
         <view class="stat-row" style="padding:4rpx 0;"><text>轮次 / 正收益率</text><text class="val">{{summary.count}} 轮 · {{summary.winRateStr}}</text></view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>净收益率 / 时薪</text><text class="val">{{summary.netRateStr}} · {{summary.hourlyStr}}</text></view>
-        <view class="stat-row" style="padding:4rpx 0;"><text>平均每轮净收益</text><text class="val">{{summary.avgProfitWan}}万</text></view>
+        <view class="stat-row" style="padding:4rpx 0;"><text>总工时 / 平均时薪</text><text class="val" style="font-size:22rpx;">{{summary.totalHoursStr}} · {{summary.hourlyStr}}</text></view>
+        <view class="stat-row" style="padding:4rpx 0;"><text>日均收益 / 月化收益</text><text class="val" style="font-size:22rpx;">{{summary.dailyStr}} · {{summary.monthStr}}</text></view>
+        <view class="stat-row" style="padding:4rpx 0;"><text>点卡成本 / 扣点卡净收益</text><text class="val" style="font-size:22rpx;">{{summary.pointStr}} · <text style="color:{{summary.netAfterPointPos?'var(--accent)':'var(--danger)'}};">{{summary.netAfterPointStr}}</text></text></view>
+        <view class="stat-row" style="padding:4rpx 0;"><text>目标时薪 {{summary.targetHourlyYuan}} 元/时</text><text class="val" style="font-size:22rpx;">{{summary.targetStr}}</text></view>
+        <view class="stat-row" style="padding:4rpx 0;"><text>平均每轮净收益</text><text class="val" style="font-size:22rpx;">{{summary.avgProfitStr}}</text></view>
         <view wx:if="{{summary.unbooked}}" class="stat-row" style="padding:4rpx 0;"><text>未记账轮次（只算投入）</text><text class="val" style="color:var(--warn);">{{summary.unbooked}} 轮</text></view>
       </view>
 
@@ -37,9 +45,9 @@
             <view class="ledger-sub">{{item.dateStr}}<text wx:if="{{item.roleName}}"> · {{item.roleName}}</text></view>
           </view>
           <view style="text-align:right;">
-            <view wx:if="{{!item.unbooked}}" style="font-size:24rpx;color:{{item.profitPos?'var(--accent)':'var(--danger)'}};">{{item.profitWan}}万</view>
+            <view wx:if="{{!item.unbooked}}" style="font-size:24rpx;color:{{item.profitPos?'var(--accent)':'var(--danger)'}};">{{item.profitStr}}</view>
             <view wx:else style="font-size:22rpx;color:var(--warn);">未记账</view>
-            <view class="ledger-meta">投入产出比 {{item.roiStr}}</view>
+            <view class="ledger-meta">投入产出比 {{item.roiStr}}<text wx:if="{{!item.unbooked}}"> · 产出 {{item.incomeStr}}</text></view>
           </view>
         </view>
       </block>
@@ -55,5 +63,36 @@
     </view>
   </scroll-view>
 
-  <run-detail show="{{showDetail}}" run="{{detailRun}}" tool="{{detailRun._tool || 'pet'}}" bind:close="closeDetail"/>
+  <run-detail show="{{showDetail}}" run="{{detailRun}}" tool="{{detailRun._tool || 'pet'}}" money-cfg="{{moneyCfg}}" currency="{{currency}}" bind:close="closeDetail"/>
+
+  <!-- 换算设置 -->
+  <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showMoneySettings}}" bindtap="closeMoneySettings">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-title">💱 收益换算设置</view>
+      <view class="stat-row"><text>梦幻币比例</text></view>
+      <view style="display:flex;align-items:center;gap:10rpx;margin:8rpx 0 16rpx;">
+        <text style="font-size:24rpx;color:var(--text2);">1 元 =</text>
+        <input type="digit" value="{{moneyInputs.wanPerYuan}}" data-k="wanPerYuan" bindinput="onMoneyInput" style="flex:1;padding:14rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:26rpx;text-align:right;"/>
+        <text style="font-size:24rpx;color:var(--text2);">万两</text>
+      </view>
+      <view class="stat-row"><text>点卡成本（元/小时）</text></view>
+      <view style="display:flex;align-items:center;gap:10rpx;margin:8rpx 0 16rpx;">
+        <input type="digit" value="{{moneyInputs.pointCostYuanPerHour}}" data-k="pointCostYuanPerHour" bindinput="onMoneyInput" style="flex:1;padding:14rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--warn);font-size:26rpx;text-align:right;"/>
+        <text style="font-size:24rpx;color:var(--text2);">元/小时（4点/小时≈0.4元）</text>
+      </view>
+      <view class="stat-row"><text>目标时薪（元/小时）</text></view>
+      <view style="display:flex;align-items:center;gap:10rpx;margin:8rpx 0 16rpx;">
+        <input type="digit" value="{{moneyInputs.targetHourlyYuan}}" data-k="targetHourlyYuan" bindinput="onMoneyInput" style="flex:1;padding:14rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:26rpx;text-align:right;"/>
+        <text style="font-size:24rpx;color:var(--text2);">元/小时</text>
+      </view>
+      <view style="font-size:20rpx;color:var(--text2);line-height:1.6;margin-bottom:16rpx;">
+        换算比例只用于展示（万两 ↔ 人民币），不影响已有记账数据；可按你所在区服的金价调整。
+      </view>
+      <view class="sheet-actions">
+        <view class="btn" bindtap="resetMoneySettings">恢复默认</view>
+        <view class="btn btn-a" style="flex:1" bindtap="saveMoneySettings">保存</view>
+      </view>
+    </view>
+  </view>
 </view>

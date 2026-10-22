@@ -9,7 +9,8 @@ Object.assign(global.wx, {
     fields() { return this },
     exec(cb) { cb([{ node: null, width: 0, height: 0 }]) }
   }),
-  getWindowInfo: () => ({ pixelRatio: 2 })
+  getWindowInfo: () => ({ pixelRatio: 2 }),
+  showToast: () => {}
 })
 global.Page = def => { pageDef = def }
 
@@ -66,9 +67,12 @@ test('账本：当前角色汇总（含未记账）', () => {
   const s = page.data.summary
   assert.equal(s.count, 2)
   assert.equal(s.unbooked, 1)
-  assert.equal(s.totalCostWan, '500.0') // 300万 + 200万（未记账的 10 万只算投入？不，未记账不计入 booked 汇总）
-  assert.equal(s.totalIncomeWan, '600.0')
-  assert.equal(s.profitWan, '100.0')
+  assert.equal(s.totalCostStr, '500.0 万两')
+  assert.equal(s.totalIncomeStr, '600.0 万两')
+  assert.equal(s.profitStr, '100.0 万两')
+  assert.equal(s.totalHoursStr, '3.0 小时')
+  assert.ok(s.hourlyStr.indexOf('万两/时') >= 0)
+  assert.ok(s.targetStr.indexOf('达标') >= 0 || s.targetStr.indexOf('差') >= 0)
   assert.equal(page.data.runList.length, 3)
   assert.equal(page.data.hasRuns, true)
 })
@@ -79,7 +83,7 @@ test('账本：按工具筛选', () => {
   page.setData({ tool: 'pet' })
   page.loadData()
   assert.equal(page.data.summary.count, 1)
-  assert.equal(page.data.summary.totalIncomeWan, '500.0')
+  assert.equal(page.data.summary.totalIncomeStr, '500.0 万两')
   assert.ok(page.data.runList.every(r => r.tool === 'pet'))
 })
 
@@ -89,7 +93,7 @@ test('账本：全部角色汇总', () => {
   page.setData({ scope: 'all' })
   page.loadData()
   assert.equal(page.data.summary.count, 3)
-  assert.equal(page.data.summary.totalIncomeWan, '700.0')
+  assert.equal(page.data.summary.totalIncomeStr, '700.0 万两')
 })
 
 test('账本：周期筛选（7 天 / 全部）', () => {
@@ -99,8 +103,33 @@ test('账本：周期筛选（7 天 / 全部）', () => {
   assert.equal(page.data.summary.count, 2)
   page.setData({ period: 'all' })
   page.loadData()
-  assert.equal(page.data.summary.count, 2) // 当前角色只有 2 条已记账（另一条未记账）
+  assert.equal(page.data.summary.count, 2)
   assert.equal(page.data.runList.length, 3)
+})
+
+test('账本：切换人民币显示', () => {
+  seed()
+  const page = createPage()
+  page.setData({ currency: 'yuan' })
+  page.loadData()
+  assert.equal(page.data.summary.totalIncomeStr, '50.00 元')
+  assert.equal(page.data.summary.profitStr, '8.33 元')
+  assert.ok(page.data.runList[0].profitStr.indexOf('元') >= 0)
+})
+
+test('账本：保存换算设置', () => {
+  seed()
+  const page = createPage()
+  page.loadData()
+  page.openMoneySettings()
+  assert.equal(page.data.showMoneySettings, true)
+  page.setData({ moneyInputs: { wanPerYuan: '10', pointCostYuanPerHour: '0.6', targetHourlyYuan: '20' } })
+  page.saveMoneySettings()
+  assert.equal(page.data.showMoneySettings, false)
+  const cfg = global.wx.getStorageSync('mhxy_money_cfg')
+  assert.equal(cfg.wanPerYuan, 10)
+  assert.equal(cfg.pointCostYuanPerHour, 0.6)
+  assert.equal(page.data.moneyCfg.targetHourlyYuan, 20)
 })
 
 test('账本：打开轮次明细抽屉', () => {

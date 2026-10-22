@@ -7,6 +7,7 @@ const UI = require('../../utils/ui')
 const UNDO = require('../../utils/undo')
 const REWARD_PRICES = require('../../utils/reward-prices')
 const LEDGER = require('../../utils/ledger')
+const MONEY = require('../../utils/money')
 const app = getApp()
 
 Page({
@@ -15,7 +16,7 @@ Page({
     // User
     users: [], activeUser: '', currentUserName: '', userIdx: 0, userNames: [],
     // Config
-    cfg: { level: 175 }, hasCur: false,
+    cfg: { level: 175 }, hasCur: false, isPaused: false, moneyCfg: {},
     // Record
     petTypes: C.PET_TYPES, quickTasks: C.PET_TYPES, showAllTasks: false,
     itemChips: [], modalTask: '', qbItem: '', jumpRing: '', undoCount: 0, vibrateOn: true,
@@ -58,7 +59,7 @@ Page({
     settleMainValue: '', settleMainItem: null, settleExtraRows: [],
     settleCustomValue: '', settleOtherCost: '',
     settleIncomeWan: '0', settleCostWan: '0', settleProfitWan: '0',
-    settleRoiStr: '—', settleProfitPos: true,
+    settleRoiStr: '—', settleProfitPos: true, settleHourlyStr: '—',
     bonusOpts: [],
     // Toast
     toastMsg: '', toastAnim: null,
@@ -82,6 +83,21 @@ Page({
 
   onHide() {
     if (this._checkTimer) { clearTimeout(this._checkTimer); this._checkTimer = null }
+  },
+
+  togglePause() {
+    if (!this._cur) return
+    if (this._cur.pausedAt) {
+      this._cur.pausedMs = (this._cur.pausedMs || 0) + (Date.now() - this._cur.pausedAt)
+      this._cur.pausedAt = null
+      this.showToast('继续计时')
+    } else {
+      this._cur.pausedAt = Date.now()
+      this.showToast('已暂停计时')
+    }
+    S.savePetCur(this.data.activeUser, this._cur)
+    UI.vibrate()
+    this.loadData()
   },
 
   onReady() {
@@ -121,6 +137,8 @@ Page({
       userNames: users.map(u => u.name),
       currentUserName: users[userIdx] ? users[userIdx].name : '',
       cfg, hasCur, prices: { ...prices },
+      isPaused: !!(cur && cur.pausedAt),
+      moneyCfg: MONEY.getMoneyCfg(),
       quickTasks, itemChips, undoCount: this._undo ? this._undo.size : 0,
       ...recordData, ...predictData, ...controlData,
       history: historyData, ...statsData
@@ -655,12 +673,28 @@ Page({
     const costWan = ((run && run.totalCost) || 0) / 10000 + other
     const profitWan = incomeWan - costWan
     const roiStr = costWan > 0 ? '1 : ' + (incomeWan / costWan).toFixed(2) : '—'
+    const durationMin = run
+      ? LEDGER.effectiveDurationMin({
+        startedAt: run.startedAt,
+        doneAt: Date.now(),
+        pausedMs: run.pausedMs,
+        pausedAt: run.pausedAt
+      }, Date.now())
+      : null
+    const hourlyLiang = durationMin !== null && durationMin >= 5
+      ? (profitWan * 10000) / (durationMin / 60)
+      : null
+    const cfg = this.data.moneyCfg || MONEY.getMoneyCfg()
+    const hourlyStr = hourlyLiang === null
+      ? '—'
+      : (hourlyLiang / 10000).toFixed(1) + ' 万两/时 ≈ ' + MONEY.wanToYuan(hourlyLiang / 10000, cfg).toFixed(1) + ' 元/时'
     this.setData({
       settleIncomeWan: incomeWan.toFixed(1),
       settleCostWan: costWan.toFixed(1),
       settleProfitWan: profitWan.toFixed(1),
       settleRoiStr: roiStr,
-      settleProfitPos: profitWan >= 0
+      settleProfitPos: profitWan >= 0,
+      settleHourlyStr: hourlyStr
     })
   },
 
@@ -741,7 +775,9 @@ Page({
       incomeItems,
       extraCost: Math.max(0, (parseFloat(data.settleOtherCost) || 0) * 10000),
       startedAt: run.startedAt,
-      doneAt
+      doneAt,
+      pausedMs: run.pausedMs,
+      pausedAt: run.pausedAt
     })
     run.ledgerVersion = 1
     run.costItems = summary.costItems

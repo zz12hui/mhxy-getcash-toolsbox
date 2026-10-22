@@ -87,6 +87,18 @@ function isBooked(run) {
   return !!(run && typeof run.income === 'number' && Array.isArray(run.incomeItems))
 }
 
+// 有效工作时长（分钟）：扣除暂停累计与当前暂停段
+function effectiveDurationMin(opts, now) {
+  const o = opts || {}
+  const startedAt = Number(o.startedAt) || 0
+  const doneAt = Number(o.doneAt) || 0
+  const end = doneAt || Number(now) || Date.now()
+  if (!startedAt || end <= startedAt) return null
+  let ms = end - startedAt - amount(o.pausedMs)
+  if (o.pausedAt) ms -= Math.max(0, end - Number(o.pausedAt))
+  return Math.max(0, Math.round(ms / 60000))
+}
+
 // 单轮汇总：cost / income / profit / roi / netRate / durationMin / hourly
 function summarizeRun(opts) {
   const o = opts || {}
@@ -99,11 +111,7 @@ function summarizeRun(opts) {
   const profit = income - cost
   const roi = cost > 0 ? income / cost : null
   const netRate = cost > 0 ? profit / cost : null
-  const startedAt = Number(o.startedAt) || 0
-  const doneAt = Number(o.doneAt) || 0
-  const durationMin = startedAt > 0 && doneAt > startedAt
-    ? Math.max(0, Math.round((doneAt - startedAt) / 60000))
-    : null
+  const durationMin = effectiveDurationMin(o, o.now)
   const hourly = durationMin !== null && durationMin >= 5
     ? profit / (durationMin / 60)
     : null
@@ -172,6 +180,15 @@ function aggregateRuns(runs) {
     return Number.isFinite(d) && d >= 5 ? s + d / 60 : s
   }, 0)
   const winCount = booked.filter(r => Number(r.profit) > 0).length
+  const daySet = {}
+  booked.forEach(r => {
+    const t = runTime(r)
+    if (!t) return
+    const d = new Date(t)
+    daySet[d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()] = true
+  })
+  const activeDays = Object.keys(daySet).length
+  const dailyAvgProfit = activeDays ? totalProfit / activeDays : null
   return {
     totalCost,
     totalIncome,
@@ -182,6 +199,10 @@ function aggregateRuns(runs) {
     netRate: totalCost > 0 ? totalProfit / totalCost : null,
     avgProfit: count ? totalProfit / count : null,
     hourly: totalHours > 0 ? totalProfit / totalHours : null,
+    totalHours,
+    activeDays,
+    dailyAvgProfit,
+    monthEstimate: dailyAvgProfit === null ? null : dailyAvgProfit * 30,
     winRate: count ? winCount / count : null
   }
 }
@@ -198,6 +219,7 @@ module.exports = {
   parseRewardText,
   valueIncomeItems,
   isBooked,
+  effectiveDurationMin,
   summarizeRun,
   periodStart,
   filterRunsByPeriod,

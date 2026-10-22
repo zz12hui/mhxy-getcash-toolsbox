@@ -80,6 +80,22 @@ test('单轮汇总边界：0 成本 / 缺用时 / 无奖励', () => {
   assert.equal(short.durationMin, null)
 })
 
+test('有效工时：扣除暂停时长', () => {
+  const start = 1600000000000
+  assert.equal(L.effectiveDurationMin({ startedAt: start, doneAt: start + 60 * 60000 }), 60)
+  assert.equal(L.effectiveDurationMin({
+    startedAt: start,
+    doneAt: start + 60 * 60000,
+    pausedMs: 20 * 60000
+  }), 40)
+  // 当前仍在暂停：暂停开始后不再计时
+  assert.equal(L.effectiveDurationMin({
+    startedAt: start,
+    doneAt: start + 60 * 60000,
+    pausedAt: start + 50 * 60000
+  }, start + 70 * 60000), 50)
+})
+
 test('周期过滤与多轮汇总', () => {
   const now = new Date(2026, 9, 22, 12, 0, 0).getTime()
   const day = 24 * 3600 * 1000
@@ -103,6 +119,10 @@ test('周期过滤与多轮汇总', () => {
   assert.equal(agg.avgProfit, 250 / 3)
   assert.equal(agg.winRate, 2 / 3)
   assert.equal(agg.hourly, 250 / 2.5)
+  assert.equal(agg.totalHours, 2.5)
+  assert.equal(agg.activeDays, 3)
+  assert.equal(agg.dailyAvgProfit, 250 / 3)
+  assert.equal(agg.monthEstimate, (250 / 3) * 30)
 })
 
 test('isBooked 识别旧数据', () => {

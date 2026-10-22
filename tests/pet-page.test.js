@@ -139,6 +139,32 @@ test('宠环：结算记账（奖励估值/净收益/ROI/用时）', () => {
   assert.ok(run.durationMin === null || typeof run.durationMin === 'number')
 })
 
+test('宠环：暂停计时与有效工时', () => {
+  seedUser()
+  const page = createPage()
+  page.onLoad()
+  page.loadData()
+  page.doStartNew()
+  assert.equal(page.data.isPaused, false)
+  page.togglePause()
+  assert.equal(page.data.isPaused, true)
+  assert.ok(page._cur.pausedAt)
+  page.togglePause()
+  assert.equal(page.data.isPaused, false)
+  assert.equal(page._cur.pausedAt, null)
+  assert.ok(page._cur.pausedMs >= 0)
+
+  // 手动构造：总时长 60 分钟，其中暂停 30 分钟 → 有效工时 30 分钟
+  page._cur.startedAt = Date.now() - 60 * 60000
+  page._cur.pausedMs = 30 * 60000
+  page.complete()
+  page.setData({ settleMainReward: '80级制造指南书-剑', settleMainValue: '25' })
+  page.confirmSettle()
+  const run = global.wx.getStorageSync('mhxy_runs_u1')[0]
+  assert.ok(run.durationMin >= 29 && run.durationMin <= 31)
+  assert.ok(run.hourly > 0)
+})
+
 test('宠环：取消结算回滚完成状态', () => {
   seedUser()
   const page = createPage()

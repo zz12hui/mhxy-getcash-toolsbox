@@ -1,5 +1,6 @@
 const C = require('../../utils/constants')
 const LEDGER = require('../../utils/ledger')
+const MONEY = require('../../utils/money')
 
 Component({
   options: {
@@ -9,7 +10,9 @@ Component({
   properties: {
     show: { type: Boolean, value: false },
     run: { type: Object, value: null },
-    tool: { type: String, value: 'pet' }
+    tool: { type: String, value: 'pet' },
+    moneyCfg: { type: Object, value: null },
+    currency: { type: String, value: 'wan' }
   },
 
   data: {
@@ -17,13 +20,16 @@ Component({
   },
 
   observers: {
-    'show, run, tool': function (show, run, tool) {
-      if (show && run) this.build(run, tool)
+    'show, run, tool, moneyCfg, currency': function (show, run, tool, moneyCfg, currency) {
+      if (show && run) this.build(run, tool, moneyCfg, currency)
     }
   },
 
   methods: {
-    build(run, tool) {
+    build(run, tool, moneyCfg, currency) {
+      const cfg = moneyCfg && moneyCfg.wanPerYuan ? moneyCfg : MONEY.getMoneyCfg()
+      const cur = currency || 'wan'
+      const fmt = amount => MONEY.formatAmount(amount, cfg, cur)
       const defaults = tool === 'pet' ? C.P_DEFAULT_PRICES : C.C_DEFAULT_PRICES
       const booked = LEDGER.isBooked(run)
       const costItems = Array.isArray(run.costItems) && run.costItems.length
@@ -32,14 +38,14 @@ Component({
       const costRows = costItems.map(it => ({
         name: it.name || it.tid,
         qty: it.qty,
-        unitWan: ((it.unitPrice || 0) / 10000).toFixed(1),
-        amountWan: ((it.amount || 0) / 10000).toFixed(1)
+        unitStr: fmt(it.unitPrice || 0),
+        amountStr: fmt(it.amount || 0)
       }))
       const incomeRows = (run.incomeItems || []).map(it => ({
         name: (it.seg ? '第' + it.seg + '环 ' : '') + (it.name || ''),
         qty: it.qty || 1,
-        unitWan: ((it.unitPrice || 0) / 10000).toFixed(1),
-        amountWan: ((it.amount || 0) / 10000).toFixed(1)
+        unitStr: fmt(it.unitPrice || 0),
+        amountStr: fmt(it.amount || 0)
       }))
       const cost = typeof run.cost === 'number'
         ? run.cost
@@ -58,7 +64,7 @@ Component({
           : run.durationMin + '分钟')
         : '—'
       const hourlyStr = typeof run.hourly === 'number'
-        ? (run.hourly / 10000).toFixed(1) + '万/时'
+        ? MONEY.formatHourly(run.hourly, cfg, cur) + '（≈ ' + MONEY.formatHourly(run.hourly, cfg, cur === 'wan' ? 'yuan' : 'wan') + '）'
         : '—'
       const comp = run.rings ? run.rings.filter(r => r.t).length : 0
       const total = tool === 'pet' ? 100 : 300
@@ -78,10 +84,11 @@ Component({
           rewardStr: rewardStr || '未记录',
           costRows,
           incomeRows,
-          costWan: (cost / 10000).toFixed(1),
-          extraCostWan: ((run.extraCost || 0) / 10000).toFixed(1),
-          incomeWan: income === null ? '—' : (income / 10000).toFixed(1),
-          profitWan: profit === null ? '—' : (profit / 10000).toFixed(1),
+          extraCostStr: fmt(run.extraCost || 0),
+          extraCostShow: Number(run.extraCost || 0) > 0,
+          costStr: fmt(cost),
+          incomeStr: fmt(income),
+          profitStr: fmt(profit),
           profitPos: profit === null ? true : profit >= 0,
           roiStr,
           netRateStr,
