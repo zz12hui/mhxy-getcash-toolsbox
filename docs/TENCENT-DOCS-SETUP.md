@@ -127,3 +127,24 @@ node scripts/tencent-docs-oauth.js status
 - `access_token` 会过期（通常 2 小时左右），过期后重新生成即可；**不要贴到聊天里**，只放 `.secrets`。
 - `client_secret` 如果存在，更不要发聊天/截图；万一发过，去后台重置。
 - 云函数上线后，`client_id` 放环境变量、`client_secret` 放云函数环境变量，用户 token 加密存云数据库，客户端永远拿不到。
+
+---
+
+## 7. 已联调通过（2026-10-22）
+
+用 `.secrets/tencent-docs.json` 里的三元组实测通过：
+
+1. 新建在线表格：`POST /openapi/drive/v2/files`（`type=sheet`）
+2. 添加子表：`POST /openapi/sheetbook/v2/{bookID}:batchUpdate`（`addSheet`）→ 返回 `sheetID`
+3. 写入数据：`PUT /openapi/sheetbook/v2/{bookID}/values/{sheetID}!A1:H3`，body `{ "values": [[...], [...]] }`
+4. 测试文档（已写入表头 + 2 行示例）：`https://docs.qq.com/sheet/DUFhUekJLTUp3R3Vn`
+
+Token 情况：JWT 有效期约 30 天（当前到 2026-11-21），过期后需重新生成；生产环境不能依赖手动换 token。
+
+### 关于「文档归属」
+
+- 当前 token 属于**开发者账号**：用它建的表在开发者账号下，不是每个用户自己的文档。
+- 两种产品形态：
+  - **A. 开发者账号建表 + 链接可读**：用户打开链接查看 / 另存为到自己的文档（不需要 OAuth，今天可做）；
+  - **B. 每个用户自己的文档**：必须走 OAuth（需要 `client_secret` + 回调页），或让用户提供自己的三元组（需验证）。
+- 回调页 `docs/tencent-docs-callback.html` 已就绪，域名 `4si.cc` 若能托管静态文件即可用。
