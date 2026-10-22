@@ -112,8 +112,8 @@ test('账本：切换人民币显示', () => {
   const page = createPage()
   page.setData({ currency: 'yuan' })
   page.loadData()
-  assert.equal(page.data.summary.totalIncomeStr, '50.00 元')
-  assert.equal(page.data.summary.profitStr, '8.33 元')
+  assert.equal(page.data.summary.totalIncomeStr, '40.40 元')
+  assert.equal(page.data.summary.profitStr, '6.73 元')
   assert.ok(page.data.runList[0].profitStr.indexOf('元') >= 0)
 })
 

@@ -1,4 +1,4 @@
-<scroll-view scroll-y class="home-scroll {{reduceMotion ? 'reduce-motion' : ''}}">
+<scroll-view scroll-y class="home-scroll {{reduceMotion ? 'reduce-motion' : ''}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation>
   <view class="hub-view" style="padding-top: {{statusBarHeight + 8}}px;">
     <view class="hub-bg">
       <view class="orb orb1"></view>
@@ -68,23 +68,48 @@
         </view>
       </view>
 
-      <view class="section-label anim-up" style="animation-delay: 260ms;">快捷工具</view>
+      <view class="section-label anim-up" style="animation-delay: 260ms;">实用工具</view>
       <view class="quick-grid anim-up" style="animation-delay: 300ms;">
         <view class="quick-module" bindtap="goFaq">
           <text class="qm-icon">📖</text>
           <text class="qm-label">知识库</text>
         </view>
-        <view class="quick-module" bindtap="onComing">
-          <text class="qm-icon">💎</text>
-          <text class="qm-label">物价参考</text>
+        <view class="quick-module" bindtap="scrollToGold">
+          <text class="qm-icon">💱</text>
+          <text class="qm-label">金价计算器</text>
         </view>
-        <view class="quick-module" bindtap="onComing">
-          <text class="qm-icon">📝</text>
-          <text class="qm-label">答题器</text>
+      </view>
+
+      <view id="gold-calc" class="gold-card anim-up" style="animation-delay: 340ms;">
+        <view class="gold-head">
+          <view>
+            <view class="gold-title">💱 金价计算器</view>
+            <view class="gold-ratio">{{goldRatioText}}</view>
+          </view>
+          <view class="gold-setting" bindtap="openGoldSettings">比例</view>
         </view>
-        <view class="quick-module" bindtap="onComing">
-          <text class="qm-icon">⏱️</text>
-          <text class="qm-label">传说计时</text>
+        <view class="gold-body">
+          <view class="gold-field">
+            <text class="gold-label">梦幻币</text>
+            <view class="gold-input-row">
+              <input class="gold-input" type="digit" value="{{goldWan}}" bindinput="onGoldWanInput" placeholder="0"/>
+              <text class="gold-unit">万两</text>
+            </view>
+          </view>
+          <view class="gold-eq">⇄</view>
+          <view class="gold-field">
+            <text class="gold-label">人民币</text>
+            <view class="gold-input-row">
+              <input class="gold-input" type="digit" value="{{goldYuan}}" bindinput="onGoldYuanInput" placeholder="0"/>
+              <text class="gold-unit">元</text>
+            </view>
+          </view>
+        </view>
+        <view class="gold-presets">
+          <view class="gold-chip" bindtap="quickGold" data-wan="1000">1000万</view>
+          <view class="gold-chip" bindtap="quickGold" data-wan="3000">3000万</view>
+          <view class="gold-chip" bindtap="quickGold" data-wan="10000">1亿</view>
+          <text class="gold-hint">改任意一边自动换算</text>
         </view>
       </view>
 
@@ -95,3 +120,23 @@
     </view>
   </view>
 </scroll-view>
+
+<!-- 金价比例设置 -->
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showGoldSettings}}" bindtap="closeGoldSettings">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">💱 金价比例设置</view>
+    <view class="gold-setting-row">
+      <input type="digit" class="gold-setting-input" value="{{goldRatioWan}}" data-k="goldRatioWan" bindinput="onGoldRatioInput"/>
+      <text class="gold-setting-unit">万两</text>
+      <text class="gold-setting-eq">=</text>
+      <input type="digit" class="gold-setting-input" value="{{goldRatioYuan}}" data-k="goldRatioYuan" bindinput="onGoldRatioInput"/>
+      <text class="gold-setting-unit">元</text>
+    </view>
+    <view class="gold-setting-hint">默认 3000 万两 = 202 元；修改后所有换算（含账本币种）立即生效。</view>
+    <view class="sheet-actions">
+      <view class="btn" bindtap="resetGoldSettings">恢复默认</view>
+      <view class="btn btn-grad" style="flex:1" bindtap="saveGoldSettings">保存</view>
+    </view>
+  </view>
+</view>

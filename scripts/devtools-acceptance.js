@@ -323,6 +323,7 @@ async function main() {
     if (homeHero) { await homeHero.trigger('tap') ; await sleep(800) }
     const homeLedgerRoute = await waitRoute(miniProgram, 'pages/ledger/ledger', 4000)
     record('首页收益大栏目可进入账本', homeHeroOk && homeLedgerRoute, 'hasSummary=' + !!homeData.ledgerSummary)
+    record('首页金价计算器（默认 3000万=202元）', homeData.goldYuan === '202' && String(homeData.goldRatioText).indexOf('3000') >= 0, 'ratio=' + homeData.goldRatioText)
 
     await miniProgram.reLaunch('/pages/profile/profile')
     await sleep(1200)

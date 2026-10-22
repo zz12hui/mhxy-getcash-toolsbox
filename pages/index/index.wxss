@@ -336,7 +336,7 @@ page { padding-bottom: 140rpx; }
 /* 快捷工具 */
 .quick-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12rpx;
 }
 
@@ -372,6 +372,165 @@ page { padding-bottom: 140rpx; }
   font-size: 19rpx;
   color: rgba(139, 163, 191, 0.35);
   line-height: 1.8;
+}
+
+/* 金价计算器 */
+.gold-card {
+  margin-top: 18rpx;
+  padding: 26rpx;
+  border-radius: 28rpx;
+  background:
+    linear-gradient(135deg, rgba(255, 200, 87, 0.10), rgba(18, 30, 50, 0.94) 48%, rgba(56, 242, 200, 0.08));
+  border: 1rpx solid rgba(255, 200, 87, 0.28);
+  box-shadow: 0 12rpx 36rpx rgba(0, 0, 0, 0.3);
+}
+
+.gold-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.gold-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.gold-ratio {
+  margin-top: 6rpx;
+  font-size: 19rpx;
+  color: var(--warn);
+  line-height: 1.5;
+}
+
+.gold-setting {
+  flex-shrink: 0;
+  padding: 6rpx 18rpx;
+  border-radius: 16rpx;
+  font-size: 19rpx;
+  color: var(--warn);
+  background: rgba(255, 200, 87, 0.08);
+  border: 1rpx solid rgba(255, 200, 87, 0.3);
+}
+
+.gold-body {
+  display: flex;
+  align-items: flex-end;
+  gap: 12rpx;
+  margin-top: 22rpx;
+}
+
+.gold-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.gold-label {
+  display: block;
+  font-size: 19rpx;
+  color: var(--text2);
+  margin-bottom: 8rpx;
+}
+
+.gold-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 16rpx;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1rpx solid rgba(120, 180, 220, 0.16);
+}
+
+.gold-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+.gold-unit {
+  flex-shrink: 0;
+  font-size: 19rpx;
+  color: var(--text2);
+}
+
+.gold-eq {
+  flex-shrink: 0;
+  padding-bottom: 22rpx;
+  font-size: 26rpx;
+  color: var(--accent);
+}
+
+.gold-presets {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-top: 16rpx;
+  flex-wrap: wrap;
+}
+
+.gold-chip {
+  padding: 6rpx 16rpx;
+  border-radius: 14rpx;
+  font-size: 19rpx;
+  color: var(--text2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.gold-chip:active {
+  color: var(--accent);
+  border-color: rgba(56, 242, 200, 0.4);
+}
+
+.gold-hint {
+  margin-left: auto;
+  font-size: 18rpx;
+  color: var(--text2);
+}
+
+/* 金价设置弹窗 */
+.gold-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin: 10rpx 0 16rpx;
+}
+
+.gold-setting-input {
+  flex: 1;
+  min-width: 0;
+  padding: 16rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1rpx solid rgba(120, 180, 220, 0.16);
+  color: var(--accent);
+  font-size: 30rpx;
+  font-weight: 700;
+  text-align: right;
+}
+
+.gold-setting-unit {
+  flex-shrink: 0;
+  font-size: 21rpx;
+  color: var(--text2);
+}
+
+.gold-setting-eq {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  color: var(--warn);
+}
+
+.gold-setting-hint {
+  font-size: 20rpx;
+  color: var(--text2);
+  line-height: 1.7;
 }
 
 /* PC / 大屏 */

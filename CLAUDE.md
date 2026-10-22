@@ -19,7 +19,8 @@ utils/
   ring-cost.js                     价格/费用计算（0 价生效、显式传参）
   ledger.js                        收益估值/ROI/周期过滤/多轮汇总
   reward-prices.js                 奖励价目表（按角色，书/铁/灵饰/战魄/特殊奖励）
-  money.js                         梦幻币↔人民币换算、点卡成本、目标时薪
+  money.js                         梦幻币↔人民币换算、点卡成本、目标时薪（默认 3000 万两 = 202 元）
+  gold-calc.js                     金价计算器（双向换算、比例配置）
   report-export.js                 收益报表行生成（腾讯文档导出）
   share-report.js                  分享海报数据模型
   ledger-home.js                   首页/我的页收益摘要
@@ -87,7 +88,7 @@ npm test
 
 # 以下需要微信开发者工具已扫码登录 + 设置→安全设置→服务端口开启
 npm run smoke         # 核心路径冒烟（9 项）
-npm run accept        # A+B 功能验收（21 项）
+npm run accept        # A+B 功能验收（22 项）
 npm run accept:cloud  # 云函数/云数据验收（8 项，需已部署云函数）
 ```
 

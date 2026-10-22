@@ -3,27 +3,45 @@ const assert = require('node:assert/strict')
 const mock = require('./helpers/mock-wx')
 const M = require('../utils/money')
 
-test('默认配置与读写', () => {
+const DEFAULT_WAN_PER_YUAN = 3000 / 202
+
+test('默认配置：3000 万两 = 202 元', () => {
   mock.reset()
   const cfg = M.getMoneyCfg()
-  assert.equal(cfg.wanPerYuan, 12)
+  assert.ok(Math.abs(cfg.wanPerYuan - DEFAULT_WAN_PER_YUAN) < 1e-9)
+  assert.equal(cfg.ratioWan, 3000)
+  assert.equal(cfg.ratioYuan, 202)
   assert.equal(cfg.pointCostYuanPerHour, 0.4)
   assert.equal(cfg.targetHourlyYuan, 10)
-  const next = { wanPerYuan: 10, pointCostYuanPerHour: 0.5, targetHourlyYuan: 15 }
-  assert.equal(M.saveMoneyCfg(next), true)
+})
+
+test('保存/读取/恢复默认（成对比例）', () => {
+  mock.reset()
+  M.getMoneyCfg()
+  assert.equal(M.saveMoneyCfg({ ratioWan: 1500, ratioYuan: 100, pointCostYuanPerHour: 0.5, targetHourlyYuan: 15 }), true)
   const read = M.getMoneyCfg()
-  assert.equal(read.wanPerYuan, 10)
+  assert.equal(read.wanPerYuan, 15)
+  assert.equal(read.ratioWan, 1500)
+  assert.equal(read.ratioYuan, 100)
   assert.equal(read.pointCostYuanPerHour, 0.5)
   assert.equal(read.targetHourlyYuan, 15)
   M.resetMoneyCfg()
-  assert.equal(M.getMoneyCfg().wanPerYuan, 12)
+  assert.ok(Math.abs(M.getMoneyCfg().wanPerYuan - DEFAULT_WAN_PER_YUAN) < 1e-9)
+})
+
+test('旧版默认 12 万两/元自动迁移到新默认', () => {
+  mock.reset()
+  global.wx.setStorageSync('mhxy_money_cfg', { wanPerYuan: 12, pointCostYuanPerHour: 0.4, targetHourlyYuan: 10 })
+  const cfg = M.getMoneyCfg()
+  assert.equal(cfg.ratioWan, 3000)
+  assert.equal(cfg.ratioYuan, 202)
 })
 
 test('非法值回退默认', () => {
   mock.reset()
   global.wx.setStorageSync('mhxy_money_cfg', { wanPerYuan: -1, targetHourlyYuan: 'x' })
   const cfg = M.getMoneyCfg()
-  assert.equal(cfg.wanPerYuan, 12)
+  assert.ok(Math.abs(cfg.wanPerYuan - DEFAULT_WAN_PER_YUAN) < 1e-9)
   assert.equal(cfg.targetHourlyYuan, 10)
 })
 
