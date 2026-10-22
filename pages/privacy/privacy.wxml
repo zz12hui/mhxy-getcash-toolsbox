@@ -6,20 +6,22 @@
   <scroll-view scroll-y class="scroll-wrap legal-scroll">
     <view class="legal" wx:if="{{activeTab==='privacy'}}">
       <view class="legal-title">梦幻搞钱工具箱 · 隐私政策</view>
-      <view class="legal-updated">更新日期：2026-10-22（v1.2）</view>
+      <view class="legal-updated">更新日期：2026-10-22（v1.4）</view>
 
       <view class="legal-h">1. 我们收集哪些信息</view>
       <view class="legal-p">· 微信昵称、头像：仅在你主动设置时获取，用于在本小程序内展示账号信息。</view>
       <view class="legal-p">· 工具数据：你录入的跑环记录、角色等级、物品价格、奖励记录等，用于本工具的计算与统计。</view>
+      <view class="legal-p">· 腾讯文档授权信息：仅当你主动使用「生成腾讯文档」或「打开腾讯文档」时，才会把当前收益报表（角色名、轮次、金额等）发送给腾讯文档以创建在线表格。本工具不保存你的腾讯文档账号密码。</view>
 
       <view class="legal-h">2. 数据保存在哪里</view>
       <view class="legal-p">· 工具数据默认只保存在你的手机本地，不上传服务器。</view>
       <view class="legal-p">· 仅当你登录并主动点击「备份到云端」时，当前所有角色的数据才会写入微信云开发数据库，且只存储在你自己的微信账号（openid）下。</view>
+      <view class="legal-p">· 通过「生成腾讯文档」创建的表格保存在开发者腾讯文档账号下，默认设置为「链接可读」；你可以随时在腾讯文档中修改或删除该表格。请不要在报表中填写敏感信息。</view>
       <view class="legal-p">· 换手机或删除小程序前，请自行完成云端备份或导出，否则本地数据会丢失。</view>
 
       <view class="legal-h">3. 信息的使用与共享</view>
-      <view class="legal-p">· 收集的信息只用于：展示账号信息、云端备份与恢复、处理你提交的反馈。</view>
-      <view class="legal-p">· 我们不会向任何第三方出售、出租或共享你的个人信息，法律法规另有要求的除外。</view>
+      <view class="legal-p">· 收集的信息只用于：展示账号信息、云端备份与恢复、处理你提交的反馈、生成腾讯文档报表。</view>
+      <view class="legal-p">· 除腾讯文档报表功能外，我们不会向任何第三方出售、出租或共享你的个人信息，法律法规另有要求的除外。</view>
 
       <view class="legal-h">4. 权限说明</view>
       <view class="legal-p">· 头像、相册（保存战绩图）、剪贴板（导出/导入数据）等权限，均只在你主动操作时申请。</view>
@@ -41,7 +43,7 @@
 
     <view class="legal" wx:if="{{activeTab==='terms'}}">
       <view class="legal-title">梦幻搞钱工具箱 · 用户协议</view>
-      <view class="legal-updated">更新日期：2026-10-21（v1.2）</view>
+      <view class="legal-updated">更新日期：2026-10-22（v1.4）</view>
 
       <view class="legal-h">1. 工具性质</view>
       <view class="legal-p">· 本小程序是玩家自制的跑环记录与收益统计辅助工具，与网易公司及《梦幻西游》官方无关，非官方产品。</view>

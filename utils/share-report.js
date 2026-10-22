@@ -18,10 +18,10 @@ function buildShareModel(input) {
     heroPos: s.profitPos !== false,
     roiStr: s.roiStr || '—',
     cards: [
-      { label: '总投入', value: s.totalCostStr || '—', color: '#f472b6' },
-      { label: '总产出', value: s.totalIncomeStr || '—', color: '#00d4aa' },
-      { label: '净收益率', value: s.netRateStr || '—', color: '#8fa3bd' },
-      { label: '平均时薪', value: s.hourlyStr || '—', color: '#f0b45c' }
+      { label: '总投入', value: s.totalCostStr || '—', color: '#ff6bcb' },
+      { label: '总产出', value: s.totalIncomeStr || '—', color: '#38f2c8' },
+      { label: '净收益率', value: s.netRateStr || '—', color: '#8ba3bf' },
+      { label: '平均时薪', value: s.hourlyStr || '—', color: '#ffc857' }
     ],
     meta: [
       { label: '轮次', value: (s.count || 0) + ' 轮' },

@@ -12,7 +12,6 @@ Page({
     reduceMotion: false,
     statusBarHeight: 20,
     navRight: 90,
-    scrollIntoView: '',
     goldWan: '3000',
     goldYuan: '202',
     goldRatioText: '',
@@ -78,11 +77,6 @@ Page({
     if (!wan) return
     const cfg = this._goldCfg || MONEY.getMoneyCfg()
     this.setData({ goldWan: String(wan), goldYuan: GOLD.fmt(GOLD.wanToYuan(wan, cfg), 2) })
-  },
-
-  scrollToGold() {
-    this.setData({ scrollIntoView: 'gold-calc' })
-    setTimeout(() => this.setData({ scrollIntoView: '' }), 600)
   },
 
   openGoldSettings() {
@@ -204,10 +198,6 @@ Page({
     if (!tool) return
     NAV.setPending('chain:' + tool)
     this.goChain()
-  },
-
-  goManual() {
-    wx.navigateTo({ url: '/pages/manual/manual' })
   },
 
   goProfile() {

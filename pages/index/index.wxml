@@ -1,161 +1,142 @@
-<scroll-view scroll-y class="home-scroll {{reduceMotion ? 'reduce-motion' : ''}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation>
-  <view class="hub-view" style="padding-top: {{statusBarHeight + 8}}px;">
-    <view class="hub-bg">
-      <view class="orb orb1"></view>
-      <view class="orb orb2"></view>
-      <view class="orb orb3"></view>
-      <view class="grid-mask"></view>
+<view class="home-page" style="padding-top: {{statusBarHeight + 6}}px;">
+  <view class="hub-bg">
+    <view class="orb orb1"></view>
+    <view class="orb orb2"></view>
+    <view class="orb orb3"></view>
+    <view class="grid-mask"></view>
+  </view>
+
+  <view class="home-inner">
+    <view class="hub-top anim-up" style="padding-right: {{navRight}}px;">
+      <view>
+        <view class="hub-brand">梦幻搞钱工具箱</view>
+        <view class="hub-slogan">今天也在<text class="accent-text">搞钱</text></view>
+      </view>
+      <view class="hub-avatar" bindtap="goProfile">我</view>
     </view>
 
-    <view class="hub-main">
-      <view class="hub-top anim-up" style="padding-right: {{navRight}}px;">
+    <view class="ledger-hero anim-up" style="animation-delay: 50ms;" bindtap="goLedger">
+      <view class="lh-head">
+        <view class="lh-title-wrap">
+          <text class="lh-icon">📊</text>
+          <text class="lh-title">收益账本</text>
+          <text class="lh-badge">ROI · 时薪 · 月化</text>
+        </view>
+        <text class="lh-arrow">查看 ›</text>
+      </view>
+      <view class="lh-main">
         <view>
-          <view class="hub-brand">梦幻搞钱工具箱</view>
-          <view class="hub-slogan">今天也在<text class="accent-text">搞钱</text></view>
+          <text class="lh-label">累计净收益</text>
+          <text class="lh-value" style="color:{{ledgerSummary.profitPos ? 'var(--accent)' : 'var(--danger)'}};">{{ledgerSummary.profitStr}}</text>
         </view>
-        <view class="hub-avatar" bindtap="goProfile">我</view>
-      </view>
-
-      <view class="ledger-hero anim-up" style="animation-delay: 60ms;" bindtap="goLedger">
-        <view class="lh-head">
-          <view class="lh-title-wrap">
-            <text class="lh-icon">📊</text>
-            <text class="lh-title">收益账本</text>
-            <text class="lh-badge">ROI · 时薪 · 月化</text>
-          </view>
-          <text class="lh-arrow">查看 ›</text>
-        </view>
-        <view class="lh-main">
-          <view>
-            <text class="lh-label">累计净收益</text>
-            <text class="lh-value" style="color:{{ledgerSummary.profitPos ? 'var(--accent)' : 'var(--danger)'}};">{{ledgerSummary.profitStr}}</text>
-          </view>
-          <view class="lh-roi">
-            <text class="lh-label">投入产出比</text>
-            <text class="lh-value-sm">{{ledgerSummary.roiStr}}</text>
-          </view>
-        </view>
-        <view wx:if="{{sparkBars.length}}" class="lh-spark">
-          <view wx:for="{{sparkBars}}" wx:key="index" class="lh-bar" style="height:{{item}}%; animation-delay:{{index * 28}}ms;"></view>
-        </view>
-        <view class="lh-foot">
-          <text>{{ledgerSummary.costStr}} 投入 · {{ledgerSummary.incomeStr}} 产出 · {{ledgerSummary.count}} 轮</text>
-          <text>时薪 {{ledgerSummary.hourlyStr}}</text>
+        <view class="lh-roi">
+          <text class="lh-label">投入产出比</text>
+          <text class="lh-value-sm">{{ledgerSummary.roiStr}}</text>
         </view>
       </view>
-
-      <view class="section-label anim-up" style="animation-delay: 120ms;">核心工具</view>
-
-      <view class="tool-grid">
-        <view class="tool-card anim-up" style="animation-delay: 160ms;" bindtap="goPet">
-          <view class="tool-ico pet-ico">🐾</view>
-          <view class="tool-info">
-            <view class="tool-title">宠环助手</view>
-            <view class="tool-desc">100 环 · 积分追踪 · 奖励预测</view>
-            <view class="tool-tags"><text class="tool-tag">100环</text><text class="tool-tag">积分制</text></view>
-          </view>
-          <text class="tool-arrow">›</text>
-        </view>
-
-        <view class="tool-card anim-up" style="animation-delay: 210ms;" bindtap="goChain">
-          <view class="tool-ico chain-ico">📜</view>
-          <view class="tool-info">
-            <view class="tool-title">跑环助手</view>
-            <view class="tool-desc">300 环 · 三段奖励 · 书铁区间</view>
-            <view class="tool-tags"><text class="tool-tag">300环</text><text class="tool-tag">三段奖励</text></view>
-          </view>
-          <text class="tool-arrow">›</text>
-        </view>
+      <view wx:if="{{sparkBars.length}}" class="lh-spark">
+        <view wx:for="{{sparkBars}}" wx:key="index" class="lh-bar" style="height:{{item}}%; animation-delay:{{index * 28}}ms;"></view>
       </view>
-
-      <view class="section-label anim-up" style="animation-delay: 260ms;">实用工具</view>
-      <view class="quick-grid anim-up" style="animation-delay: 300ms;">
-        <view class="quick-module" bindtap="goFaq">
-          <text class="qm-icon">📖</text>
-          <text class="qm-label">知识库</text>
-        </view>
-        <view class="quick-module" bindtap="scrollToGold">
-          <text class="qm-icon">💱</text>
-          <text class="qm-label">金价计算器</text>
-        </view>
+      <view class="lh-foot">
+        <text>{{ledgerSummary.costStr}} 投入 · {{ledgerSummary.incomeStr}} 产出 · {{ledgerSummary.count}} 轮</text>
+        <text>时薪 {{ledgerSummary.hourlyStr}}</text>
       </view>
+    </view>
 
-      <view id="gold-calc" class="gold-card anim-up" style="animation-delay: 340ms;">
-        <view class="gold-head">
-          <view>
-            <view class="gold-title">💱 金价计算器</view>
-            <view class="gold-ratio">{{goldRatioText}}</view>
-          </view>
-          <view class="gold-setting" bindtap="openGoldSettings">比例</view>
+    <view class="tool-grid anim-up" style="animation-delay: 90ms;">
+      <view class="tool-card" bindtap="goPet">
+        <view class="tool-ico pet-ico">🐾</view>
+        <view class="tool-info">
+          <view class="tool-title">宠环助手</view>
+          <view class="tool-desc">100 环 · 积分 · 预测</view>
         </view>
-        <view class="gold-body">
-          <view class="gold-field">
-            <text class="gold-label">梦幻币</text>
-            <view class="gold-input-row">
-              <input class="gold-input" type="digit" value="{{goldWan}}" bindinput="onGoldWanInput" placeholder="0"/>
-              <text class="gold-unit">万两</text>
-            </view>
-          </view>
-          <view class="gold-eq">⇄</view>
-          <view class="gold-field">
-            <text class="gold-label">人民币</text>
-            <view class="gold-input-row">
-              <input class="gold-input" type="digit" value="{{goldYuan}}" bindinput="onGoldYuanInput" placeholder="0"/>
-              <text class="gold-unit">元</text>
-            </view>
+        <text class="tool-arrow">›</text>
+      </view>
+      <view class="tool-card" bindtap="goChain">
+        <view class="tool-ico chain-ico">📜</view>
+        <view class="tool-info">
+          <view class="tool-title">跑环助手</view>
+          <view class="tool-desc">300 环 · 三段奖励</view>
+        </view>
+        <text class="tool-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="gold-card anim-up" style="animation-delay: 130ms;">
+      <view class="gold-head">
+        <view>
+          <view class="gold-title">💱 金价计算器</view>
+          <view class="gold-ratio">{{goldRatioText}}</view>
+        </view>
+        <view class="gold-setting" bindtap="openGoldSettings">比例</view>
+      </view>
+      <view class="gold-body">
+        <view class="gold-field">
+          <text class="gold-label">梦幻币</text>
+          <view class="gold-input-row">
+            <input class="gold-input" type="digit" value="{{goldWan}}" bindinput="onGoldWanInput" placeholder="0"/>
+            <text class="gold-unit">万两</text>
           </view>
         </view>
-        <view class="gold-presets">
-          <view class="gold-chip" bindtap="quickGold" data-wan="1000">1000万</view>
-          <view class="gold-chip" bindtap="quickGold" data-wan="3000">3000万</view>
-          <view class="gold-chip" bindtap="quickGold" data-wan="10000">1亿</view>
-          <text class="gold-hint">改任意一边自动换算</text>
+        <view class="gold-eq">⇄</view>
+        <view class="gold-field">
+          <text class="gold-label">人民币</text>
+          <view class="gold-input-row">
+            <input class="gold-input" type="digit" value="{{goldYuan}}" bindinput="onGoldYuanInput" placeholder="0"/>
+            <text class="gold-unit">元</text>
+          </view>
         </view>
       </view>
+      <view class="gold-presets">
+        <view class="gold-chip" bindtap="quickGold" data-wan="1000">1000万</view>
+        <view class="gold-chip" bindtap="quickGold" data-wan="3000">3000万</view>
+        <view class="gold-chip" bindtap="quickGold" data-wan="10000">1亿</view>
+        <text class="gold-hint">改任意一边自动换算</text>
+      </view>
+    </view>
 
-      <view class="section-label anim-up" style="animation-delay: 380ms;">跑环工具箱</view>
-      <view class="mini-grid anim-up" style="animation-delay: 420ms;">
-        <view class="mini-tool" bindtap="goPriceRef">
-          <text class="mt-icon">📋</text>
-          <text class="mt-label">物品参考价</text>
-        </view>
-        <view class="mini-tool" bindtap="goPetTool" data-tool="predict">
-          <text class="mt-icon">🔮</text>
-          <text class="mt-label">宠环预测</text>
-        </view>
-        <view class="mini-tool" bindtap="goPetTool" data-tool="control">
-          <text class="mt-icon">🎯</text>
-          <text class="mt-label">控分计算</text>
-        </view>
-        <view class="mini-tool" bindtap="goPetTool" data-tool="batch">
-          <text class="mt-icon">📦</text>
-          <text class="mt-label">批量填充</text>
-        </view>
-        <view class="mini-tool" bindtap="goChainTool" data-tool="history">
-          <text class="mt-icon">📜</text>
-          <text class="mt-label">跑环历史</text>
-        </view>
-        <view class="mini-tool" bindtap="goChainTool" data-tool="stats">
-          <text class="mt-icon">📈</text>
-          <text class="mt-label">跑环统计</text>
-        </view>
-        <view class="mini-tool" bindtap="goChainTool" data-tool="reward">
-          <text class="mt-icon">🏆</text>
-          <text class="mt-label">奖励记录</text>
-        </view>
-        <view class="mini-tool" bindtap="goManual">
-          <text class="mt-icon">📖</text>
-          <text class="mt-label">操作手册</text>
-        </view>
+    <view class="section-label anim-up" style="animation-delay: 160ms;">全部工具</view>
+    <view class="mini-grid anim-up" style="animation-delay: 180ms;">
+      <view class="mini-tool" bindtap="goFaq">
+        <text class="mt-icon">📖</text>
+        <text class="mt-label">知识库</text>
       </view>
+      <view class="mini-tool" bindtap="goPriceRef">
+        <text class="mt-icon">📋</text>
+        <text class="mt-label">物品参考价</text>
+      </view>
+      <view class="mini-tool" bindtap="goPetTool" data-tool="predict">
+        <text class="mt-icon">🔮</text>
+        <text class="mt-label">宠环预测</text>
+      </view>
+      <view class="mini-tool" bindtap="goPetTool" data-tool="control">
+        <text class="mt-icon">🎯</text>
+        <text class="mt-label">控分计算</text>
+      </view>
+      <view class="mini-tool" bindtap="goPetTool" data-tool="batch">
+        <text class="mt-icon">📦</text>
+        <text class="mt-label">批量填充</text>
+      </view>
+      <view class="mini-tool" bindtap="goChainTool" data-tool="history">
+        <text class="mt-icon">📜</text>
+        <text class="mt-label">跑环历史</text>
+      </view>
+      <view class="mini-tool" bindtap="goChainTool" data-tool="stats">
+        <text class="mt-icon">📈</text>
+        <text class="mt-label">跑环统计</text>
+      </view>
+      <view class="mini-tool" bindtap="goChainTool" data-tool="reward">
+        <text class="mt-icon">🏆</text>
+        <text class="mt-label">奖励记录</text>
+      </view>
+    </view>
 
-      <view class="hub-ft">
-        <text>梦幻搞钱工具箱 · 本地存储 · </text>
-        <text>{{clockStr}}</text>
-      </view>
+    <view class="hub-ft">
+      <text>梦幻搞钱工具箱 · 本地存储 · </text>
+      <text>{{clockStr}}</text>
     </view>
   </view>
-</scroll-view>
+</view>
 
 <!-- 金价比例设置 -->
 <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showGoldSettings}}" bindtap="closeGoldSettings">

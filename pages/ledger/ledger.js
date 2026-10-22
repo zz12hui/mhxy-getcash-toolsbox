@@ -452,14 +452,14 @@ Page({
 
       // 背景
       const bg = ctx.createLinearGradient(0, 0, 0, H)
-      bg.addColorStop(0, '#0b1220')
-      bg.addColorStop(0.55, '#111c2e')
-      bg.addColorStop(1, '#0a111d')
+      bg.addColorStop(0, '#060a12')
+      bg.addColorStop(0.55, '#0a1322')
+      bg.addColorStop(1, '#0b1524')
       ctx.fillStyle = bg
       ctx.fillRect(0, 0, W, H)
       const glow = ctx.createRadialGradient(620, 160, 20, 620, 160, 520)
-      glow.addColorStop(0, 'rgba(0,212,170,0.16)')
-      glow.addColorStop(1, 'rgba(0,212,170,0)')
+      glow.addColorStop(0, 'rgba(56,242,200,0.18)')
+      glow.addColorStop(1, 'rgba(56,242,200,0)')
       ctx.fillStyle = glow
       ctx.fillRect(0, 0, W, 760)
 
@@ -480,15 +480,15 @@ Page({
 
       // 主卡：累计净收益 + ROI
       roundRect(50, 232, 650, 190, 24)
-      ctx.fillStyle = 'rgba(0,212,170,0.08)'
+      ctx.fillStyle = 'rgba(56,242,200,0.08)'
       ctx.fill()
-      ctx.strokeStyle = 'rgba(0,212,170,0.35)'
+      ctx.strokeStyle = 'rgba(56,242,200,0.35)'
       ctx.lineWidth = 2
       ctx.stroke()
       ctx.fillStyle = '#8fa3bd'
       ctx.font = '24px sans-serif'
       ctx.fillText(model.heroLabel, 90, 288)
-      ctx.fillStyle = model.heroPos ? '#00d4aa' : '#ff6b6b'
+      ctx.fillStyle = model.heroPos ? '#38f2c8' : '#ff6b6b'
       ctx.font = 'bold 62px sans-serif'
       ctx.fillText(model.heroValue, 90, 372)
       ctx.textAlign = 'right'
@@ -546,7 +546,7 @@ Page({
         const range = max - min || 1
         const cx0 = 50
         const cy0 = 1030
-        const cw = 650
+        const cw = 560
         const ch = 90
         const py = v => cy0 + ch - ((v - min) / range) * ch
         ctx.strokeStyle = 'rgba(56,242,200,0.55)'
@@ -570,7 +570,7 @@ Page({
         const range = max - min || 1
         const cx0 = 50
         const cy0 = 1030
-        const cw = 650
+        const cw = 560
         const ch = 90
         const py = v => cy0 + ch - ((v - min) / range) * ch
         // 零轴
@@ -601,11 +601,21 @@ Page({
         ctx.fillText('还没有已记账轮次，先去结算一轮', 50, 1075)
       }
 
-      // 页脚
-      ctx.textAlign = 'center'
+      // 页脚 + 小程序码占位
+      ctx.textAlign = 'left'
       ctx.fillStyle = '#6b7d95'
       ctx.font = '21px sans-serif'
-      ctx.fillText(model.footer, W / 2, 1145)
+      ctx.fillText(model.footer, 50, 1145)
+      roundRect(620, 1040, 80, 80, 10)
+      ctx.setLineDash([4, 4])
+      ctx.strokeStyle = 'rgba(143,163,189,0.45)'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.textAlign = 'center'
+      ctx.font = '16px sans-serif'
+      ctx.fillStyle = 'rgba(143,163,189,0.7)'
+      ctx.fillText('小程序码', 660, 1132)
       ctx.textAlign = 'left'
 
       setTimeout(() => {

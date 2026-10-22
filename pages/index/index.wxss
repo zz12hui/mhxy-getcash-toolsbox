@@ -1,18 +1,18 @@
-page { padding-bottom: 140rpx; }
-
-.home-scroll {
+page {
   height: 100%;
+  overflow: hidden;
+  padding-bottom: 0;
 }
 
-.hub-view {
-  flex: 1;
-  min-height: 100%;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+.home-page {
   position: relative;
-  padding-top: 24rpx;
+  height: 100vh;
+  box-sizing: border-box;
+  padding-bottom: 132rpx;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #060a12 0%, #0a1322 58%, #0b1524 100%);
 }
 
 .hub-bg {
@@ -23,7 +23,7 @@ page { padding-bottom: 140rpx; }
   left: 0;
   pointer-events: none;
   z-index: 0;
-  background: linear-gradient(180deg, #060a12 0%, #0a1322 55%, #0b1524 100%);
+  overflow: hidden;
 }
 
 .orb {
@@ -34,27 +34,27 @@ page { padding-bottom: 140rpx; }
 }
 
 .orb1 {
-  width: 620rpx;
-  height: 620rpx;
+  width: 520rpx;
+  height: 520rpx;
   background: radial-gradient(circle, rgba(56, 242, 200, 0.16), transparent 68%);
-  top: -220rpx;
-  right: -160rpx;
+  top: -200rpx;
+  right: -150rpx;
 }
 
 .orb2 {
-  width: 520rpx;
-  height: 520rpx;
-  background: radial-gradient(circle, rgba(58, 167, 255, 0.14), transparent 68%);
-  bottom: 120rpx;
+  width: 460rpx;
+  height: 460rpx;
+  background: radial-gradient(circle, rgba(58, 167, 255, 0.13), transparent 68%);
+  bottom: 40rpx;
   left: -180rpx;
 }
 
 .orb3 {
-  width: 440rpx;
-  height: 440rpx;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.12), transparent 70%);
-  top: 44%;
-  left: 46%;
+  width: 380rpx;
+  height: 380rpx;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.10), transparent 70%);
+  top: 42%;
+  left: 48%;
 }
 
 .grid-mask {
@@ -64,37 +64,41 @@ page { padding-bottom: 140rpx; }
   bottom: 0;
   left: 0;
   background-image:
-    linear-gradient(rgba(120, 180, 220, 0.035) 1rpx, transparent 1rpx),
-    linear-gradient(90deg, rgba(120, 180, 220, 0.035) 1rpx, transparent 1rpx);
+    linear-gradient(rgba(120, 180, 220, 0.03) 1rpx, transparent 1rpx),
+    linear-gradient(90deg, rgba(120, 180, 220, 0.03) 1rpx, transparent 1rpx);
   background-size: 56rpx 56rpx;
 }
 
-.hub-main {
+.home-inner {
   position: relative;
   z-index: 1;
-  padding: 32rpx 28rpx 60rpx;
-  max-width: 700rpx;
-  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14rpx 26rpx 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .hub-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 20rpx;
-  margin-bottom: 30rpx;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+  flex-shrink: 0;
 }
 
 .hub-brand {
-  font-size: 24rpx;
+  font-size: 21rpx;
   color: var(--text2);
   letter-spacing: 1rpx;
 }
 
 .hub-slogan {
-  margin-top: 8rpx;
-  font-size: 48rpx;
+  margin-top: 2rpx;
+  font-size: 40rpx;
   font-weight: 800;
   color: var(--text);
   line-height: 1.2;
@@ -106,13 +110,13 @@ page { padding-bottom: 140rpx; }
 }
 
 .hub-avatar {
-  width: 76rpx;
-  height: 76rpx;
+  width: 64rpx;
+  height: 64rpx;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26rpx;
+  font-size: 23rpx;
   font-weight: 700;
   color: var(--accent);
   background: linear-gradient(135deg, rgba(56, 242, 200, 0.18), rgba(58, 167, 255, 0.10));
@@ -122,14 +126,13 @@ page { padding-bottom: 140rpx; }
 
 /* 收益账本大栏目 */
 .ledger-hero {
-  margin: 0 0 26rpx;
-  padding: 30rpx;
-  border-radius: 30rpx;
+  margin: 0;
+  padding: 20rpx 24rpx;
+  border-radius: 26rpx;
   background: linear-gradient(135deg, rgba(56, 242, 200, 0.13), rgba(13, 24, 40, 0.95) 55%, rgba(58, 167, 255, 0.10));
   border: 1rpx solid rgba(56, 242, 200, 0.32);
-  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.38), inset 0 1rpx 0 rgba(255, 255, 255, 0.06);
-  position: relative;
-  overflow: hidden;
+  box-shadow: 0 14rpx 40rpx rgba(0, 0, 0, 0.36), inset 0 1rpx 0 rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 
 .ledger-hero:active {
@@ -146,29 +149,29 @@ page { padding-bottom: 140rpx; }
 .lh-title-wrap {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  gap: 8rpx;
   flex-wrap: wrap;
 }
 
-.lh-icon { font-size: 32rpx; }
+.lh-icon { font-size: 26rpx; }
 
 .lh-title {
-  font-size: 30rpx;
+  font-size: 27rpx;
   font-weight: 700;
   color: var(--text);
 }
 
 .lh-badge {
-  font-size: 18rpx;
+  font-size: 16rpx;
   color: var(--accent);
   border: 1rpx solid rgba(56, 242, 200, 0.35);
   border-radius: 999rpx;
-  padding: 2rpx 12rpx;
+  padding: 2rpx 10rpx;
   background: rgba(56, 242, 200, 0.06);
 }
 
 .lh-arrow {
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: var(--text2);
 }
 
@@ -176,46 +179,46 @@ page { padding-bottom: 140rpx; }
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 18rpx;
-  margin-top: 22rpx;
+  gap: 14rpx;
+  margin-top: 10rpx;
 }
 
 .lh-label {
   display: block;
-  font-size: 20rpx;
+  font-size: 18rpx;
   color: var(--text2);
 }
 
 .lh-value {
   display: block;
-  font-size: 58rpx;
+  font-size: 46rpx;
   font-weight: 800;
   line-height: 1.15;
-  margin-top: 6rpx;
+  margin-top: 2rpx;
   word-break: break-all;
   text-shadow: 0 0 32rpx rgba(56, 242, 200, 0.22);
 }
 
 .lh-value-sm {
   display: block;
-  font-size: 30rpx;
+  font-size: 26rpx;
   font-weight: 700;
   color: var(--text);
-  margin-top: 6rpx;
+  margin-top: 2rpx;
 }
 
 .lh-spark {
   display: flex;
   align-items: flex-end;
-  gap: 8rpx;
-  height: 64rpx;
-  margin-top: 20rpx;
+  gap: 6rpx;
+  height: 38rpx;
+  margin-top: 10rpx;
 }
 
 .lh-bar {
   flex: 1;
-  min-width: 6rpx;
-  border-radius: 6rpx 6rpx 2rpx 2rpx;
+  min-width: 5rpx;
+  border-radius: 4rpx 4rpx 2rpx 2rpx;
   background: linear-gradient(180deg, rgba(56, 242, 200, 0.9), rgba(56, 242, 200, 0.15));
   transform-origin: bottom;
   animation: barIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -230,57 +233,50 @@ page { padding-bottom: 140rpx; }
 .lh-foot {
   display: flex;
   justify-content: space-between;
-  gap: 12rpx;
-  margin-top: 20rpx;
-  padding-top: 16rpx;
+  gap: 10rpx;
+  margin-top: 10rpx;
+  padding-top: 8rpx;
   border-top: 1rpx solid rgba(255, 255, 255, 0.06);
-  font-size: 19rpx;
+  font-size: 17rpx;
   color: var(--text2);
   flex-wrap: wrap;
 }
 
-.section-label {
-  margin: 30rpx 4rpx 16rpx;
-  font-size: 24rpx;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 1rpx;
-}
-
-/* 工具卡 */
+/* 工具卡（两列） */
 .tool-grid {
   display: flex;
-  flex-direction: column;
-  gap: 16rpx;
+  gap: 12rpx;
+  flex-shrink: 0;
 }
 
 .tool-card {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
-  border-radius: 26rpx;
+  gap: 12rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 22rpx;
   background: rgba(18, 30, 50, 0.88);
   border: 1rpx solid rgba(120, 180, 220, 0.12);
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.22);
   transition: transform 150ms ease-out, border-color 150ms ease-out;
 }
 
 .tool-card:active {
-  transform: scale(0.985);
+  transform: scale(0.975);
   border-color: rgba(56, 242, 200, 0.45);
 }
 
 .tool-ico {
-  width: 92rpx;
-  height: 92rpx;
-  min-width: 92rpx;
-  border-radius: 24rpx;
+  width: 64rpx;
+  height: 64rpx;
+  min-width: 64rpx;
+  border-radius: 18rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 44rpx;
+  font-size: 32rpx;
 }
 
 .pet-ico {
@@ -299,117 +295,61 @@ page { padding-bottom: 140rpx; }
 }
 
 .tool-title {
-  font-size: 29rpx;
+  font-size: 25rpx;
   font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .tool-desc {
-  margin-top: 6rpx;
-  font-size: 21rpx;
+  margin-top: 2rpx;
+  font-size: 17rpx;
   color: var(--text2);
-  line-height: 1.5;
-}
-
-.tool-tags {
-  display: flex;
-  gap: 8rpx;
-  margin-top: 10rpx;
-  flex-wrap: wrap;
-}
-
-.tool-tag {
-  font-size: 18rpx;
-  color: var(--text2);
-  padding: 3rpx 12rpx;
-  border-radius: 12rpx;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1rpx solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tool-arrow {
-  font-size: 34rpx;
+  font-size: 26rpx;
   color: var(--text2);
-  padding-right: 4rpx;
-}
-
-/* 快捷工具 */
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12rpx;
-}
-
-.quick-module {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 112rpx;
-  border-radius: 22rpx;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1rpx solid rgba(255, 255, 255, 0.06);
-}
-
-.quick-module:active {
-  background: rgba(56, 242, 200, 0.08);
-  border-color: rgba(56, 242, 200, 0.3);
-}
-
-.qm-icon {
-  font-size: 34rpx;
-  margin-bottom: 6rpx;
-}
-
-.qm-label {
-  font-size: 19rpx;
-  color: var(--text2);
-}
-
-.hub-ft {
-  margin-top: 40rpx;
-  text-align: center;
-  font-size: 19rpx;
-  color: rgba(139, 163, 191, 0.35);
-  line-height: 1.8;
 }
 
 /* 金价计算器 */
 .gold-card {
-  margin-top: 18rpx;
-  padding: 26rpx;
-  border-radius: 28rpx;
-  background:
-    linear-gradient(135deg, rgba(255, 200, 87, 0.10), rgba(18, 30, 50, 0.94) 48%, rgba(56, 242, 200, 0.08));
+  flex-shrink: 0;
+  padding: 18rpx 20rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, rgba(255, 200, 87, 0.10), rgba(18, 30, 50, 0.94) 48%, rgba(56, 242, 200, 0.08));
   border: 1rpx solid rgba(255, 200, 87, 0.28);
-  box-shadow: 0 12rpx 36rpx rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10rpx 28rpx rgba(0, 0, 0, 0.26);
 }
 
 .gold-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .gold-title {
-  font-size: 28rpx;
+  font-size: 24rpx;
   font-weight: 700;
   color: var(--text);
 }
 
 .gold-ratio {
-  margin-top: 6rpx;
-  font-size: 19rpx;
+  margin-top: 2rpx;
+  font-size: 16rpx;
   color: var(--warn);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .gold-setting {
   flex-shrink: 0;
-  padding: 6rpx 18rpx;
-  border-radius: 16rpx;
-  font-size: 19rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 14rpx;
+  font-size: 17rpx;
   color: var(--warn);
   background: rgba(255, 200, 87, 0.08);
   border: 1rpx solid rgba(255, 200, 87, 0.3);
@@ -418,8 +358,8 @@ page { padding-bottom: 140rpx; }
 .gold-body {
   display: flex;
   align-items: flex-end;
-  gap: 12rpx;
-  margin-top: 22rpx;
+  gap: 10rpx;
+  margin-top: 10rpx;
 }
 
 .gold-field {
@@ -429,17 +369,17 @@ page { padding-bottom: 140rpx; }
 
 .gold-label {
   display: block;
-  font-size: 19rpx;
+  font-size: 17rpx;
   color: var(--text2);
-  margin-bottom: 8rpx;
+  margin-bottom: 5rpx;
 }
 
 .gold-input-row {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 14rpx 16rpx;
-  border-radius: 16rpx;
+  gap: 6rpx;
+  padding: 8rpx 12rpx;
+  border-radius: 14rpx;
   background: rgba(0, 0, 0, 0.22);
   border: 1rpx solid rgba(120, 180, 220, 0.16);
 }
@@ -447,7 +387,7 @@ page { padding-bottom: 140rpx; }
 .gold-input {
   flex: 1;
   min-width: 0;
-  font-size: 30rpx;
+  font-size: 27rpx;
   font-weight: 700;
   color: var(--text);
   text-align: right;
@@ -455,29 +395,28 @@ page { padding-bottom: 140rpx; }
 
 .gold-unit {
   flex-shrink: 0;
-  font-size: 19rpx;
+  font-size: 17rpx;
   color: var(--text2);
 }
 
 .gold-eq {
   flex-shrink: 0;
-  padding-bottom: 22rpx;
-  font-size: 26rpx;
+  padding-bottom: 16rpx;
+  font-size: 22rpx;
   color: var(--accent);
 }
 
 .gold-presets {
   display: flex;
   align-items: center;
-  gap: 10rpx;
-  margin-top: 16rpx;
-  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 8rpx;
 }
 
 .gold-chip {
-  padding: 6rpx 16rpx;
-  border-radius: 14rpx;
-  font-size: 19rpx;
+  padding: 3rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 17rpx;
   color: var(--text2);
   background: rgba(255, 255, 255, 0.04);
   border: 1rpx solid rgba(255, 255, 255, 0.08);
@@ -490,8 +429,65 @@ page { padding-bottom: 140rpx; }
 
 .gold-hint {
   margin-left: auto;
-  font-size: 18rpx;
+  font-size: 16rpx;
   color: var(--text2);
+}
+
+/* 工具网格 */
+.section-label {
+  margin: 4rpx 4rpx 8rpx;
+  font-size: 21rpx;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 1rpx;
+  flex-shrink: 0;
+}
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10rpx;
+  flex-shrink: 0;
+}
+
+.mini-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  height: 88rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1rpx solid rgba(255, 255, 255, 0.06);
+  transition: transform 140ms ease-out, border-color 140ms ease-out;
+}
+
+.mini-tool:active {
+  transform: scale(0.95);
+  border-color: rgba(56, 242, 200, 0.35);
+  background: rgba(56, 242, 200, 0.06);
+}
+
+.mt-icon {
+  font-size: 26rpx;
+}
+
+.mt-label {
+  font-size: 16rpx;
+  color: var(--text2);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.hub-ft {
+  padding-top: 10rpx;
+  text-align: center;
+  font-size: 16rpx;
+  color: rgba(139, 163, 191, 0.45);
+  line-height: 1.6;
+  flex-shrink: 0;
 }
 
 /* 金价设置弹窗 */
@@ -533,63 +529,35 @@ page { padding-bottom: 140rpx; }
   line-height: 1.7;
 }
 
-/* 跑环工具箱 */
-.mini-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12rpx;
-}
-
-.mini-tool {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-  height: 118rpx;
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1rpx solid rgba(255, 255, 255, 0.06);
-  transition: transform 140ms ease-out, border-color 140ms ease-out;
-}
-
-.mini-tool:active {
-  transform: scale(0.96);
-  border-color: rgba(56, 242, 200, 0.35);
-  background: rgba(56, 242, 200, 0.06);
-}
-
-.mt-icon {
-  font-size: 30rpx;
-}
-
-.mt-label {
-  font-size: 18rpx;
-  color: var(--text2);
-  text-align: center;
-  line-height: 1.3;
+/* 小屏压缩，保证不出现滚动 */
+@media (max-height: 720px) {
+  .hub-slogan { font-size: 34rpx; }
+  .ledger-hero { padding: 16rpx 20rpx; margin-bottom: 10rpx; }
+  .lh-value { font-size: 40rpx; }
+  .lh-spark { height: 28rpx; }
+  .tool-card { padding: 12rpx 14rpx; }
+  .gold-card { padding: 14rpx 16rpx; margin-bottom: 8rpx; }
+  .gold-hint { display: none; }
+  .mini-tool { height: 76rpx; }
+  .hub-ft { display: none; }
 }
 
 /* PC / 大屏 */
 @media (min-width: 768px) {
-  .tool-grid {
-    flex-direction: row;
+  .home-inner {
+    max-width: 782px;
+    margin: 0 auto;
   }
 
-  .tool-grid .tool-card {
-    flex: 1;
-    margin-bottom: 0;
+  .mini-grid {
+    grid-template-columns: repeat(8, 1fr);
   }
 
-  .quick-grid {
-    gap: 16rpx;
+  .mini-tool {
+    height: 96rpx;
   }
 
-  .quick-module {
-    height: 128rpx;
-  }
-
-  .hub-main {
-    padding-top: 48rpx;
+  .gold-card {
+    max-width: none;
   }
 }
