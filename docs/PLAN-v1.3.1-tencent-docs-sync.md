@@ -1,7 +1,7 @@
 # 收益报表同步到腾讯文档 · 可行性方案（v1.3.1）
 
 > 关联：[收益记账规划](PLAN-v1.3-bookkeeping.md)、[验收指南](ACCEPTANCE-v1.2.md)
-> 状态：**路线 C（OAuth 正式绑定）已选定**；开放平台已注册、开发者权限已开通，等待 AppID / 回调地址 / AppSecret 配置与本地 OAuth 联调。准备清单见 [TENCENT-DOCS-SETUP.md](TENCENT-DOCS-SETUP.md)。
+> 状态：**A 版（开发者账号建表 + 链接可读）已接入小程序**：云函数 `docsReport` 已部署，账本页可一键生成腾讯文档报表并跳转腾讯文档小程序。B 版（每个用户自己的文档）待 `client_secret` + 回调页。准备清单见 [TENCENT-DOCS-SETUP.md](TENCENT-DOCS-SETUP.md)。
 > 结论：**能结合，但要分两条路线**——「导出导入」今天就能做；「每个用户绑定自己的腾讯文档」需要腾讯文档开放平台/API 权限，能否用个人主体开通需实际申请确认。
 
 ---

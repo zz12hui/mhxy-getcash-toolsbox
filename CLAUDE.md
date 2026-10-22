@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-梦幻搞钱工具箱 — 微信小程序，梦幻西游跑环记录/预测/统计工具。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 可选微信登录与云备份。微信云开发后端（5 个云函数 + 云数据库），无后台管理端。
+梦幻搞钱工具箱 — 微信小程序，梦幻西游跑环记录/预测/统计工具。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 可选微信登录与云备份。微信云开发后端（6 个云函数 + 云数据库），无后台管理端。
 
 基础库 2.24.0，AppID `<YOUR_APPID>`，云环境 `<YOUR_CLOUD_ENV>`（作者自用，他人 fork 需替换）。
 
@@ -20,6 +20,7 @@ utils/
   ledger.js                        收益估值/ROI/周期过滤/多轮汇总
   reward-prices.js                 奖励价目表（按角色，书/铁/灵饰/战魄/特殊奖励）
   money.js                         梦幻币↔人民币换算、点卡成本、目标时薪
+  report-export.js                 收益报表行生成（腾讯文档导出）
   task-usage.js                   常用任务排序
   item-memory.js                  物品名记忆
   undo.js                         UndoStack（最多 10 步）
@@ -36,11 +37,11 @@ pages/
   privacy/                         隐私政策与用户协议
   ledger/                          收益账本（筛选/汇总/累计净收益折线/轮次列表）
 components/run-detail/             轮次明细抽屉（成本/收益/ROI）
-cloudfunctions/                    login / syncUpload / syncDownload / submitFeedback / init
+cloudfunctions/                    login / syncUpload / syncDownload / submitFeedback / init / docsReport
 tests/                             Node 单测（npm test）
 ```
 
-### 云函数清单（实际 5 个）
+### 云函数清单（实际 6 个）
 
 | 函数 | 说明 |
 |---|---|
@@ -48,6 +49,7 @@ tests/                             Node 单测（npm test）
 | syncUpload | 入参 `roles[]`，按角色 + 数据类型分文档写入 `user_sync_data` |
 | syncDownload | 返回 `roles[]`（含 pet/chain），客户端整份恢复 |
 | submitFeedback | 反馈写入 `feedbacks` |
+| docsReport | 生成腾讯文档收益报表：建表→加子表→写数据→设链接可读；Token 在云函数环境变量 `TENCENT_DOCS_CLIENT_ID/ACCESS_TOKEN/OPEN_ID`，不落代码 |
 | init | FAQ 初始化 + 绑定管理员；校验 openid（环境变量 `ADMIN_OPENIDS` 或 `admins` 集合），控制台调用可用 `INIT_SECRET` + `event.secret` |
 
 ### 云数据库集合

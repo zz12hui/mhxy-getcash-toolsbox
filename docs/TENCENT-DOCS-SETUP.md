@@ -148,3 +148,34 @@ Token 情况：JWT 有效期约 30 天（当前到 2026-11-21），过期后需�
   - **A. 开发者账号建表 + 链接可读**：用户打开链接查看 / 另存为到自己的文档（不需要 OAuth，今天可做）；
   - **B. 每个用户自己的文档**：必须走 OAuth（需要 `client_secret` + 回调页），或让用户提供自己的三元组（需验证）。
 - 回调页 `docs/tencent-docs-callback.html` 已就绪，域名 `4si.cc` 若能托管静态文件即可用。
+
+---
+
+## 8. 小程序内已接入（A 版：开发者账号建表）
+
+已新增云函数 `docsReport`（已部署到云环境）和账本页按钮「📄 生成腾讯文档报表」：
+
+1. 账本页按当前筛选（角色/工具/周期）整理表头 + 每轮明细 + 汇总；
+2. 调云函数 `docsReport` → 建在线表格 → 加子表「收益报表」→ 写入数据 → 设为「链接可读」；
+3. 小程序弹窗显示链接，可「复制链接」或「打开腾讯文档」：
+   - 使用腾讯文档小程序跳转规范：
+     `wx.navigateToMiniProgram({ appId: 'wxd45c635d754dbf59', path: 'pages/detail/detail?url=' + encodeURIComponent(url) })`
+   - 半屏 `wx.openEmbeddedMiniProgram` 需在小程序后台「第三方设置 → 半屏小程序管理」申请，暂未接。
+
+### 需要你配置 3 个环境变量（一次性）
+
+微信开发者工具 → 云开发控制台 → 云函数 → `docsReport` → 函数配置 → 环境变量，添加：
+
+| 变量名 | 值 |
+|---|---|
+| TENCENT_DOCS_CLIENT_ID | `<TENCENT_DOCS_CLIENT_ID>` |
+| TENCENT_DOCS_ACCESS_TOKEN | `.secrets/tencent-docs.json` 里的 accessToken（后台那个，别贴聊天） |
+| TENCENT_DOCS_OPEN_ID | `.secrets/tencent-docs.json` 里的 openId |
+
+保存后如果调用仍提示缺少变量，重新部署一次云函数（我可以执行）。
+
+### 文档归属（重要）
+
+- **A 版**：文档创建在**开发者账号**下，通过「链接可读」分享给用户；用户可以查看、另存为到自己的腾讯文档。
+- **B 版**（每个用户自己的文档）：需要 `client_secret` + 回调页做 OAuth；你后台目前只有三元组，若确认没有 client_secret，就只能先上 A 版。
+- Token 是 30 天有效期，过期需重新生成；生产要长期稳定需要 OAuth refresh token。

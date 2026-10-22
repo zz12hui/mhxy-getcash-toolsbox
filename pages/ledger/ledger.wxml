@@ -25,6 +25,9 @@
       </view>
 
       <view class="reward-rule-box">
+        <view style="display:flex;gap:12rpx;margin-bottom:16rpx;">
+          <view class="btn btn-a" style="flex:1" bindtap="createDocsReport">{{docsLoading ? '生成中…' : '📄 生成腾讯文档报表'}}</view>
+        </view>
         <view class="stat-row" style="padding:4rpx 0;"><text>轮次 / 正收益率</text><text class="val">{{summary.count}} 轮 · {{summary.winRateStr}}</text></view>
         <view class="stat-row" style="padding:4rpx 0;"><text>总工时 / 平均时薪</text><text class="val" style="font-size:22rpx;">{{summary.totalHoursStr}} · {{summary.hourlyStr}}</text></view>
         <view class="stat-row" style="padding:4rpx 0;"><text>日均收益 / 月化收益</text><text class="val" style="font-size:22rpx;">{{summary.dailyStr}} · {{summary.monthStr}}</text></view>
@@ -64,6 +67,22 @@
   </scroll-view>
 
   <run-detail show="{{showDetail}}" run="{{detailRun}}" tool="{{detailRun._tool || 'pet'}}" money-cfg="{{moneyCfg}}" currency="{{currency}}" bind:close="closeDetail"/>
+
+  <!-- 生成腾讯文档结果 -->
+  <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showDocsResult}}" bindtap="closeDocsResult">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-title">📄 腾讯文档报表已生成</view>
+      <view class="stat-row"><text>标题</text><text class="val" style="font-size:22rpx;max-width:60%;">{{docsResultTitle}}</text></view>
+      <view style="font-size:22rpx;color:var(--text2);word-break:break-all;margin:12rpx 0;line-height:1.6;">{{docsResultUrl}}</view>
+      <view wx:if="{{docsResultWarning}}" style="font-size:21rpx;color:var(--warn);line-height:1.6;margin-bottom:8rpx;">{{docsResultWarning}}</view>
+      <view class="sheet-actions">
+        <view class="btn" bindtap="copyDocsLink">复制链接</view>
+        <view class="btn btn-a" style="flex:1" bindtap="openDocsMiniProgram">打开腾讯文档</view>
+      </view>
+      <view class="btn" style="margin-top:12rpx;" bindtap="closeDocsResult">关闭</view>
+    </view>
+  </view>
 
   <!-- 换算设置 -->
   <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showMoneySettings}}" bindtap="closeMoneySettings">

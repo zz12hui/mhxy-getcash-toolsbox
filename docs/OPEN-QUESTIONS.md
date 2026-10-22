@@ -9,16 +9,16 @@
 
 | # | 事项 | 现状 | 需要你 | 我的建议 |
 |---|---|---|---|---|
-| A1 | AppID（client_id） | 未提供 | 发我即可（公开标识） | — |
-| A2 | AppSecret | 未提供；`.secrets/tencent-docs.json` 模板已建 | 复制到该文件，别贴聊天；说「放好了」 | 已 gitignore；若泄露过就重置 |
-| A3 | 回调地址 redirect_uri | 未确认 | 有没有已备案 HTTPS 域名？ | 没有 → 用 GitHub Pages 静态回调页 `https://zz12hui.github.io/mhxy-getcash-toolsbox/tencent-docs-callback.html`，需你在开放平台登记 |
-| A4 | 已获批 scope / 额度 | 未确认 | 截图或列一下：文档读取/编辑/创建在线表格；免费额度多少 | 至少要「文档内容读写 + 创建表格」 |
-| A5 | 应用/主体状态 | 你说注册好了，但不确定是 OAuth 应用权限还是只有 MCP Token | 确认应用是否已过审、是否有 OAuth 授权能力 | 若只有个人 Token → 退回 B 路线（Token 绑定） |
+| A1 | AppID（client_id） | ✅ 已拿到：`<TENCENT_DOCS_CLIENT_ID>` | — | — |
+| A2 | AppSecret | 后台只有三元组，未见 client_secret | 确认后台有没有「应用密钥 / Client Secret / 重置密钥」；没有就告知，走 A 版 | A 版不需要 secret |
+| A3 | 回调地址 redirect_uri | 域名 `4si.cc` 已有，但无回调页 | 能否在 4si.cc 托管 `docs/tencent-docs-callback.html`？不能就用 GitHub Pages | B 版才需要 |
+| A4 | 已获批 scope / 额度 | ✅ 实测可建表/写数据/设链接可读；2000 次/天 | — | 2000 次够用，手动同步 |
+| A5 | 应用/主体状态 | ✅ 三元组已实测通过 | — | A 版已打通；B 版待 secret+回调 |
 | A6 | 授权体验 | 小程序内不能直接 web-view 第三方 OAuth | 接受「外部浏览器授权 → 回填绑定码」吗？ | 接受；回调页显示 code，复制回小程序 |
-| A7 | 文档归属 | 未定 | 应用自动建表（推荐）还是用户绑定已有表？每人一张还是每角色一张？ | 自动建「收益报表」在线表格，每角色一张 |
+| A7 | 文档归属 | A 版已实现：建在开发者账号 + 链接可读，用户可另存；每角色一张表 | 接受先上 A 版吗？ | 必须用户自己的文档则等 B 版 OAuth |
 | A8 | 同步口径 | 未定 | 同步「全部已记账轮次+汇总」还是当前筛选结果？追加去重还是覆盖？手动还是自动？ | 全部已记账 + 汇总；追加按 runId 去重；手动点同步 |
 | A9 | 隐私合规 | 未做 | 是否同意在隐私政策/微信后台补「腾讯文档授权信息」说明；解绑即删 token | 同意；我会写好文案 |
-| A10 | 测试文档 | 未授权 | 允许我在你腾讯文档里建一张测试表写两行测试数据吗？（不碰正式表） | 允许则联调最快 |
+| A10 | 测试文档 | ✅ 已建测试表并写入表头+2 行：`https://docs.qq.com/sheet/DUFhUekJLTUp3R3Vn` | 看一眼是否正常，可删 | — |
 
 ---
 
@@ -84,8 +84,6 @@
 
 ## 六、你现在只需要做 3 件事
 
-1. **发我 AppID**，并回答：有没有已备案 HTTPS 回调域名？（没有就用 GitHub Pages）
-2. **把 AppSecret 放进** `.secrets/tencent-docs.json`（模板已建好），然后说「放好了」
-3. **发我开放平台已获批的 scope/额度截图**，并确认「可以建测试表格联调」
-
-> 可选加分项：把区服奖励价、金价、点卡、目标时薪发我，我一次性把默认值改准。
+1. **云开发控制台给 `docsReport` 配 3 个环境变量**（`TENCENT_DOCS_CLIENT_ID / ACCESS_TOKEN / OPEN_ID`，值在 `.secrets/tencent-docs.json`），配完告诉我，我来跑端到端测试。
+2. **确认后台有没有 client_secret**：有就放 `.secrets`（B 版需要）；没有就明确说「没有」，A 版先用。
+3. **决定文档归属**：接受 A 版（建在你账号、链接可读、用户可另存），还是必须等 B 版（每个用户自己的文档）？

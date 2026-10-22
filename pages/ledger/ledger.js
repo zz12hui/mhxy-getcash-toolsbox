@@ -2,6 +2,7 @@ const C = require('../../utils/constants')
 const S = require('../../utils/storage')
 const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
+const REPORT = require('../../utils/report-export')
 
 Page({
   data: {
@@ -33,6 +34,11 @@ Page({
     runList: [],
     unbookedCount: 0,
     hasRuns: false,
+    docsLoading: false,
+    showDocsResult: false,
+    docsResultUrl: '',
+    docsResultTitle: '',
+    docsResultWarning: '',
     showDetail: false,
     detailRun: null
   },
@@ -53,6 +59,7 @@ Page({
     const agg = LEDGER.aggregateRuns(filtered)
 
     this._runMap = {}
+    this._filtered = filtered
     const runList = filtered
       .slice()
       .sort((a, b) => (b.doneAt || b.startedAt || 0) - (a.doneAt || a.startedAt || 0))
@@ -239,6 +246,67 @@ Page({
   },
 
   closeMoneySettings() { this.setData({ showMoneySettings: false }) },
+
+  createDocsReport() {
+    if (this.data.docsLoading) return
+    const runs = this._filtered || []
+    if (!runs.filter(r => LEDGER.isBooked(r)).length) {
+      wx.showToast({ title: '没有已记账轮次，先结算一轮', icon: 'none' })
+      return
+    }
+    const rep = REPORT.buildReport(runs, {
+      roleName: this.data.scope === 'all' ? '全部角色' : this.data.activeUserName,
+      cfg: this.data.moneyCfg,
+      currency: this.data.currency
+    })
+    this.setData({ docsLoading: true })
+    wx.cloud.callFunction({
+      name: 'docsReport',
+      data: { action: 'create', title: rep.title, rows: rep.rows }
+    }).then(res => {
+      const r = (res && res.result) || {}
+      if (!r.ok) throw new Error(r.error || '生成失败')
+      this.setData({
+        docsLoading: false,
+        showDocsResult: true,
+        docsResultUrl: r.url || '',
+        docsResultTitle: r.title || rep.title,
+        docsResultWarning: r.shareWarning || ''
+      })
+    }).catch(err => {
+      this.setData({ docsLoading: false })
+      wx.showModal({
+        title: '生成腾讯文档失败',
+        content: (err && err.message) || '请稍后重试',
+        showCancel: false
+      })
+    })
+  },
+
+  closeDocsResult() { this.setData({ showDocsResult: false }) },
+
+  copyDocsLink() {
+    const url = this.data.docsResultUrl
+    if (!url) return
+    wx.setClipboardData({
+      data: url,
+      success: () => wx.showToast({ title: '链接已复制', icon: 'none' })
+    })
+  },
+
+  openDocsMiniProgram() {
+    const url = this.data.docsResultUrl
+    if (!url) return
+    if (!wx.navigateToMiniProgram) { this.copyDocsLink(); return }
+    wx.navigateToMiniProgram({
+      appId: 'wxd45c635d754dbf59',
+      path: 'pages/detail/detail?url=' + encodeURIComponent(url),
+      fail: () => {
+        wx.setClipboardData({ data: url })
+        wx.showToast({ title: '已复制链接，可粘贴打开', icon: 'none' })
+      }
+    })
+  },
 
   noop() {},
 
