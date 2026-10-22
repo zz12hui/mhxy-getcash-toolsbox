@@ -5,6 +5,8 @@ const TASK_USAGE = require('../../utils/task-usage')
 const ITEM_MEMORY = require('../../utils/item-memory')
 const UI = require('../../utils/ui')
 const UNDO = require('../../utils/undo')
+const REWARD_PRICES = require('../../utils/reward-prices')
+const LEDGER = require('../../utils/ledger')
 const app = getApp()
 
 Page({
@@ -52,6 +54,10 @@ Page({
     settleLvs: ['150', '140', '130', '120', '110', '100', '90', '80'], settleLvIdx: 0,
     settleSubTypes: ['刀','剑','扇','枪','锤','斧','鞭','环圈','双剑','爪刺','弓','弩','头盔','项链','衣服','鞋子','腰带'], settleTypeIdx: 0,
     settleMainReward: '', settleExtras: [], settleCustom: '',
+    settleMainValue: '', settleMainItem: null, settleExtraRows: [],
+    settleCustomValue: '', settleOtherCost: '',
+    settleIncomeWan: '0', settleCostWan: '0', settleProfitWan: '0',
+    settleRoiStr: '—', settleProfitPos: true,
     bonusOpts: [],
     // Toast
     toastMsg: '', toastAnim: null,
@@ -559,6 +565,7 @@ Page({
     const sc = run.totalScore || 0
     const pLvOpts = C.BOOK_LVLS.filter(l => l <= bl)
     const bonusLabels = ['修炼果', '200修炼点', '3级家具设计图']
+    this._rewardPrices = REWARD_PRICES.getRewardPrices(this.data.activeUser)
     this.setData({
       showSettleModal: true,
       settleScore: sc, settleBookLv: bl,
@@ -566,9 +573,14 @@ Page({
       settleLvs: pLvOpts.map(String),
       settleCatIdx: 0, settleLvIdx: 0, settleTypeIdx: 0,
       settleMainReward: '', settleExtras: [], settleCustom: '',
+      settleMainValue: '', settleMainItem: null, settleExtraRows: [],
+      settleCustomValue: '', settleOtherCost: '',
+      settleIncomeWan: '0', settleCostWan: ((run.totalCost || 0) / 10000).toFixed(1),
+      settleProfitWan: '0', settleRoiStr: '—', settleProfitPos: true,
       bonusOpts: bonusLabels.map(l => ({ label: l, checked: false }))
     })
     this._settleRun = run
+    this.computeSettlePreview()
   },
 
   closeSettleModal() {
@@ -597,33 +609,85 @@ Page({
     const { settleCats, settleCatIdx, settleLvs, settleLvIdx, settleSubTypes, settleTypeIdx } = this.data
     const cat = settleCats[settleCatIdx]
     if (!cat) { this.showToast('请选择类别'); return }
-    let reward = ''
+    let item = null
     if (cat === '战魄') {
-      reward = '160级战魄'
+      item = { kind: 'zhanpo', name: '160级战魄' }
     } else {
       const lv = settleLvs[settleLvIdx]
       if (!lv) { this.showToast('请选择等级'); return }
       if (cat === '制造指南书') {
         const tp = settleSubTypes[settleTypeIdx]
         if (!tp) { this.showToast('请选择类型'); return }
-        reward = lv + '级' + cat + '-' + tp
+        item = { kind: 'book', level: Number(lv), subType: tp, name: lv + '级' + cat + '-' + tp }
       } else {
-        reward = lv + '级' + cat
+        item = { kind: 'iron', level: Number(lv), name: lv + '级' + cat }
       }
     }
-    this.setData({ settleMainReward: reward })
+    const unit = REWARD_PRICES.rewardUnitPrice(this._rewardPrices, item)
+    this.setData({
+      settleMainReward: item.name,
+      settleMainItem: item,
+      settleMainValue: (unit / 10000).toFixed(1)
+    })
+    this.computeSettlePreview()
   },
 
-  clearSettleMain() { this.setData({ settleMainReward: '' }) },
+  clearSettleMain() {
+    this.setData({ settleMainReward: '', settleMainItem: null, settleMainValue: '' })
+    this.computeSettlePreview()
+  },
+
+  settleExtraKind(label) {
+    if (label === '修炼果') return 'xiulian_guo'
+    if (label === '200修炼点') return 'xiulian_200'
+    if (label === '3级家具设计图') return 'furniture3'
+    return 'other'
+  },
+
+  computeSettlePreview() {
+    const main = parseFloat(this.data.settleMainValue) || 0
+    const extras = (this.data.settleExtraRows || []).reduce((s, r) => s + (parseFloat(r.valueWan) || 0), 0)
+    const custom = parseFloat(this.data.settleCustomValue) || 0
+    const other = parseFloat(this.data.settleOtherCost) || 0
+    const run = this._settleRun
+    const incomeWan = main + extras + custom
+    const costWan = ((run && run.totalCost) || 0) / 10000 + other
+    const profitWan = incomeWan - costWan
+    const roiStr = costWan > 0 ? '1 : ' + (incomeWan / costWan).toFixed(2) : '—'
+    this.setData({
+      settleIncomeWan: incomeWan.toFixed(1),
+      settleCostWan: costWan.toFixed(1),
+      settleProfitWan: profitWan.toFixed(1),
+      settleRoiStr: roiStr,
+      settleProfitPos: profitWan >= 0
+    })
+  },
+
+  onSettleMainValueInput(e) { this.setData({ settleMainValue: e.detail.value }); this.computeSettlePreview() },
+  onSettleCustomValue(e) { this.setData({ settleCustomValue: e.detail.value }); this.computeSettlePreview() },
+  onSettleOtherCost(e) { this.setData({ settleOtherCost: e.detail.value }); this.computeSettlePreview() },
+
+  onSettleExtraValueInput(e) {
+    const idx = parseInt(e.currentTarget.dataset.idx)
+    const rows = this.data.settleExtraRows.map((r, i) => i === idx ? Object.assign({}, r, { valueWan: e.detail.value }) : r)
+    this.setData({ settleExtraRows: rows })
+    this.computeSettlePreview()
+  },
 
   toggleSettleExtra(_e) {
     // handled by onSettleExtrasChange instead
   },
 
   onSettleExtrasChange(e) {
-    const selected = e.detail.value
+    const selected = e.detail.value || []
     const bonusOpts = this.data.bonusOpts.map(b => ({ label: b.label, checked: selected.indexOf(b.label) >= 0 }))
-    this.setData({ settleExtras: selected, bonusOpts })
+    const rows = selected.map(label => {
+      const kind = this.settleExtraKind(label)
+      const unit = REWARD_PRICES.rewardUnitPrice(this._rewardPrices, { kind, name: label })
+      return { label, kind, name: label, valueWan: (unit / 10000).toFixed(1) }
+    })
+    this.setData({ settleExtras: selected, settleExtraRows: rows, bonusOpts })
+    this.computeSettlePreview()
   },
 
   onSettleCustom(e) { this.setData({ settleCustom: e.detail.value }) },
@@ -631,11 +695,76 @@ Page({
   confirmSettle() {
     const run = this._settleRun
     if (!run) return
-    const checked = []
-    if (this.data.settleMainReward) checked.push(this.data.settleMainReward)
-    checked.push(...this.data.settleExtras)
-    if (this.data.settleCustom.trim()) checked.push(this.data.settleCustom.trim())
-    run.reward = checked.length > 0 ? checked : ['未记录']
+    const data = this.data
+    const incomeItems = []
+    const rewardTexts = []
+    if (data.settleMainReward) {
+      const item = (data.settleMainItem && data.settleMainItem.kind)
+        ? { ...data.settleMainItem }
+        : LEDGER.parseRewardText(data.settleMainReward)
+      if (item) {
+        item.qty = 1
+        item.unitPrice = Math.max(0, (parseFloat(data.settleMainValue) || 0) * 10000)
+        incomeItems.push(item)
+        rewardTexts.push(data.settleMainReward)
+      }
+    }
+    const extraRows = data.settleExtraRows || []
+    extraRows.forEach(row => {
+      incomeItems.push({
+        kind: row.kind,
+        name: row.label,
+        qty: 1,
+        unitPrice: Math.max(0, (parseFloat(row.valueWan) || 0) * 10000)
+      })
+      rewardTexts.push(row.label)
+    })
+    const customName = (data.settleCustom || '').trim()
+    if (customName) {
+      incomeItems.push({
+        kind: 'other',
+        name: customName,
+        qty: 1,
+        unitPrice: Math.max(0, (parseFloat(data.settleCustomValue) || 0) * 10000)
+      })
+      rewardTexts.push(customName)
+    }
+    run.reward = rewardTexts.length > 0 ? rewardTexts : ['未记录']
+
+    const doneAt = run.doneAt || Date.now()
+    run.doneAt = doneAt
+    const summary = LEDGER.summarizeRun({
+      rings: run.rings,
+      prices: this._prices,
+      defaults: C.P_DEFAULT_PRICES,
+      incomeItems,
+      extraCost: Math.max(0, (parseFloat(data.settleOtherCost) || 0) * 10000),
+      startedAt: run.startedAt,
+      doneAt
+    })
+    run.ledgerVersion = 1
+    run.costItems = summary.costItems
+    run.extraCost = summary.extraCost
+    run.cost = summary.cost
+    if (incomeItems.length === 0) {
+      run.unbooked = true
+      delete run.incomeItems
+      delete run.income
+      delete run.profit
+      delete run.roi
+      delete run.netRate
+      delete run.hourly
+      delete run.durationMin
+    } else {
+      run.unbooked = false
+      run.incomeItems = summary.incomeItems
+      run.income = summary.income
+      run.profit = summary.profit
+      run.roi = summary.roi
+      run.netRate = summary.netRate
+      run.durationMin = summary.durationMin
+      run.hourly = summary.hourly
+    }
 
     const runs = S.getPetRuns(this.data.activeUser)
     runs.unshift({ ...run })
@@ -646,7 +775,10 @@ Page({
     if (this._undo) this._undo.clear()
     this.setData({ showSettleModal: false })
     this.loadData()
-    this.showToast('结算完成！总分:' + run.totalScore + '|费用:' + (run.totalCost / 10000).toFixed(0) + '万')
+    const suffix = run.unbooked
+      ? '（未记账，可到历史补录收益）'
+      : '|收入:' + LEDGER.formatWan(run.income) + '万|净收益:' + LEDGER.formatWan(run.profit) + '万'
+    this.showToast('结算完成！总分:' + run.totalScore + '|费用:' + (run.totalCost / 10000).toFixed(0) + '万' + suffix)
   },
 
   // ===== History =====

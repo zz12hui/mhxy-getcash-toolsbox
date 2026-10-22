@@ -5,6 +5,8 @@ const TASK_USAGE = require('../../utils/task-usage')
 const ITEM_MEMORY = require('../../utils/item-memory')
 const UI = require('../../utils/ui')
 const UNDO = require('../../utils/undo')
+const REWARD_PRICES = require('../../utils/reward-prices')
+const LEDGER = require('../../utils/ledger')
 const app = getApp()
 
 Page({
@@ -51,6 +53,8 @@ Page({
     segFixedCat: '', segLvs: [], segLvIdx: 0,
     segSubTypes: [], segTypeIdx: 0,
     segMainReward: '', segExtras: [], segExtraChecked: [], segCustom: '',
+    segMainValueWan: '', segMainItem: null, segExtraRows: [],
+    segCustomValue: '', segIncomeWan: '0',
     // Toast
     toastMsg: '',
     // Running
@@ -277,6 +281,38 @@ Page({
     if (!cur || cur.done) return
     cur.done = true; cur.doneAt = Date.now()
     cur.totalCost = RING_COST.totalCost(cur.rings, this._prices, C.C_DEFAULT_PRICES)
+    const incomeItems = cur.incomeItems || []
+    const summary = LEDGER.summarizeRun({
+      rings: cur.rings,
+      prices: this._prices,
+      defaults: C.C_DEFAULT_PRICES,
+      incomeItems,
+      extraCost: 0,
+      startedAt: cur.startedAt,
+      doneAt: cur.doneAt
+    })
+    cur.ledgerVersion = 1
+    cur.costItems = summary.costItems
+    cur.cost = summary.cost
+    if (incomeItems.length === 0) {
+      cur.unbooked = true
+      delete cur.incomeItems
+      delete cur.income
+      delete cur.profit
+      delete cur.roi
+      delete cur.netRate
+      delete cur.hourly
+      delete cur.durationMin
+    } else {
+      cur.unbooked = false
+      cur.incomeItems = summary.incomeItems
+      cur.income = summary.income
+      cur.profit = summary.profit
+      cur.roi = summary.roi
+      cur.netRate = summary.netRate
+      cur.durationMin = summary.durationMin
+      cur.hourly = summary.hourly
+    }
     const runs = S.getChainRuns(this.data.activeUser)
     runs.unshift({ ...cur })
     S.saveChainRuns(this.data.activeUser, runs)
@@ -284,7 +320,10 @@ Page({
     this._cur = null
     if (this._undo) this._undo.clear()
     this.loadData()
-    this.showToast('结算完成！费用:' + (cur.totalCost / 10000).toFixed(0) + '万')
+    const suffix = cur.unbooked
+      ? '（未记账，可到历史补录收益）'
+      : '|收入:' + LEDGER.formatWan(cur.income) + '万|净收益:' + LEDGER.formatWan(cur.profit) + '万'
+    this.showToast('结算完成！费用:' + (cur.totalCost / 10000).toFixed(0) + '万' + suffix)
   },
 
   // ===== Ring editing =====
@@ -512,6 +551,7 @@ Page({
     const lv = this._cur ? this._cur.level : this.data.cfg.level
     const lvls = C.cBookLevels(lv)
     const r = C.cRewardRange(lv)
+    this._rewardPrices = REWARD_PRICES.getRewardPrices(this.data.activeUser)
     let label, fixedCat = '', showCat = true
     if (seg === 100) { label = '制造指南书'; fixedCat = '制造指南书'; showCat = false }
     else if (seg === 200) { label = '百炼精铁'; fixedCat = '百炼精铁'; showCat = false }
@@ -531,6 +571,8 @@ Page({
       segCatIdx: 0, segLvs: lvls.map(String), segLvIdx: 0,
       segSubTypes: subTypes, segTypeIdx: 0,
       segMainReward: '', segExtraChecked: [], segCustom: '',
+      segMainValueWan: '', segMainItem: null, segExtraRows: [],
+      segCustomValue: '', segIncomeWan: '0',
       segExtras: extrasLabels.map(l => ({ label: l, checked: false })),
       segCats: cats
     })
@@ -546,30 +588,75 @@ Page({
     const { segCats, segCatIdx, segFixedCat, segLvs, segLvIdx, segSubTypes, segTypeIdx, segShowCat } = this.data
     const cat = segShowCat ? segCats[segCatIdx] : segFixedCat
     if (!cat) { this.showToast('请选择类别'); return }
-    let reward = ''
-    if (cat === '战魄') { reward = '160级战魄' }
-    else {
+    let item = null
+    if (cat === '战魄') {
+      item = { kind: 'zhanpo', name: '160级战魄' }
+    } else {
       const lv = segLvs[segLvIdx]
       if (!lv) { this.showToast('请选择等级'); return }
       if (cat === '制造指南书') {
         const tp = segSubTypes[segTypeIdx]
         if (!tp) { this.showToast('请选择类型'); return }
-        reward = lv + '级' + cat + '-' + tp
-      } else { reward = lv + '级' + cat }
+        item = { kind: 'book', level: Number(lv), subType: tp, name: lv + '级' + cat + '-' + tp }
+      } else {
+        item = { kind: 'iron', level: Number(lv), name: lv + '级' + cat }
+      }
     }
-    this.setData({ segMainReward: reward })
+    const unit = REWARD_PRICES.rewardUnitPrice(this._rewardPrices, item)
+    this.setData({
+      segMainReward: item.name,
+      segMainItem: item,
+      segMainValueWan: (unit / 10000).toFixed(1)
+    })
+    this.computeSegPreview()
   },
 
-  clearSegMain() { this.setData({ segMainReward: '' }) },
+  clearSegMain() {
+    this.setData({ segMainReward: '', segMainItem: null, segMainValueWan: '' })
+    this.computeSegPreview()
+  },
+
+  segExtraKind(label) {
+    const m = String(label || '').match(/^(\d{2,3})(灵饰指南书|元灵晶石)$/)
+    if (!m) return { kind: 'other', name: label }
+    return {
+      kind: m[2] === '灵饰指南书' ? 'lingshi_book' : 'lingshi_stone',
+      level: Number(m[1]),
+      name: label
+    }
+  },
+
+  computeSegPreview() {
+    const main = parseFloat(this.data.segMainValueWan) || 0
+    const extras = (this.data.segExtraRows || []).reduce((s, r) => s + (parseFloat(r.valueWan) || 0), 0)
+    const custom = parseFloat(this.data.segCustomValue) || 0
+    this.setData({ segIncomeWan: (main + extras + custom).toFixed(1) })
+  },
+
+  onSegMainValueInput(e) { this.setData({ segMainValueWan: e.detail.value }); this.computeSegPreview() },
+  onSegCustomValue(e) { this.setData({ segCustomValue: e.detail.value }); this.computeSegPreview() },
+
+  onSegExtraValueInput(e) {
+    const idx = parseInt(e.currentTarget.dataset.idx)
+    const rows = this.data.segExtraRows.map((r, i) => i === idx ? Object.assign({}, r, { valueWan: e.detail.value }) : r)
+    this.setData({ segExtraRows: rows })
+    this.computeSegPreview()
+  },
 
   toggleSegExtra(_e) {
     // handled by onSegExtrasChange instead
   },
 
   onSegExtrasChange(e) {
-    const selected = e.detail.value
+    const selected = e.detail.value || []
     const segExtras = this.data.segExtras.map(s => ({ label: s.label, checked: selected.indexOf(s.label) >= 0 }))
-    this.setData({ segExtraChecked: selected, segExtras })
+    const rows = selected.map(label => {
+      const item = this.segExtraKind(label)
+      const unit = REWARD_PRICES.rewardUnitPrice(this._rewardPrices, item)
+      return { label, kind: item.kind, level: item.level, valueWan: (unit / 10000).toFixed(1) }
+    })
+    this.setData({ segExtraChecked: selected, segExtras, segExtraRows: rows })
+    this.computeSegPreview()
   },
 
   onSegCustom(e) { this.setData({ segCustom: e.detail.value }) },
@@ -577,12 +664,46 @@ Page({
   confirmSeg() {
     if (!this._cur) return
     const seg = this.data.segRewardSeg
-    const checked = []
-    if (this.data.segMainReward) checked.push(this.data.segMainReward)
-    checked.push(...this.data.segExtraChecked)
-    if (this.data.segCustom.trim()) checked.push(this.data.segCustom.trim())
+    const texts = []
+    const items = []
+    if (this.data.segMainReward) {
+      const item = (this.data.segMainItem && this.data.segMainItem.kind)
+        ? { ...this.data.segMainItem }
+        : LEDGER.parseRewardText(this.data.segMainReward)
+      if (item) {
+        item.qty = 1
+        item.unitPrice = Math.max(0, (parseFloat(this.data.segMainValueWan) || 0) * 10000)
+        items.push(item)
+        texts.push(this.data.segMainReward)
+      }
+    }
+    const extraRows = this.data.segExtraRows || []
+    extraRows.forEach(row => {
+      items.push({
+        kind: row.kind,
+        name: row.label,
+        level: row.level,
+        qty: 1,
+        unitPrice: Math.max(0, (parseFloat(row.valueWan) || 0) * 10000)
+      })
+      texts.push(row.label)
+    })
+    const custom = (this.data.segCustom || '').trim()
+    if (custom) {
+      items.push({
+        kind: 'other',
+        name: custom,
+        qty: 1,
+        unitPrice: Math.max(0, (parseFloat(this.data.segCustomValue) || 0) * 10000)
+      })
+      texts.push(custom)
+    }
     this.pushUndo('记录第' + seg + '环奖励')
-    this._cur.rewards[seg] = checked.length > 0 ? checked : ['未记录']
+    this._cur.rewards[seg] = texts.length > 0 ? texts : ['未记录']
+    const others = (this._cur.incomeItems || []).filter(i => i.seg !== seg)
+    this._cur.incomeItems = items.length > 0
+      ? others.concat(items.map(i => Object.assign({}, i, { seg })))
+      : others
     S.saveChainCur(this.data.activeUser, this._cur)
     this.setData({ showSegModal: false })
     this.loadData()

@@ -106,6 +106,37 @@ test('宠环：批量填充 + 结算写入历史', () => {
   assert.equal(runs.length, 1)
   assert.equal(runs[0].totalScore, 100)
   assert.ok(Array.isArray(runs[0].reward))
+  // 没选任何奖励 → 标记未记账
+  assert.equal(runs[0].unbooked, true)
+})
+
+test('宠环：结算记账（奖励估值/净收益/ROI/用时）', () => {
+  seedUser()
+  const page = createPage()
+  page.onLoad()
+  page.loadData()
+  page.doStartNew()
+  page.setData({ batchStart: 1, batchEnd: 100, batchSelTid: 'equip60' })
+  page.confirmBatch()
+  page.loadData()
+  page.complete()
+  // 主奖励：80 级书，实际价 25 万
+  page.setData({ settleMainReward: '80级制造指南书-剑', settleMainValue: '25' })
+  page.confirmSettle()
+
+  const run = global.wx.getStorageSync('mhxy_runs_u1')[0]
+  assert.equal(run.unbooked, false)
+  assert.equal(run.ledgerVersion, 1)
+  assert.equal(run.incomeItems.length, 1)
+  assert.equal(run.incomeItems[0].kind, 'book')
+  assert.equal(run.incomeItems[0].unitPrice, 250000)
+  assert.equal(run.income, 250000)
+  assert.equal(run.cost, 180000 * 100)
+  assert.equal(run.profit, 250000 - 18000000)
+  assert.equal(run.roi, 250000 / 18000000)
+  assert.ok(Array.isArray(run.costItems))
+  assert.equal(run.costItems[0].qty, 100)
+  assert.ok(run.durationMin === null || typeof run.durationMin === 'number')
 })
 
 test('宠环：取消结算回滚完成状态', () => {

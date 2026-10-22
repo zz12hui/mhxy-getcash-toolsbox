@@ -356,6 +356,11 @@
       <text class="hl-accent">📖 {{segMainReward}}</text>
       <text style="color:var(--danger);margin-left:16rpx;" bindtap="clearSegMain">✕</text>
     </view>
+    <view wx:if="{{segMainReward}}" style="display:flex;align-items:center;gap:10rpx;margin-top:8rpx;">
+      <text style="font-size:24rpx;color:var(--text2);">价值</text>
+      <input type="digit" value="{{segMainValueWan}}" bindinput="onSegMainValueInput" style="width:180rpx;padding:8rpx 12rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:24rpx;text-align:right;"/>
+      <text style="font-size:22rpx;color:var(--text2);">万两（参考价，可改实际价）</text>
+    </view>
     <view wx:if="{{segExtras.length}}" class="modal-sub-label">💍 灵饰奖励（≥110级有几率）：</view>
     <checkbox-group wx:if="{{segExtras.length}}" bindchange="onSegExtrasChange">
       <view class="modal-grid" style="max-height:200rpx;">
@@ -364,7 +369,20 @@
         </label>
       </view>
     </checkbox-group>
-    <input placeholder="其他（手动输入）" value="{{segCustom}}" bindinput="onSegCustom" style="width:100%;padding:16rpx;background:var(--bg);border:1px solid var(--border);border-radius:10rpx;color:var(--text);font-size:26rpx;margin:16rpx 0;box-sizing:border-box;"/>
+    <view wx:if="{{segExtraRows.length}}" style="margin-top:8rpx;">
+      <view wx:for="{{segExtraRows}}" wx:key="label" style="display:flex;align-items:center;gap:10rpx;margin-bottom:8rpx;">
+        <text style="flex:1;font-size:24rpx;color:var(--text);">{{item.label}}</text>
+        <input type="digit" data-idx="{{index}}" value="{{item.valueWan}}" bindinput="onSegExtraValueInput" style="width:160rpx;padding:8rpx 12rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:24rpx;text-align:right;"/>
+        <text style="font-size:22rpx;color:var(--text2);">万</text>
+      </view>
+    </view>
+    <input placeholder="其他（手动输入）" value="{{segCustom}}" bindinput="onSegCustom" style="width:100%;padding:16rpx;background:var(--bg);border:1px solid var(--border);border-radius:10rpx;color:var(--text);font-size:26rpx;margin:16rpx 0 8rpx;box-sizing:border-box;"/>
+    <view style="display:flex;align-items:center;gap:10rpx;margin-bottom:8rpx;">
+      <text style="font-size:24rpx;color:var(--text2);">自定义价值</text>
+      <input type="digit" placeholder="0" value="{{segCustomValue}}" bindinput="onSegCustomValue" style="width:160rpx;padding:8rpx 12rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:24rpx;text-align:right;"/>
+      <text style="font-size:22rpx;color:var(--text2);">万两</text>
+    </view>
+    <view class="stat-row" style="padding:6rpx 0;"><text>本段收入</text><text class="val" style="color:var(--accent);">{{segIncomeWan}}万</text></view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeSegModal">跳过</view>
       <view class="btn btn-a" style="flex:1" bindtap="confirmSeg">确认记录</view>

@@ -124,3 +124,51 @@ test('跑环：完成度向下取整（299 环不显示 100%）', () => {
   assert.equal(page.data.completed, 299)
   assert.equal(page.data.completedPct, 99)
 })
+
+test('跑环：段奖励估值与结算记账', () => {
+  seedUser()
+  const page = createPage()
+  page.onLoad()
+  page.loadData()
+  page.doStartNew()
+
+  // 第 100 环：80 级书，实际价 25 万
+  page.setData({ batchStart: 1, batchEnd: 100, batchSelTid: 'equip60_3' })
+  page.confirmBatch()
+  page.setData({
+    showSegModal: true, segRewardSeg: 100, segMainReward: '80级制造指南书-剑',
+    segMainValueWan: '25', segExtraRows: [], segCustom: '', segCustomValue: ''
+  })
+  page.confirmSeg()
+  assert.equal(page._cur.incomeItems.length, 1)
+  assert.equal(page._cur.incomeItems[0].seg, 100)
+  assert.equal(page._cur.incomeItems[0].unitPrice, 250000)
+
+  // 第 200 环：80 级铁，实际价 12 万
+  page.setData({ batchStart: 101, batchEnd: 200, batchSelTid: 'equip60_3' })
+  page.confirmBatch()
+  page.setData({
+    showSegModal: true, segRewardSeg: 200, segMainReward: '80级百炼精铁',
+    segMainValueWan: '12', segExtraRows: [], segCustom: '', segCustomValue: ''
+  })
+  page.confirmSeg()
+
+  // 第 300 环：80 级书，实际价 25 万，记录后自动结算
+  page.setData({ batchStart: 201, batchEnd: 300, batchSelTid: 'equip60_3' })
+  page.confirmBatch()
+  page.setData({
+    showSegModal: true, segRewardSeg: 300, segMainReward: '80级制造指南书-剑',
+    segMainValueWan: '25', segExtraRows: [], segCustom: '', segCustomValue: ''
+  })
+  page.confirmSeg()
+
+  const run = global.wx.getStorageSync('mhxy3_runs_u1')[0]
+  assert.equal(run.unbooked, false)
+  assert.equal(run.incomeItems.length, 3)
+  assert.equal(run.income, 250000 + 120000 + 250000)
+  assert.equal(run.cost, 300 * 80000)
+  assert.equal(run.profit, 620000 - 24000000)
+  assert.ok(run.roi > 0)
+  assert.equal(run.costItems[0].qty, 300)
+  assert.equal(run.ledgerVersion, 1)
+})

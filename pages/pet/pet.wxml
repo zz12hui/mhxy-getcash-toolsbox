@@ -394,6 +394,11 @@
       <text class="hl-accent">📖 {{settleMainReward}}</text>
       <text style="color:var(--danger);margin-left:16rpx;" bindtap="clearSettleMain">✕</text>
     </view>
+    <view wx:if="{{settleMainReward}}" style="display:flex;align-items:center;gap:10rpx;margin-top:8rpx;">
+      <text style="font-size:24rpx;color:var(--text2);">价值</text>
+      <input type="digit" value="{{settleMainValue}}" bindinput="onSettleMainValueInput" style="width:180rpx;padding:8rpx 12rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:24rpx;text-align:right;"/>
+      <text style="font-size:22rpx;color:var(--text2);">万两（参考价，可改实际价）</text>
+    </view>
     <view class="modal-sub-label">🎁 额外奖励（≥170分几率获得）：</view>
     <checkbox-group bindchange="onSettleExtrasChange">
       <view class="modal-grid" style="grid-template-columns:repeat(3,1fr);">
@@ -402,7 +407,30 @@
         </label>
       </view>
     </checkbox-group>
-    <input placeholder="其他奖励（手动输入）" value="{{settleCustom}}" bindinput="onSettleCustom" style="width:100%;padding:16rpx;background:var(--bg);border:1px solid var(--border);border-radius:10rpx;color:var(--text);font-size:26rpx;margin:16rpx 0;box-sizing:border-box;"/>
+    <view wx:if="{{settleExtraRows.length}}" style="margin-top:8rpx;">
+      <view wx:for="{{settleExtraRows}}" wx:key="label" style="display:flex;align-items:center;gap:10rpx;margin-bottom:8rpx;">
+        <text style="flex:1;font-size:24rpx;color:var(--text);">{{item.label}}</text>
+        <input type="digit" data-idx="{{index}}" value="{{item.valueWan}}" bindinput="onSettleExtraValueInput" style="width:160rpx;padding:8rpx 12rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:24rpx;text-align:right;"/>
+        <text style="font-size:22rpx;color:var(--text2);">万</text>
+      </view>
+    </view>
+    <input placeholder="其他奖励（手动输入）" value="{{settleCustom}}" bindinput="onSettleCustom" style="width:100%;padding:16rpx;background:var(--bg);border:1px solid var(--border);border-radius:10rpx;color:var(--text);font-size:26rpx;margin:16rpx 0 8rpx;box-sizing:border-box;"/>
+    <view style="display:flex;align-items:center;gap:10rpx;margin-bottom:8rpx;">
+      <text style="font-size:24rpx;color:var(--text2);">自定义价值</text>
+      <input type="digit" placeholder="0" value="{{settleCustomValue}}" bindinput="onSettleCustomValue" style="width:160rpx;padding:8rpx 12rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--accent);font-size:24rpx;text-align:right;"/>
+      <text style="font-size:22rpx;color:var(--text2);">万两</text>
+    </view>
+    <view style="display:flex;align-items:center;gap:10rpx;margin:8rpx 0;">
+      <text style="font-size:24rpx;color:var(--text2);">其他投入</text>
+      <input type="digit" placeholder="0" value="{{settleOtherCost}}" bindinput="onSettleOtherCost" style="width:160rpx;padding:8rpx 12rpx;background:var(--bg);border:1px solid var(--border);border-radius:8rpx;color:var(--warn);font-size:24rpx;text-align:right;"/>
+      <text style="font-size:22rpx;color:var(--text2);">万两（旗子/药等，可选）</text>
+    </view>
+    <view class="reward-rule-box" style="margin-top:12rpx;">
+      <view class="stat-row" style="padding:6rpx 0;"><text>本轮收入</text><text class="val" style="color:var(--accent);">{{settleIncomeWan}}万</text></view>
+      <view class="stat-row" style="padding:6rpx 0;"><text>本轮投入</text><text class="val" style="color:#f472b6;">{{settleCostWan}}万</text></view>
+      <view class="stat-row" style="padding:6rpx 0;"><text>净收益</text><text class="val" style="color:{{settleProfitPos?'var(--accent)':'var(--danger)'}};">{{settleProfitWan}}万</text></view>
+      <view class="stat-row" style="padding:6rpx 0;"><text>投入产出比</text><text class="val">{{settleRoiStr}}</text></view>
+    </view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeSettleModal">取消</view>
       <view class="btn btn-a" style="flex:1" bindtap="confirmSettle">确认结算</view>
