@@ -3,6 +3,7 @@ const HOME = require('../../utils/ledger-home')
 const MOTION = require('../../utils/motion')
 const MONEY = require('../../utils/money')
 const GOLD = require('../../utils/gold-calc')
+const NAV = require('../../utils/home-nav')
 
 Page({
   data: {
@@ -185,6 +186,28 @@ Page({
 
   goLedger() {
     wx.navigateTo({ url: '/pages/ledger/ledger' })
+  },
+
+  goPriceRef() {
+    wx.navigateTo({ url: '/pages/prices/prices' })
+  },
+
+  goPetTool(e) {
+    const tool = e.currentTarget.dataset.tool
+    if (!tool) return
+    NAV.setPending('pet:' + tool)
+    this.goPet()
+  },
+
+  goChainTool(e) {
+    const tool = e.currentTarget.dataset.tool
+    if (!tool) return
+    NAV.setPending('chain:' + tool)
+    this.goChain()
+  },
+
+  goManual() {
+    wx.navigateTo({ url: '/pages/manual/manual' })
   },
 
   goProfile() {

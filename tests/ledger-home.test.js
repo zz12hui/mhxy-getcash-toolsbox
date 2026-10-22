@@ -51,3 +51,13 @@ test('首页迷你趋势：按累计净收益归一化', () => {
   assert.equal(bars.length, 2)
   bars.forEach(v => assert.ok(v >= 10 && v <= 92))
 })
+
+test('首页迷你趋势：1 轮也有一根柱子', () => {
+  mock.reset()
+  S.saveUsers([{ id: 'u1', name: '角色A', createdAt: 1 }])
+  S.saveActiveUser('u1')
+  S.savePetRuns('u1', [
+    { id: 1, level: 175, doneAt: Date.now(), rings: [], costItems: [], cost: 100, incomeItems: [], income: 200, profit: 100, roi: 2, netRate: 1, durationMin: 30, ledgerVersion: 1 }
+  ])
+  assert.deepEqual(HOME.getHomeChart(), [70])
+})

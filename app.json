@@ -10,7 +10,8 @@
     "pages/feedback/feedback",
     "pages/manual/manual",
     "pages/privacy/privacy",
-    "pages/ledger/ledger"
+    "pages/ledger/ledger",
+    "pages/prices/prices"
   ],
   "window": {
     "navigationBarBackgroundColor": "#0f1623",

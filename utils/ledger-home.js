@@ -35,7 +35,8 @@ function getHomeSummary(opts) {
   }
 }
 
-// 首页大卡里的迷你柱状趋势：最近 N 轮累计净收益，归一化到 8~92（百分比高度）
+// 首页迷你趋势：最近 N 轮累计净收益，归一化到 10~92（百分比高度）
+// 只有 1 轮也返回一根柱子，避免首页看起来是空的
 function getHomeChart(opts) {
   const o = opts || {}
   const uid = o.uid || S.getActiveUser()
@@ -43,12 +44,13 @@ function getHomeChart(opts) {
   const booked = getRoleRuns(uid)
     .filter(r => LEDGER.isBooked(r) && (r.doneAt || r.startedAt))
     .sort((a, b) => (a.doneAt || a.startedAt) - (b.doneAt || b.startedAt))
-  if (booked.length < 2) return []
+  if (!booked.length) return []
   let acc = 0
   const points = booked.map(r => {
     acc += Number(r.profit) || 0
     return acc
   }).slice(-count)
+  if (points.length === 1) return [70]
   const min = Math.min.apply(null, points.concat([0]))
   const max = Math.max.apply(null, points.concat([0]))
   const range = max - min || 1

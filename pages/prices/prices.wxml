@@ -1,0 +1,86 @@
+<view class="app prices-page">
+  <scroll-view scroll-y class="scroll-wrap prices-scroll" style="flex:1;">
+    <view class="prices-content">
+      <view class="prices-nav anim-up" style="padding-top: {{statusBarHeight}}px; padding-right: {{navRight}}px;">
+        <view class="nav-btn" bindtap="goBack">‹</view>
+        <view class="nav-title">物品参考价</view>
+        <view class="nav-btn"></view>
+      </view>
+
+      <view class="ratio-card anim-up" style="animation-delay: 40ms;">
+        <view class="ratio-head">
+          <text class="ratio-title">当前金价</text>
+          <text class="ratio-role">{{roleName || '未创建角色'}}</text>
+        </view>
+        <view class="ratio-line">{{ratioText}}</view>
+        <view class="ratio-sub">默认 3000 万两 = 202 元 · 可在首页金价计算器调整</view>
+      </view>
+
+      <view class="seg anim-up" style="animation-delay: 80ms;">
+        <view class="seg-item {{activeTab==='task'?'on':''}}" bindtap="onTab" data-tab="task">任务物品</view>
+        <view class="seg-item {{activeTab==='reward'?'on':''}}" bindtap="onTab" data-tab="reward">奖励价目</view>
+      </view>
+
+      <block wx:if="{{activeTab==='task'}}">
+        <view class="price-block anim-up" style="animation-delay: 120ms;">
+          <view class="price-block-head">
+            <text class="price-block-title">🐾 宠环任务</text>
+            <text class="price-link" bindtap="goPetPrices">去设置 ›</text>
+          </view>
+          <view class="price-row price-head"><text>物品</text><text>默认</text><text>当前</text></view>
+          <view class="price-row" wx:for="{{petRows}}" wx:key="name">
+            <text class="price-name">{{item.icon}} {{item.name}}</text>
+            <text class="price-val">{{item.defWan}}</text>
+            <text class="price-val {{item.custom?'is-custom':''}}">{{item.curWan}}</text>
+          </view>
+        </view>
+
+        <view class="price-block anim-up" style="animation-delay: 160ms;">
+          <view class="price-block-head">
+            <text class="price-block-title">📜 跑环任务</text>
+            <text class="price-link" bindtap="goChainPrices">去设置 ›</text>
+          </view>
+          <view class="price-row price-head"><text>物品</text><text>默认</text><text>当前</text></view>
+          <view class="price-row" wx:for="{{chainRows}}" wx:key="name">
+            <text class="price-name">{{item.icon}} {{item.name}}</text>
+            <text class="price-val">{{item.defWan}}</text>
+            <text class="price-val {{item.custom?'is-custom':''}}">{{item.curWan}}</text>
+          </view>
+        </view>
+      </block>
+
+      <block wx:else>
+        <view class="price-block anim-up" style="animation-delay: 120ms;">
+          <view class="price-block-head"><text class="price-block-title">📖 制造指南书</text><text class="price-unit">万两</text></view>
+          <view class="price-row" wx:for="{{books}}" wx:key="label">
+            <text class="price-name">{{item.label}}</text>
+            <text class="price-val">{{item.value}}</text>
+          </view>
+        </view>
+        <view class="price-block anim-up" style="animation-delay: 150ms;">
+          <view class="price-block-head"><text class="price-block-title">🔨 百炼精铁</text><text class="price-unit">万两</text></view>
+          <view class="price-row" wx:for="{{irons}}" wx:key="label">
+            <text class="price-name">{{item.label}}</text>
+            <text class="price-val">{{item.value}}</text>
+          </view>
+        </view>
+        <view class="price-block anim-up" style="animation-delay: 180ms;">
+          <view class="price-block-head"><text class="price-block-title">💍 灵饰 / 特殊奖励</text><text class="price-unit">万两</text></view>
+          <view class="price-row" wx:for="{{lingshi}}" wx:key="label">
+            <text class="price-name">{{item.label}}</text>
+            <text class="price-val">{{item.value}}</text>
+          </view>
+          <view class="price-row" wx:for="{{special}}" wx:key="label">
+            <text class="price-name">{{item.label}}</text>
+            <text class="price-val">{{item.value}}</text>
+          </view>
+        </view>
+      </block>
+
+      <view class="prices-note">
+        任务物品价格可在宠物/跑环页「⋯ → 物品价格设置」修改；奖励价目当前为参考价，结算时可逐轮改价。所有单位：万两。
+      </view>
+      <view style="height: 40rpx;"></view>
+    </view>
+  </scroll-view>
+</view>

@@ -113,6 +113,42 @@
         </view>
       </view>
 
+      <view class="section-label anim-up" style="animation-delay: 380ms;">跑环工具箱</view>
+      <view class="mini-grid anim-up" style="animation-delay: 420ms;">
+        <view class="mini-tool" bindtap="goPriceRef">
+          <text class="mt-icon">📋</text>
+          <text class="mt-label">物品参考价</text>
+        </view>
+        <view class="mini-tool" bindtap="goPetTool" data-tool="predict">
+          <text class="mt-icon">🔮</text>
+          <text class="mt-label">宠环预测</text>
+        </view>
+        <view class="mini-tool" bindtap="goPetTool" data-tool="control">
+          <text class="mt-icon">🎯</text>
+          <text class="mt-label">控分计算</text>
+        </view>
+        <view class="mini-tool" bindtap="goPetTool" data-tool="batch">
+          <text class="mt-icon">📦</text>
+          <text class="mt-label">批量填充</text>
+        </view>
+        <view class="mini-tool" bindtap="goChainTool" data-tool="history">
+          <text class="mt-icon">📜</text>
+          <text class="mt-label">跑环历史</text>
+        </view>
+        <view class="mini-tool" bindtap="goChainTool" data-tool="stats">
+          <text class="mt-icon">📈</text>
+          <text class="mt-label">跑环统计</text>
+        </view>
+        <view class="mini-tool" bindtap="goChainTool" data-tool="reward">
+          <text class="mt-icon">🏆</text>
+          <text class="mt-label">奖励记录</text>
+        </view>
+        <view class="mini-tool" bindtap="goManual">
+          <text class="mt-icon">📖</text>
+          <text class="mt-label">操作手册</text>
+        </view>
+      </view>
+
       <view class="hub-ft">
         <text>梦幻搞钱工具箱 · 本地存储 · </text>
         <text>{{clockStr}}</text>

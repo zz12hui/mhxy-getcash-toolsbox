@@ -325,6 +325,11 @@ async function main() {
     record('首页收益大栏目可进入账本', homeHeroOk && homeLedgerRoute, 'hasSummary=' + !!homeData.ledgerSummary)
     record('首页金价计算器（默认 3000万=202元）', homeData.goldYuan === '202' && String(homeData.goldRatioText).indexOf('3000') >= 0, 'ratio=' + homeData.goldRatioText)
 
+    await miniProgram.reLaunch('/pages/prices/prices')
+    await sleep(1000)
+    const pricesData = await getData(miniProgram)
+    record('物品参考价页可打开', !!(pricesData.petRows && pricesData.petRows.length && pricesData.books && pricesData.books.length), 'petRows=' + (pricesData.petRows && pricesData.petRows.length))
+
     await miniProgram.reLaunch('/pages/profile/profile')
     await sleep(1200)
     const profileData = await getData(miniProgram)

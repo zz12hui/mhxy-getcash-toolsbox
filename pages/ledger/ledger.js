@@ -230,11 +230,11 @@ Page({
 
       const drawAt = progress => {
         ctx.clearRect(0, 0, w, h)
-        if (points.length < 2) {
+        if (!points.length) {
           ctx.fillStyle = '#6b7d95'
           ctx.font = '12px sans-serif'
           ctx.textAlign = 'center'
-          ctx.fillText('已记账轮次不足，继续跑环并结算后查看趋势', w / 2, h / 2)
+          ctx.fillText('还没有已记账轮次，先去结算一轮', w / 2, h / 2)
           return
         }
         const pad = { l: 42, r: 14, t: 16, b: 24 }
@@ -260,6 +260,30 @@ Page({
           ctx.moveTo(pad.l, y(0))
           ctx.lineTo(w - pad.r, y(0))
           ctx.stroke()
+        }
+
+        // 只有 1 轮：画一条基准线 + 单点，不再提示“轮次不足”
+        if (points.length === 1) {
+          const yy = y(points[0])
+          ctx.setLineDash([5, 5])
+          ctx.strokeStyle = 'rgba(56,242,200,0.55)'
+          ctx.lineWidth = 1.5
+          ctx.beginPath()
+          ctx.moveTo(pad.l, yy)
+          ctx.lineTo(w - pad.r, yy)
+          ctx.stroke()
+          ctx.setLineDash([])
+          ctx.beginPath()
+          ctx.arc(w - pad.r, yy, 4, 0, Math.PI * 2)
+          ctx.fillStyle = '#38f2c8'
+          ctx.fill()
+          ctx.fillStyle = '#8ba3bf'
+          ctx.font = '10px sans-serif'
+          ctx.textAlign = 'left'
+          ctx.fillText('1 轮 · 累计', pad.l + 6, yy - 8)
+          ctx.fillText((max / 10000).toFixed(1) + '万', 2, pad.t + 8)
+          ctx.fillText((min / 10000).toFixed(1) + '万', 2, pad.t + ph)
+          return
         }
 
         const n = points.length - 1
@@ -516,7 +540,31 @@ Page({
       ctx.font = '22px sans-serif'
       ctx.fillText('累计净收益趋势', 50, 1000)
       const points = model.chartPoints || []
-      if (points.length >= 2) {
+      if (points.length === 1) {
+        const max = Math.max(points[0], 0)
+        const min = Math.min(points[0], 0)
+        const range = max - min || 1
+        const cx0 = 50
+        const cy0 = 1030
+        const cw = 650
+        const ch = 90
+        const py = v => cy0 + ch - ((v - min) / range) * ch
+        ctx.strokeStyle = 'rgba(56,242,200,0.55)'
+        ctx.lineWidth = 2
+        ctx.setLineDash([6, 6])
+        ctx.beginPath()
+        ctx.moveTo(cx0, py(points[0]))
+        ctx.lineTo(cx0 + cw, py(points[0]))
+        ctx.stroke()
+        ctx.setLineDash([])
+        ctx.fillStyle = '#38f2c8'
+        ctx.beginPath()
+        ctx.arc(cx0 + cw, py(points[0]), 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#8fa3bd'
+        ctx.font = '20px sans-serif'
+        ctx.fillText('1 轮 · 累计', cx0 + 6, py(points[0]) - 10)
+      } else if (points.length >= 2) {
         const max = Math.max.apply(null, points.concat([0]))
         const min = Math.min.apply(null, points.concat([0]))
         const range = max - min || 1
@@ -533,7 +581,7 @@ Page({
         ctx.lineTo(cx0 + cw, py(0))
         ctx.stroke()
         // 折线
-        ctx.strokeStyle = '#00d4aa'
+        ctx.strokeStyle = '#38f2c8'
         ctx.lineWidth = 3
         ctx.beginPath()
         points.forEach((v, i) => {
@@ -543,14 +591,14 @@ Page({
         })
         ctx.stroke()
         // 末点
-        ctx.fillStyle = '#00d4aa'
+        ctx.fillStyle = '#38f2c8'
         ctx.beginPath()
         ctx.arc(cx0 + cw, py(points[points.length - 1]), 5, 0, Math.PI * 2)
         ctx.fill()
       } else {
         ctx.fillStyle = '#6b7d95'
         ctx.font = '22px sans-serif'
-        ctx.fillText('已记账轮次不足，多跑几轮后这里会显示趋势', 50, 1075)
+        ctx.fillText('还没有已记账轮次，先去结算一轮', 50, 1075)
       }
 
       // 页脚

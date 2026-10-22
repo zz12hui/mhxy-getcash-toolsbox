@@ -40,6 +40,7 @@ pages/
   manual/                          操作手册
   privacy/                         隐私政策与用户协议
   ledger/                          收益账本（筛选/汇总/累计净收益折线/轮次列表）
+  prices/                          物品参考价（任务物品 + 奖励价目）
 components/run-detail/             轮次明细抽屉（成本/收益/ROI）
 cloudfunctions/                    login / syncUpload / syncDownload / submitFeedback / init / docsReport
 tests/                             Node 单测（npm test）
@@ -88,7 +89,7 @@ npm test
 
 # 以下需要微信开发者工具已扫码登录 + 设置→安全设置→服务端口开启
 npm run smoke         # 核心路径冒烟（9 项）
-npm run accept        # A+B 功能验收（22 项）
+npm run accept        # A+B 功能验收（23 项）
 npm run accept:cloud  # 云函数/云数据验收（8 项，需已部署云函数）
 ```
 

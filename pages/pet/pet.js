@@ -6,6 +6,7 @@ const ITEM_MEMORY = require('../../utils/item-memory')
 const UI = require('../../utils/ui')
 const UNDO = require('../../utils/undo')
 const MOTION = require('../../utils/motion')
+const NAV = require('../../utils/home-nav')
 const REWARD_PRICES = require('../../utils/reward-prices')
 const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
@@ -73,8 +74,21 @@ Page({
   },
 
   onShow() {
+    const pending = NAV.takePending()
     this.loadData()
     this.setData({ vibrateOn: UI.isVibrateOn() })
+    if (pending && pending.indexOf('pet:') === 0) {
+      const action = pending.slice(4)
+      setTimeout(() => {
+        if (action === 'prices') this.showPricesSheet()
+        else if (action === 'batch') this.showBatch()
+        else if (['record', 'predict', 'control', 'history', 'stats'].indexOf(action) >= 0) {
+          this.setData({ tab: action })
+          this.loadData()
+        }
+      }, 220)
+      return
+    }
     // First-use guide check
     const uid = this.data.activeUser
     if (uid && !wx.getStorageSync('mhxy_guide_seen_pet_' + uid)) {
