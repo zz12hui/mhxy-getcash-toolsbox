@@ -24,3 +24,6 @@ coverage/
 # 微信开发者工具本地私有配置
 project.private.config.json
 miniprogram_npm/
+
+# 本地密钥（腾讯文档 AppSecret / OAuth token 等）
+.secrets/
