@@ -35,7 +35,6 @@ exports.main = async (event, context) => {
         _openid: OPENID,
         nickName: '',
         avatarUrl: '',
-        phoneNumber: '',
         lastLoginAt: now,
         createdAt: now,
         updatedAt: now
@@ -53,7 +52,6 @@ exports.main = async (event, context) => {
             openid: OPENID,
             nickName: '',
             avatarUrl: '',
-            phoneNumber: '',
             lastLoginAt: now,
             isAdmin: false
           }
@@ -75,7 +73,6 @@ exports.main = async (event, context) => {
         openid: user._openid,
         nickName: user.nickName || '',
         avatarUrl: user.avatarUrl || '',
-        phoneNumber: user.phoneNumber || '',
         lastLoginAt: user.lastLoginAt,
         isAdmin
       }

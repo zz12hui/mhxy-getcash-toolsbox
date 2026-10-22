@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-梦幻搞钱工具箱 — 微信小程序，梦幻西游跑环记录/预测/统计工具。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 可选微信登录与云备份。微信云开发后端（6 个云函数 + 云数据库），无后台管理端。
+梦幻搞钱工具箱 — 微信小程序，梦幻西游跑环记录/预测/统计工具。宠环助手（100 环）+ 跑环助手（300 环）+ 知识库 + 可选微信登录与云备份。微信云开发后端（5 个云函数 + 云数据库），无后台管理端。
 
 基础库 2.24.0，AppID `<YOUR_APPID>`，云环境 `<YOUR_CLOUD_ENV>`（作者自用，他人 fork 需替换）。
 
@@ -27,21 +27,19 @@ pages/
   chain/                           跑环（记录/奖励/历史/统计）
   profile/                         个人中心（账号/备份恢复/角色）
   faq/ + faq-detail/               知识库
-  login/                           登录/账号设置（头像/昵称/手机号/退出）
+  login/                           登录/账号设置（头像/昵称/退出）
   feedback/                        意见反馈
   manual/                          操作手册
   privacy/                         隐私政策与用户协议
-cloudfunctions/                    login / getPhone / syncUpload / syncDownload
-                                   submitFeedback / init
+cloudfunctions/                    login / syncUpload / syncDownload / submitFeedback / init
 tests/                             Node 单测（npm test）
 ```
 
-### 云函数清单（实际 6 个）
+### 云函数清单（实际 5 个）
 
 | 函数 | 说明 |
 |---|---|
 | login | 返回 openid / isAdmin；首次创建 users 记录 |
-| getPhone | `cloud.openapi.phonenumber.getPhoneNumber({code})`，权限 `phonenumber.getPhoneNumber` |
 | syncUpload | 入参 `roles[]`，按角色 + 数据类型分文档写入 `user_sync_data` |
 | syncDownload | 返回 `roles[]`（含 pet/chain），客户端整份恢复 |
 | submitFeedback | 反馈写入 `feedbacks` |
@@ -79,7 +77,7 @@ npm test
 # 以下需要微信开发者工具已扫码登录 + 设置→安全设置→服务端口开启
 npm run smoke         # 核心路径冒烟（9 项）
 npm run accept        # A+B 功能验收（14 项）
-npm run accept:cloud  # 云函数/云数据验收（9 项，需已部署云函数）
+npm run accept:cloud  # 云函数/云数据验收（8 项，需已部署云函数）
 ```
 
 ### 注意事项

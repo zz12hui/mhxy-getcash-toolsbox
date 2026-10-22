@@ -7,8 +7,6 @@ Page({
     isLoggedIn: false,
     nickName: '',
     avatarUrl: '',
-    phoneNumber: '',
-    hasPhone: false,
     loggingIn: false,
     loginErr: ''
   },
@@ -20,12 +18,15 @@ Page({
   refreshState() {
     const profile = S.getWxProfile()
     const isLoggedIn = !!profile
+    // 手机号能力已下线：清理历史版本可能残留的本地手机号
+    if (profile && profile.phoneNumber) {
+      delete profile.phoneNumber
+      S.saveWxProfile(profile)
+    }
     this.setData({
       isLoggedIn,
       nickName: profile ? (profile.nickName || '微信用户') : '',
       avatarUrl: profile ? (profile.avatarUrl || '') : '',
-      phoneNumber: profile ? (profile.phoneNumber || '') : '',
-      hasPhone: profile ? !!profile.phoneNumber : false,
       loginErr: ''
     })
   },
@@ -42,7 +43,6 @@ Page({
         openid: user.openid,
         nickName: user.nickName || '微信用户',
         avatarUrl: user.avatarUrl || '',
-        phoneNumber: user.phoneNumber || '',
         isAdmin: !!user.isAdmin
       }
       S.saveWxProfile(profile)
@@ -58,30 +58,6 @@ Page({
       wx.hideLoading()
       this.setData({ loggingIn: false, loginErr: (err.message || '登录失败，请重试') })
     }
-  },
-
-  onGetPhone(e) {
-    const code = e.detail.code
-    if (!code) {
-      // User declined or WeChat real-name verification not completed
-      wx.showToast({ title: '手机号授权需在微信公众平台开通「手机号快速验证」能力', icon: 'none', duration: 3000 })
-      return
-    }
-
-    wx.showLoading({ title: '获取中...', mask: true })
-    CLOUD.callFunction('getPhone', { code })
-      .then(data => {
-        wx.hideLoading()
-        const profile = S.getWxProfile() || {}
-        profile.phoneNumber = data.phoneNumber || ''
-        S.saveWxProfile(profile)
-        app.globalData.wxProfile = profile
-        this.refreshState()
-        wx.showToast({ title: '已绑定 ' + data.phoneNumber, icon: 'success' })
-      }).catch(err => {
-        wx.hideLoading()
-        wx.showToast({ title: '绑定失败: ' + (err.message || ''), icon: 'none', duration: 3000 })
-      })
   },
 
   onChooseAvatar(e) {

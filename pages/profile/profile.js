@@ -65,7 +65,7 @@ Page({
       String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
   },
 
-  // v1.2：登录后也能进入账号页（改头像/昵称/绑定手机/退出登录）
+  // v1.2：登录后也能进入账号页（改头像/昵称/退出登录）
   onAccountTap() {
     wx.navigateTo({ url: '/pages/login/login' })
   },

@@ -2,7 +2,7 @@
 /**
  * v1.2 云功能自动化验收（登录 / FAQ / 云备份 / 反馈）
  *
- * 前置：开发者工具已扫码登录、服务端口开启；4 个云函数已部署（init/getPhone/syncUpload/syncDownload）。
+ * 前置：开发者工具已扫码登录、服务端口开启；云函数 init / login / syncUpload / syncDownload 已部署。
  * 运行：npm run accept:cloud
  *
  * 说明：wx.showModal 确认框无法被自动化，恢复流程只验证到「备份调用成功」；其余走真实点击。
@@ -139,12 +139,6 @@ async function main() {
       return wx.cloud.callFunction({ name: 'init', data: {} }).then(res => res.result).catch(err => ({ code: -999, message: String(err) }))
     })
     record('init 云函数受鉴权保护', !!initRes && initRes.code === 403, 'code=' + (initRes && initRes.code) + ' msg=' + ((initRes && initRes.message) || '').slice(0, 40))
-
-    // ===== 3.3 getPhone 参数校验 =====
-    const phoneRes = await miniProgram.evaluate(() => {
-      return wx.cloud.callFunction({ name: 'getPhone', data: {} }).then(res => res.result).catch(err => ({ code: -999, message: String(err) }))
-    })
-    record('getPhone 缺少 code 时正确拒绝', !!phoneRes && phoneRes.code === -1, 'code=' + (phoneRes && phoneRes.code))
 
     // ===== 4. 意见反馈（submitFeedback 云函数） =====
     await miniProgram.reLaunch('/pages/feedback/feedback')

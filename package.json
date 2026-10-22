@@ -8,6 +8,7 @@
     "test": "node --test tests/constants.test.js tests/ring-cost.test.js tests/undo.test.js tests/storage-helpers.test.js tests/storage.test.js tests/pet-page.test.js tests/chain-page.test.js",
     "smoke": "node scripts/devtools-smoke.js",
     "accept": "node scripts/devtools-acceptance.js",
+    "accept:fresh": "node scripts/devtools-acceptance.js --clean",
     "accept:cloud": "node scripts/devtools-cloud-acceptance.js"
   },
   "repository": {

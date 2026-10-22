@@ -12,7 +12,7 @@
 const path = require('path')
 const fs = require('fs')
 const net = require('net')
-const { spawn } = require('child_process')
+const { spawn, execSync } = require('child_process')
 const automator = require('miniprogram-automator')
 
 const DEFAULT_CLI = 'C:\\Program Files (x86)\\Tencent\\微信web开发者工具\\cli.bat'
@@ -116,6 +116,14 @@ async function main() {
   }
   let miniProgram
   try {
+    if (process.argv.indexOf('--clean') >= 0) {
+      console.log('清理小程序数据缓存（storage），保证从干净状态验收...')
+      try {
+        execSync('"' + CLI + '" cache --clean storage --project "' + PROJECT + '"', { stdio: 'ignore' })
+      } catch (e) {
+        console.log('清理缓存失败（不影响继续）: ' + (e && e.message))
+      }
+    }
     miniProgram = await openAutomation()
   } catch (err) {
     console.error('连接自动化失败：' + (err && err.message))

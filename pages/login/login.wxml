@@ -37,17 +37,6 @@
             <text class="pi-label">昵称</text>
             <input class="pi-input" type="nickname" value="{{nickName}}" bindinput="onNickInput" placeholder="点此设置昵称" focus="{{true}}"/>
           </view>
-          <view class="profile-info-row">
-            <text class="pi-label">手机</text>
-            <block wx:if="{{hasPhone}}">
-              <text class="pi-value">{{phoneNumber}}</text>
-            </block>
-            <block wx:else>
-              <button class="btn btn-xs" open-type="getPhoneNumber" bindgetphonenumber="onGetPhone" style="height:56rpx;line-height:56rpx;font-size:24rpx;padding:0 20rpx;">
-                绑定手机号
-              </button>
-            </block>
-          </view>
         </view>
       </view>
     </scroll-view>

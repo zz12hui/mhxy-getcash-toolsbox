@@ -9,7 +9,7 @@
           <view wx:else class="profile-avatar profile-avatar-d">👤</view>
           <view class="profile-name-wrap">
             <text class="profile-name">{{isLoggedIn ? nickName : '未登录'}}</text>
-            <text class="profile-sub">{{isLoggedIn ? '点击管理账号（资料/手机号/退出）' : '点击登录同步数据到云端'}}</text>
+            <text class="profile-sub">{{isLoggedIn ? '点击管理账号（资料/退出）' : '点击登录同步数据到云端'}}</text>
           </view>
         </view>
         <text class="profile-arrow">›</text>

@@ -6,11 +6,10 @@
   <scroll-view scroll-y class="scroll-wrap legal-scroll">
     <view class="legal" wx:if="{{activeTab==='privacy'}}">
       <view class="legal-title">梦幻搞钱工具箱 · 隐私政策</view>
-      <view class="legal-updated">更新日期：2026-10-21（v1.2）</view>
+      <view class="legal-updated">更新日期：2026-10-22（v1.2）</view>
 
       <view class="legal-h">1. 我们收集哪些信息</view>
       <view class="legal-p">· 微信昵称、头像：仅在你主动设置时获取，用于在本小程序内展示账号信息。</view>
-      <view class="legal-p">· 手机号：仅在你主动点击「绑定手机号」并授权后获取，用于账号识别与问题排查。</view>
       <view class="legal-p">· 工具数据：你录入的跑环记录、角色等级、物品价格、奖励记录等，用于本工具的计算与统计。</view>
 
       <view class="legal-h">2. 数据保存在哪里</view>
@@ -23,7 +22,7 @@
       <view class="legal-p">· 我们不会向任何第三方出售、出租或共享你的个人信息，法律法规另有要求的除外。</view>
 
       <view class="legal-h">4. 权限说明</view>
-      <view class="legal-p">· 手机号、头像、相册（保存战绩图）、剪贴板（导出/导入数据）等权限，均只在你主动操作时申请。</view>
+      <view class="legal-p">· 头像、相册（保存战绩图）、剪贴板（导出/导入数据）等权限，均只在你主动操作时申请。</view>
       <view class="legal-p">· 拒绝授权不影响本地记录、预测、统计等核心功能。</view>
 
       <view class="legal-h">5. 数据安全与保留</view>
