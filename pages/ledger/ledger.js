@@ -36,6 +36,7 @@ Page({
     unbookedCount: 0,
     hasRuns: false,
     sharing: false,
+    docsError: '',
     docsLoading: false,
     showDocsResult: false,
     docsResultUrl: '',
@@ -261,7 +262,7 @@ Page({
       cfg: this.data.moneyCfg,
       currency: this.data.currency
     })
-    this.setData({ docsLoading: true })
+    this.setData({ docsLoading: true, docsError: '' })
     wx.cloud.callFunction({
       name: 'docsReport',
       data: { action: 'create', title: rep.title, rows: rep.rows }
@@ -276,10 +277,11 @@ Page({
         docsResultWarning: r.shareWarning || ''
       })
     }).catch(err => {
-      this.setData({ docsLoading: false })
+      const msg = (err && err.message) || '请稍后重试'
+      this.setData({ docsLoading: false, docsError: msg })
       wx.showModal({
         title: '生成腾讯文档失败',
-        content: (err && err.message) || '请稍后重试',
+        content: msg,
         showCancel: false
       })
     })

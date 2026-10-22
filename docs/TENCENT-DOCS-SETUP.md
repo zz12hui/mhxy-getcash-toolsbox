@@ -179,3 +179,26 @@ Token 情况：JWT 有效期约 30 天（当前到 2026-11-21），过期后需�
 - **A 版**：文档创建在**开发者账号**下，通过「链接可读」分享给用户；用户可以查看、另存为到自己的腾讯文档。
 - **B 版**（每个用户自己的文档）：需要 `client_secret` + 回调页做 OAuth；你后台目前只有三元组，若确认没有 client_secret，就只能先上 A 版。
 - Token 是 30 天有效期，过期需重新生成；生产要长期稳定需要 OAuth refresh token。
+
+---
+
+## 9. 云函数端到端已跑通（2026-10-22）
+
+实测链路：账本页点「📄 腾讯文档」→ 云函数 `docsReport` → 创建在线表格 → 加子表 → 写表头/明细/汇总 → 设为链接可读 → 返回链接。
+
+测试生成文档：`https://docs.qq.com/sheet/DUGJKZ1pSSEpsbWRr`
+
+### 环境变量问题与本地兜底
+
+云函数当前**读不到**控制台环境变量（报缺 `TENCENT_DOCS_CLIENT_ID/ACCESS_TOKEN/OPEN_ID`），因此加了一个本地兜底：
+
+```bash
+# 从 .secrets/tencent-docs.json 生成云函数本地配置（已 gitignore，不会提交）
+node scripts/gen-docs-config.js
+# 然后重新部署
+cli cloud functions deploy --env <YOUR_CLOUD_ENV> --names docsReport --project . --remote-npm-install
+```
+
+优先级：**环境变量 > 本地兜底**。等确认环境变量生效后，删除 `cloudfunctions/docsReport/config.local.js` 并重新部署，即可回到纯环境变量。
+
+> 排查建议：环境变量要配在「云开发控制台 → 云函数 → docsReport → 函数配置 → 环境变量」，注意环境 ID 是 `<YOUR_CLOUD_ENV>`；保存后重新部署一次。配在「本地调试环境变量」里不会生效。

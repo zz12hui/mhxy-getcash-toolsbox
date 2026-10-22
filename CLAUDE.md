@@ -51,7 +51,7 @@ tests/                             Node 单测（npm test）
 | syncUpload | 入参 `roles[]`，按角色 + 数据类型分文档写入 `user_sync_data` |
 | syncDownload | 返回 `roles[]`（含 pet/chain），客户端整份恢复 |
 | submitFeedback | 反馈写入 `feedbacks` |
-| docsReport | 生成腾讯文档收益报表：建表→加子表→写数据→设链接可读；Token 在云函数环境变量 `TENCENT_DOCS_CLIENT_ID/ACCESS_TOKEN/OPEN_ID`，不落代码 |
+| docsReport | 生成腾讯文档收益报表：建表→加子表→写数据→设链接可读；Token 优先读环境变量 `TENCENT_DOCS_CLIENT_ID/ACCESS_TOKEN/OPEN_ID`，环境变量读不到时用 `scripts/gen-docs-config.js` 生成的本地兜底（已 gitignore） |
 | init | FAQ 初始化 + 绑定管理员；校验 openid（环境变量 `ADMIN_OPENIDS` 或 `admins` 集合），控制台调用可用 `INIT_SECRET` + `event.secret` |
 
 ### 云数据库集合

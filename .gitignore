@@ -27,3 +27,6 @@ miniprogram_npm/
 
 # 本地密钥（腾讯文档 AppSecret / OAuth token 等）
 .secrets/
+
+# 云函数本地兜底配置（含 token，绝不提交）
+cloudfunctions/docsReport/config.local.js

@@ -41,11 +41,18 @@ function requestJson(method, path, headers, body) {
 }
 
 function getConfig() {
-  const clientId = process.env.TENCENT_DOCS_CLIENT_ID || ''
-  const accessToken = process.env.TENCENT_DOCS_ACCESS_TOKEN || ''
-  const openId = process.env.TENCENT_DOCS_OPEN_ID || ''
+  let local = {}
+  try { local = require('./config.local') } catch (e) { /* 本地兜底配置不存在时忽略 */ }
+  const clientId = process.env.TENCENT_DOCS_CLIENT_ID || local.clientId || ''
+  const accessToken = process.env.TENCENT_DOCS_ACCESS_TOKEN || local.accessToken || ''
+  const openId = process.env.TENCENT_DOCS_OPEN_ID || local.openId || ''
   if (!clientId || !accessToken || !openId) {
-    throw new Error('云函数缺少腾讯文档环境变量（TENCENT_DOCS_CLIENT_ID / TENCENT_DOCS_ACCESS_TOKEN / TENCENT_DOCS_OPEN_ID）')
+    const flags = [
+      'CLIENT_ID=' + (clientId ? 'ok' : 'missing'),
+      'ACCESS_TOKEN=' + (accessToken ? 'ok' : 'missing'),
+      'OPEN_ID=' + (openId ? 'ok' : 'missing')
+    ].join(' / ')
+    throw new Error('云函数缺少腾讯文档配置（' + flags + '）：请在云开发控制台给 docsReport 配环境变量，或本地执行 node scripts/gen-docs-config.js 后重新部署')
   }
   return { clientId, accessToken, openId }
 }
@@ -72,9 +79,12 @@ function colLetter(n) {
 function sanitizeRows(input) {
   if (!Array.isArray(input) || !input.length) throw new Error('没有可写入的报表数据')
   if (input.length > 500) throw new Error('单次最多 500 行，请缩小筛选范围')
+  const maxCols = input.reduce((m, row) => Math.max(m, Array.isArray(row) ? row.length : 0), 0)
+  const colCount = Math.min(Math.max(maxCols, 1), 20)
   return input.map(row => {
-    if (!Array.isArray(row)) return []
-    return row.slice(0, 20).map(cell => {
+    const cells = Array.isArray(row) ? row.slice(0, colCount) : []
+    while (cells.length < colCount) cells.push('')
+    return cells.map(cell => {
       const s = cell === null || cell === undefined ? '' : String(cell)
       return s.slice(0, 300)
     })
@@ -145,10 +155,11 @@ exports.main = async (event) => {
     const title = String((event && event.title) || '梦幻收益报表').slice(0, 36)
     const cfg = getConfig()
 
-    const file = await createSheet(cfg, title)
+    const file = await createSheet(cfg, title).catch(e => { throw new Error('创建表格步骤：' + e.message) })
     const bookID = file.ID
     const sheetID = await addSheet(cfg, bookID, '收益报表', Math.max(rows.length + 10, 100), Math.max(rows[0].length, 8))
-    await writeValues(cfg, bookID, sheetID, rows)
+      .catch(e => { throw new Error('添加工作表步骤：' + e.message) })
+    await writeValues(cfg, bookID, sheetID, rows).catch(e => { throw new Error('写入数据步骤：' + e.message) })
     let shareWarning = ''
     try {
       await setPublicRead(cfg, bookID)
