@@ -411,7 +411,7 @@
 </view>
 
 <!-- Bottom Sheet: Guide -->
-<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showGuide}}" style="background:rgba(0,0,0,0.85);">
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showGuide}}" bindtap="closeGuide" style="background:rgba(0,0,0,0.85);">
   <view class="sheet" catchtap="noop">
     <view class="sheet-handle"></view>
     <view class="sheet-title">📖 使用引导 <text style="font-size:22rpx;color:var(--text2);font-weight:400;">{{guideStep+1}}/{{guideSteps.length}}</text></view>

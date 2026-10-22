@@ -269,6 +269,35 @@ async function main() {
     const feedbackRouteOk = feedbackOk ? await waitRoute(miniProgram, 'pages/feedback/feedback', 5000) : false
     const route2 = (await getPage(miniProgram)).path
     record('意见反馈页可进入', feedbackRouteOk, 'route=' + route2)
+
+    // ===== 11. 使用引导点击遮罩空白可关闭 =====
+    await miniProgram.reLaunch('/pages/pet/pet')
+    await sleep(1000)
+    const petPage = await getPage(miniProgram)
+    await petPage.setData({ showGuide: true, guideStep: 0 })
+    await sleep(400)
+    const guideOverlay = await (await getPage(miniProgram)).$('.sheet-overlay')
+    let petGuideClosed = false
+    if (guideOverlay) {
+      await guideOverlay.trigger('tap')
+      await sleep(400)
+      petGuideClosed = (await getData(miniProgram)).showGuide === false
+    }
+    record('宠环使用引导点击空白可关闭', petGuideClosed)
+
+    await miniProgram.reLaunch('/pages/chain/chain')
+    await sleep(1000)
+    const chainPage = await getPage(miniProgram)
+    await chainPage.setData({ showGuide: true, guideStep: 0 })
+    await sleep(400)
+    const guideOverlay2 = await (await getPage(miniProgram)).$('.sheet-overlay')
+    let chainGuideClosed = false
+    if (guideOverlay2) {
+      await guideOverlay2.trigger('tap')
+      await sleep(400)
+      chainGuideClosed = (await getData(miniProgram)).showGuide === false
+    }
+    record('跑环使用引导点击空白可关闭', chainGuideClosed)
   } catch (err) {
     console.error('验收脚本异常：' + (err && err.stack ? err.stack : err))
     record('执行完整性', false, err && err.message)

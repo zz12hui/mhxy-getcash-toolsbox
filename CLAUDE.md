@@ -76,7 +76,7 @@ npm test
 
 # 以下需要微信开发者工具已扫码登录 + 设置→安全设置→服务端口开启
 npm run smoke         # 核心路径冒烟（9 项）
-npm run accept        # A+B 功能验收（14 项）
+npm run accept        # A+B 功能验收（16 项）
 npm run accept:cloud  # 云函数/云数据验收（8 项，需已部署云函数）
 ```
 
