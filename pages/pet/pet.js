@@ -98,6 +98,13 @@ Page({
 
   onHide() {
     if (this._checkTimer) { clearTimeout(this._checkTimer); this._checkTimer = null }
+    this.setTabBarHidden(false)
+  },
+
+  setTabBarHidden(hidden) {
+    if (typeof this.getTabBar !== 'function') return
+    const tb = this.getTabBar()
+    if (tb && tb.setData) tb.setData({ hidden: !!hidden })
   },
 
   togglePause() {
@@ -616,6 +623,7 @@ Page({
     })
     this._settleRun = run
     this.computeSettlePreview()
+    this.setTabBarHidden(true)
   },
 
   closeSettleModal() {
@@ -634,6 +642,7 @@ Page({
       this.loadData()
     }
     this.setData({ showSettleModal: false })
+    this.setTabBarHidden(false)
   },
 
   onSettleCatChange(e) { this.setData({ settleCatIdx: parseInt(e.detail.value), settleLvIdx: 0, settleTypeIdx: 0, settleMainReward: '' }) },
@@ -827,6 +836,7 @@ Page({
     this._settleRun = null
     if (this._undo) this._undo.clear()
     this.setData({ showSettleModal: false })
+    this.setTabBarHidden(false)
     this.loadData()
     const suffix = run.unbooked
       ? '（未记账，可到历史补录收益）'

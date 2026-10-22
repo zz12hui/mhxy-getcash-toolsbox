@@ -337,8 +337,9 @@
 
 <!-- Bottom Sheet: Seg reward -->
 <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showSegModal}}" bindtap="closeSegModal">
-  <view class="sheet" catchtap="noop">
+  <view class="sheet sheet-flex" catchtap="noop">
     <view class="sheet-handle"></view>
+    <view class="sheet-body">
     <view class="sheet-title">🏆 第{{segRewardSeg}}环奖励记录</view>
     <view class="stat-row"><text>角色等级</text><text class="val">{{cfg.level}}级</text></view>
     <view class="stat-row"><text>奖励说明</text><text class="val" style="color:var(--warn);font-size:22rpx;">{{rewardRuleShort}}</text></view>
@@ -391,6 +392,7 @@
       <text style="font-size:22rpx;color:var(--text2);">万两</text>
     </view>
     <view class="stat-row" style="padding:6rpx 0;"><text>本段收入</text><text class="val" style="color:var(--accent);">{{segIncomeWan}}万</text></view>
+    </view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeSegModal">跳过</view>
       <view class="btn btn-a" style="flex:1" bindtap="confirmSeg">确认记录</view>

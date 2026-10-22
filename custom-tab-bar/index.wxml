@@ -1,4 +1,4 @@
-<view class="tab-bar">
+<view class="tab-bar {{hidden ? 'tab-hidden' : ''}}">
   <view wx:for="{{list}}" wx:key="index" class="tab-bar-item {{selected===index?'active':''}}" data-index="{{index}}" data-path="{{item.pagePath}}" bindtap="switchTab">
     <view wx:if="{{selected===index}}" class="tab-active-bg"></view>
     <text class="tab-bar-icon">{{item.icon}}</text>

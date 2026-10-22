@@ -93,6 +93,13 @@ Page({
 
   onHide() {
     if (this._checkTimer) { clearTimeout(this._checkTimer); this._checkTimer = null }
+    this.setTabBarHidden(false)
+  },
+
+  setTabBarHidden(hidden) {
+    if (typeof this.getTabBar !== 'function') return
+    const tb = this.getTabBar()
+    if (tb && tb.setData) tb.setData({ hidden: !!hidden })
   },
 
   togglePause() {
@@ -613,9 +620,10 @@ Page({
       segExtras: extrasLabels.map(l => ({ label: l, checked: false })),
       segCats: cats
     })
+    this.setTabBarHidden(true)
   },
 
-  closeSegModal() { this.setData({ showSegModal: false }) },
+  closeSegModal() { this.setData({ showSegModal: false }); this.setTabBarHidden(false) },
 
   onSegCatChange(e) { this.setData({ segCatIdx: parseInt(e.detail.value), segLvIdx: 0, segTypeIdx: 0, segMainReward: '' }) },
   onSegLvChange(e) { this.setData({ segLvIdx: parseInt(e.detail.value), segMainReward: '' }) },
@@ -743,6 +751,7 @@ Page({
       : others
     S.saveChainCur(this.data.activeUser, this._cur)
     this.setData({ showSegModal: false })
+    this.setTabBarHidden(false)
     this.loadData()
     if (seg === 300 && this.segDone(100) && this.segDone(200)) this.doComplete()
   },

@@ -378,8 +378,9 @@
 
 <!-- Bottom Sheet: Settlement -->
 <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showSettleModal}}" bindtap="closeSettleModal">
-  <view class="sheet" catchtap="noop">
+  <view class="sheet sheet-flex" catchtap="noop">
     <view class="sheet-handle"></view>
+    <view class="sheet-body">
     <view class="sheet-title">🏆 跑环结算 — 实际奖励</view>
     <view class="stat-row"><text>总分</text><text class="val" style="color:var(--accent);">{{settleScore}}分</text></view>
     <view class="stat-row"><text>预测书铁等级</text><text class="val" style="color:var(--warn);">{{settleBookLv}}级</text></view>
@@ -439,6 +440,7 @@
       <view class="stat-row" style="padding:6rpx 0;"><text>净收益</text><text class="val" style="color:{{settleProfitPos?'var(--accent)':'var(--danger)'}};">{{settleProfitWan}}万</text></view>
       <view class="stat-row" style="padding:6rpx 0;"><text>投入产出比</text><text class="val">{{settleRoiStr}}</text></view>
       <view class="stat-row" style="padding:6rpx 0;"><text>时薪（按有效工时）</text><text class="val" style="font-size:22rpx;">{{settleHourlyStr}}</text></view>
+    </view>
     </view>
     <view class="sheet-actions">
       <view class="btn" bindtap="closeSettleModal">取消</view>
