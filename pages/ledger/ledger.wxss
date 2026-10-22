@@ -58,6 +58,9 @@
 
 .chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 56rpx;
   padding: 8rpx 16rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.08);
   border-radius: 18rpx;
@@ -398,4 +401,23 @@
   font-size: 19rpx;
   color: var(--text2);
   line-height: 1.7;
+}
+
+/* PC / 大屏 */
+@media (min-width: 768px) {
+  .ledger-content {
+    padding: 24rpx 32rpx 48rpx;
+  }
+
+  .ledger-row {
+    padding: 18rpx 26rpx;
+  }
+
+  .ledger-chart {
+    height: 360rpx;
+  }
+
+  .action-row {
+    gap: 20rpx;
+  }
 }

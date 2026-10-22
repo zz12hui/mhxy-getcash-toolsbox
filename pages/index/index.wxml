@@ -1,4 +1,4 @@
-<scroll-view scroll-y class="home-scroll">
+<scroll-view scroll-y class="home-scroll {{reduceMotion ? 'reduce-motion' : ''}}">
   <view class="hub-view" style="padding-top: {{statusBarHeight + 8}}px;">
     <view class="hub-bg">
       <view class="orb orb1"></view>
@@ -46,24 +46,26 @@
 
       <view class="section-label anim-up" style="animation-delay: 120ms;">核心工具</view>
 
-      <view class="tool-card anim-up" style="animation-delay: 160ms;" bindtap="goPet">
-        <view class="tool-ico pet-ico">🐾</view>
-        <view class="tool-info">
-          <view class="tool-title">宠环助手</view>
-          <view class="tool-desc">100 环 · 积分追踪 · 奖励预测</view>
-          <view class="tool-tags"><text class="tool-tag">100环</text><text class="tool-tag">积分制</text></view>
+      <view class="tool-grid">
+        <view class="tool-card anim-up" style="animation-delay: 160ms;" bindtap="goPet">
+          <view class="tool-ico pet-ico">🐾</view>
+          <view class="tool-info">
+            <view class="tool-title">宠环助手</view>
+            <view class="tool-desc">100 环 · 积分追踪 · 奖励预测</view>
+            <view class="tool-tags"><text class="tool-tag">100环</text><text class="tool-tag">积分制</text></view>
+          </view>
+          <text class="tool-arrow">›</text>
         </view>
-        <text class="tool-arrow">›</text>
-      </view>
 
-      <view class="tool-card anim-up" style="animation-delay: 210ms;" bindtap="goChain">
-        <view class="tool-ico chain-ico">📜</view>
-        <view class="tool-info">
-          <view class="tool-title">跑环助手</view>
-          <view class="tool-desc">300 环 · 三段奖励 · 书铁区间</view>
-          <view class="tool-tags"><text class="tool-tag">300环</text><text class="tool-tag">三段奖励</text></view>
+        <view class="tool-card anim-up" style="animation-delay: 210ms;" bindtap="goChain">
+          <view class="tool-ico chain-ico">📜</view>
+          <view class="tool-info">
+            <view class="tool-title">跑环助手</view>
+            <view class="tool-desc">300 环 · 三段奖励 · 书铁区间</view>
+            <view class="tool-tags"><text class="tool-tag">300环</text><text class="tool-tag">三段奖励</text></view>
+          </view>
+          <text class="tool-arrow">›</text>
         </view>
-        <text class="tool-arrow">›</text>
       </view>
 
       <view class="section-label anim-up" style="animation-delay: 260ms;">快捷工具</view>

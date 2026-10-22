@@ -1,4 +1,4 @@
-<view class="app ledger-page">
+<view class="app ledger-page {{reduceMotion ? 'reduce-motion' : ''}}">
   <scroll-view scroll-y class="scroll-wrap page-scroll" style="flex:1;">
     <view class="ledger-content">
       <view class="ledger-nav anim-up" style="padding-top: {{statusBarHeight}}px; padding-right: {{navRight}}px;">

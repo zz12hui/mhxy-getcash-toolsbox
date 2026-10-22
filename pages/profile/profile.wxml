@@ -73,6 +73,17 @@
       </view>
     </view>
 
+    <!-- 显示与动效 -->
+    <view class="profile-section">
+      <view class="section-title">显示与动效</view>
+      <view class="menu-list">
+        <view class="menu-item">
+          <text>✨ 精简动效（低端机/省电）</text>
+          <switch checked="{{reduceMotion}}" bindchange="toggleReduceMotion" color="#38f2c8"/>
+        </view>
+      </view>
+    </view>
+
     <!-- Services — 4 per row -->
     <view class="profile-section">
       <view class="section-title">服务</view>

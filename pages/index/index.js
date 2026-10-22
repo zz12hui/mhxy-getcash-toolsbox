@@ -1,10 +1,12 @@
 const app = getApp()
 const HOME = require('../../utils/ledger-home')
+const MOTION = require('../../utils/motion')
 
 Page({
   data: {
     clockStr: '',
     sparkBars: [],
+    reduceMotion: false,
     statusBarHeight: 20,
     navRight: 90,
     ledgerSummary: { hasData: false, profitStr: '0.0 万两', profitPos: true, roiStr: '—', costStr: '0.0 万两', incomeStr: '0.0 万两', count: 0, hourlyStr: '—' }
@@ -25,6 +27,7 @@ Page({
   onShow() {
     this.updateClock()
     this.loadLedgerSummary()
+    this.setData({ reduceMotion: MOTION.getReduceMotion() })
     if (this._clockTimer) clearInterval(this._clockTimer)
     this._clockTimer = setInterval(() => this.updateClock(), 1000)
   },

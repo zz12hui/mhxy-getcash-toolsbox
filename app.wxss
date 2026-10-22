@@ -1110,3 +1110,106 @@ page {
   word-break: break-all;
 }
 
+/* 减少动态效果 */
+.reduce-motion .anim-up,
+.reduce-motion .anim-fade,
+.reduce-motion .lh-bar,
+.reduce-motion .sheet,
+.reduce-motion .btn,
+.reduce-motion .chip,
+.reduce-motion .ledger-row {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* 移动端手感：热区与安全区 */
+.btn {
+  min-height: 72rpx;
+}
+
+.btn-xs {
+  min-height: 60rpx;
+}
+
+.sheet-actions .btn {
+  min-height: 86rpx;
+}
+
+.sheet {
+  padding-bottom: calc(170rpx + env(safe-area-inset-bottom));
+}
+
+/* 结算预估卡 */
+.reward-rule-box {
+  background: rgba(56, 242, 200, 0.06);
+  border: 1rpx solid rgba(56, 242, 200, 0.22);
+  border-radius: 22rpx;
+  padding: 18rpx 20rpx;
+  font-size: 22rpx;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* PC / 大屏自适应 */
+@media (min-width: 768px) {
+  .app,
+  .hub-main,
+  .ledger-content,
+  .tab-bar {
+    max-width: 780px;
+  }
+
+  .app {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hub-main,
+  .ledger-content {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .tab-bar {
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 24rpx 24rpx 0 0;
+    border-left: 1rpx solid rgba(120, 180, 220, 0.12);
+    border-right: 1rpx solid rgba(120, 180, 220, 0.12);
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .filter-row {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .sheet {
+    max-width: 780px;
+    margin: 0 auto;
+    border-radius: 34rpx 34rpx 0 0;
+    border-left: 1rpx solid rgba(120, 180, 220, 0.18);
+    border-right: 1rpx solid rgba(120, 180, 220, 0.18);
+  }
+
+  .sheet-overlay {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1100px) {
+  .app,
+  .hub-main,
+  .ledger-content,
+  .tab-bar {
+    max-width: 920px;
+  }
+
+  .ledger-chart {
+    height: 360rpx;
+  }
+}
+

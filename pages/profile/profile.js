@@ -2,6 +2,7 @@ const app = getApp()
 const S = require('../../utils/storage')
 const CLOUD = require('../../utils/cloud')
 const HOME = require('../../utils/ledger-home')
+const MOTION = require('../../utils/motion')
 
 Page({
   data: {
@@ -20,6 +21,7 @@ Page({
     activeUserIndex: -1,
     activeUserName: '',
     userPickerRange: [],
+    reduceMotion: false,
     ledgerSummary: { hasData: false, profitStr: '0.0 万两', profitPos: true, roiStr: '—', costStr: '0.0 万两', incomeStr: '0.0 万两', count: 0, hourlyStr: '—' }
   },
 
@@ -57,6 +59,7 @@ Page({
       activeUserIndex,
       activeUserName: activeUserObj ? activeUserObj.name : '',
       userPickerRange,
+      reduceMotion: MOTION.getReduceMotion(),
       ledgerSummary: this.getLedgerSummary()
     })
   },
@@ -160,6 +163,13 @@ Page({
     app.globalData.users = this.data.users
     this.loadData()
     wx.showToast({ title: '已切换到 ' + user.name, icon: 'none' })
+  },
+
+  toggleReduceMotion(e) {
+    const v = !!(e && e.detail && e.detail.value)
+    MOTION.setReduceMotion(v)
+    this.setData({ reduceMotion: v })
+    wx.showToast({ title: v ? '已开启精简动效' : '已恢复完整动效', icon: 'none' })
   },
 
   goManual() { wx.navigateTo({ url: '/pages/manual/manual' }) },

@@ -5,6 +5,7 @@ const TASK_USAGE = require('../../utils/task-usage')
 const ITEM_MEMORY = require('../../utils/item-memory')
 const UI = require('../../utils/ui')
 const UNDO = require('../../utils/undo')
+const MOTION = require('../../utils/motion')
 const REWARD_PRICES = require('../../utils/reward-prices')
 const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
@@ -16,7 +17,7 @@ Page({
     // User
     users: [], activeUser: '', currentUserName: '', userIdx: 0, userNames: [],
     // Config
-    cfg: { level: 175 }, hasCur: false, isPaused: false, moneyCfg: {},
+    cfg: { level: 175 }, hasCur: false, isPaused: false, moneyCfg: {}, reduceMotion: false,
     // Record
     petTypes: C.PET_TYPES, quickTasks: C.PET_TYPES, showAllTasks: false,
     itemChips: [], modalTask: '', qbItem: '', jumpRing: '', undoCount: 0, vibrateOn: true,
@@ -139,6 +140,7 @@ Page({
       cfg, hasCur, prices: { ...prices },
       isPaused: !!(cur && cur.pausedAt),
       moneyCfg: MONEY.getMoneyCfg(),
+      reduceMotion: MOTION.getReduceMotion(),
       quickTasks, itemChips, undoCount: this._undo ? this._undo.size : 0,
       ...recordData, ...predictData, ...controlData,
       history: historyData, ...statsData

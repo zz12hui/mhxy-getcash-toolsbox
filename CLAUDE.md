@@ -23,6 +23,7 @@ utils/
   report-export.js                 收益报表行生成（腾讯文档导出）
   share-report.js                  分享海报数据模型
   ledger-home.js                   首页/我的页收益摘要
+  motion.js                        精简动效开关（本地）
   task-usage.js                   常用任务排序
   item-memory.js                  物品名记忆
   undo.js                         UndoStack（最多 10 步）

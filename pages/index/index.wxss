@@ -248,6 +248,12 @@ page { padding-bottom: 140rpx; }
 }
 
 /* 工具卡 */
+.tool-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
 .tool-card {
   display: flex;
   align-items: center;
@@ -366,4 +372,28 @@ page { padding-bottom: 140rpx; }
   font-size: 19rpx;
   color: rgba(139, 163, 191, 0.35);
   line-height: 1.8;
+}
+
+/* PC / 大屏 */
+@media (min-width: 768px) {
+  .tool-grid {
+    flex-direction: row;
+  }
+
+  .tool-grid .tool-card {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .quick-grid {
+    gap: 16rpx;
+  }
+
+  .quick-module {
+    height: 128rpx;
+  }
+
+  .hub-main {
+    padding-top: 48rpx;
+  }
 }

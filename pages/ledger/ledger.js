@@ -4,6 +4,7 @@ const LEDGER = require('../../utils/ledger')
 const MONEY = require('../../utils/money')
 const REPORT = require('../../utils/report-export')
 const SHARE = require('../../utils/share-report')
+const MOTION = require('../../utils/motion')
 
 Page({
   data: {
@@ -39,6 +40,7 @@ Page({
     docsError: '',
     statusBarHeight: 20,
     navRight: 90,
+    reduceMotion: false,
     docsLoading: false,
     showDocsResult: false,
     docsResultUrl: '',
@@ -56,11 +58,12 @@ Page({
         const rect = wx.getMenuButtonBoundingClientRect()
         if (rect && rect.left) navRight = Math.max(70, info.windowWidth - rect.left + 10)
       } catch (e) { /* 忽略胶囊信息失败 */ }
-      this.setData({ statusBarHeight: info.statusBarHeight || 20, navRight })
+      this.setData({ statusBarHeight: info.statusBarHeight || 20, navRight, reduceMotion: MOTION.getReduceMotion() })
     } catch (e) { /* 忽略 */ }
   },
 
   onShow() {
+    this.setData({ reduceMotion: MOTION.getReduceMotion() })
     this.loadData()
   },
 
@@ -304,6 +307,11 @@ Page({
         ctx.textAlign = 'left'
         ctx.fillText((max / 10000).toFixed(0) + '万', 2, pad.t + 8)
         ctx.fillText((min / 10000).toFixed(0) + '万', 2, pad.t + ph)
+      }
+
+      if (this.data.reduceMotion) {
+        drawAt(1)
+        return
       }
 
       let frame = 0
