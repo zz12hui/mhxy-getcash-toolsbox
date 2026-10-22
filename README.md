@@ -171,6 +171,8 @@ npm test             # Node 单测（游戏公式、费用计算、存储、撤�
 - **v1.3.1：收益报表导出 / 同步腾讯文档**（导出方案已定；API 绑定需腾讯文档开放平台资质）— 方案见 [docs/PLAN-v1.3.1-tencent-docs-sync.md](docs/PLAN-v1.3.1-tencent-docs-sync.md)
 - v1.4：后台管理、全角色云同步、订阅消息（待排期）
 
+> 当前不确定 / 待确认事项见 [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md)（腾讯文档接入、记账 P3、发布收尾）。
+
 ## License
 
 [MIT](LICENSE)
