@@ -38,6 +38,10 @@ Page({
     wx.navigateTo({ url: '/pages/faq/faq' })
   },
 
+  goLedger() {
+    wx.navigateTo({ url: '/pages/ledger/ledger' })
+  },
+
   onComing() {
     wx.showToast({ title: '功能开发中，敬请期待', icon: 'none' })
   },

@@ -27,6 +27,7 @@ Page({
     segRewards: [], rewardRows: [],
     // History
     history: [],
+    showRunDetail: false, runDetailRun: null,
     // Stats
     stats: {}, typeDist: [],
     // Guide
@@ -711,6 +712,21 @@ Page({
   },
 
   // ===== History =====
+  openRunDetail(e) {
+    const id = e.currentTarget.dataset.id
+    const r = this.data.history.find(h => h._raw && h._raw.id === id)
+    if (!r || !r._raw) return
+    this.setData({ showRunDetail: true, runDetailRun: r._raw })
+  },
+
+  closeRunDetail() {
+    this.setData({ showRunDetail: false, runDetailRun: null })
+  },
+
+  goLedger() {
+    wx.navigateTo({ url: '/pages/ledger/ledger' })
+  },
+
   showReport(e) {
     const id = e.currentTarget.dataset.id
     const r = this.data.history.find(h => h._raw && h._raw.id === id)
@@ -876,7 +892,12 @@ Page({
         id: r.id, _raw: r, done: r.done, level: r.level, comp, costWan: costWan.toFixed(0),
         startedStr: C.fmtDate(r.startedAt),
         doneStr: r.doneAt ? '→' + C.fmtDate(r.doneAt) : '',
-        rewardStr
+        rewardStr,
+        booked: LEDGER.isBooked(r),
+        incomeWan: LEDGER.isBooked(r) ? LEDGER.formatWan(r.income) : '—',
+        profitWan: LEDGER.isBooked(r) ? LEDGER.formatWan(r.profit) : '—',
+        profitPos: LEDGER.isBooked(r) ? Number(r.profit) >= 0 : true,
+        roiStr: LEDGER.isBooked(r) && r.roi != null ? '1 : ' + Number(r.roi).toFixed(2) : '—'
       }
     })
   },

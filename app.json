@@ -9,7 +9,8 @@
     "pages/login/login",
     "pages/feedback/feedback",
     "pages/manual/manual",
-    "pages/privacy/privacy"
+    "pages/privacy/privacy",
+    "pages/ledger/ledger"
   ],
   "window": {
     "navigationBarBackgroundColor": "#0f1623",

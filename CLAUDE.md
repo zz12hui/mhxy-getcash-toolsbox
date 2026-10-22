@@ -17,6 +17,8 @@ utils/
   cloud.js                         callFunction + FAQ 查询
   faq-cache.js                     FAQ 本地缓存（1h TTL）
   ring-cost.js                     价格/费用计算（0 价生效、显式传参）
+  ledger.js                        收益估值/ROI/周期过滤/多轮汇总
+  reward-prices.js                 奖励价目表（按角色，书/铁/灵饰/战魄/特殊奖励）
   task-usage.js                   常用任务排序
   item-memory.js                  物品名记忆
   undo.js                         UndoStack（最多 10 步）
@@ -31,6 +33,8 @@ pages/
   feedback/                        意见反馈
   manual/                          操作手册
   privacy/                         隐私政策与用户协议
+  ledger/                          收益账本（筛选/汇总/累计净收益折线/轮次列表）
+components/run-detail/             轮次明细抽屉（成本/收益/ROI）
 cloudfunctions/                    login / syncUpload / syncDownload / submitFeedback / init
 tests/                             Node 单测（npm test）
 ```
@@ -76,7 +80,7 @@ npm test
 
 # 以下需要微信开发者工具已扫码登录 + 设置→安全设置→服务端口开启
 npm run smoke         # 核心路径冒烟（9 项）
-npm run accept        # A+B 功能验收（16 项）
+npm run accept        # A+B 功能验收（18 项）
 npm run accept:cloud  # 云函数/云数据验收（8 项，需已部署云函数）
 ```
 

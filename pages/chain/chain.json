@@ -1,4 +1,7 @@
 {
   "navigationBarTitleText": "跑环助手",
-  "enable-flex": true
+  "enable-flex": true,
+  "usingComponents": {
+    "run-detail": "/components/run-detail/index"
+  }
 }

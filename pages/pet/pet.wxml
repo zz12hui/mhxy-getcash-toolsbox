@@ -206,13 +206,17 @@
                 {{r.startedStr}}{{r.doneStr ? ' → ' + r.doneStr : ''}}
                 <text wx:if="{{r.rewardStr}}"> | {{r.rewardStr}}</text>
               </view>
+              <view wx:if="{{r.booked}}" style="font-size:20rpx;color:var(--text2);margin-top:4rpx;">
+                产出 {{r.incomeWan}}万 · 净收益 <text style="color:{{r.profitPos?'var(--accent)':'var(--danger)'}};">{{r.profitWan}}万</text> · ROI {{r.roiStr}}
+              </view>
+              <view wx:else style="font-size:20rpx;color:var(--warn);margin-top:4rpx;">未记账（投入 {{r.costWan}}万）</view>
             </view>
             <view style="display:flex;align-items:center;gap:8rpx;">
               <view style="text-align:right;">
                 <view class="score">{{r.totalScore||'-'}}分</view>
                 <view style="font-size:20rpx;color:{{r.tierColor}};">{{r.tierLabel}}</view>
               </view>
-              <view class="btn btn-xs" bindtap="showReport" data-id="{{r.id}}">📊</view>
+              <view class="btn btn-xs" bindtap="openRunDetail" data-id="{{r.id}}">📒</view>
               <view class="btn btn-xs" style="color:var(--danger);border-color:var(--danger);" bindtap="deleteRun" data-id="{{r.id}}">✕</view>
             </view>
           </view>
@@ -239,6 +243,9 @@
           <view class="stat-card"><view class="lbl">平均分</view><view class="val">{{stats.avgScore}}</view></view>
           <view class="stat-card"><view class="lbl">总费用</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{stats.totalCostWan}}万</view></view>
           <view class="stat-card"><view class="lbl">均次费用</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{stats.avgCostWan}}万</view></view>
+        </view>
+        <view style="display:flex;justify-content:flex-end;margin-bottom:16rpx;">
+          <view class="btn btn-xs" bindtap="goLedger">📒 查看收益账本</view>
         </view>
         <view style="margin-bottom:16rpx;">
           <view class="section-sub-title">奖励档位分布</view>
@@ -464,3 +471,5 @@
 
 <!-- Toast -->
 <view class="toast" wx:if="{{toastMsg}}">{{toastMsg}}</view>
+
+<run-detail show="{{showRunDetail}}" run="{{runDetailRun}}" tool="pet" bind:close="closeRunDetail"/>

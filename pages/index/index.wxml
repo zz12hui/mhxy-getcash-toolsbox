@@ -48,7 +48,7 @@
           <text class="qm-icon">📖</text>
           <text class="qm-label">知识库</text>
         </view>
-        <view class="quick-module" bindtap="onComing">
+        <view class="quick-module" bindtap="goLedger">
           <text class="qm-icon">📊</text>
           <text class="qm-label">收益统计</text>
         </view>

@@ -23,6 +23,13 @@
 - 按角色等级给出书铁区间、灵饰/战魄提示
 - 历史与统计（任务类型分布、费用汇总）
 
+### 收益账本（v1.3）
+
+- 每轮结算记录成本明细 + 收益明细（奖励按参考价自动估值，可改实际价）
+- 自动计算净收益、投入产出比（1 : x）、净收益率、时薪、用时
+- 历史列表显示每轮产出/净收益/ROI，可点开看成本与收益明细；旧数据标「未记账」可补录
+- 收益账本页：按角色 / 工具 / 周期汇总总投入、总产出、净收益、ROI，含累计净收益折线
+
 ### 账号与云备份（可选）
 
 - 微信登录、昵称/头像（头像上传云存储）
@@ -53,13 +60,16 @@
 app.js / app.json / app.wxss     应用入口、云开发初始化、全局样式
 custom-tab-bar/                   自定义 TabBar（首页 | 当前工具 | 我的）
 pages/                            index / pet / chain / profile / faq / faq-detail
-                                  login / feedback / manual / privacy
+                                  login / feedback / manual / privacy / ledger
+components/run-detail/            轮次明细抽屉（成本/收益/ROI，历史与账本共用）
 utils/
   constants.js                    游戏常量与公式（纯函数，可直接单测）
   storage.js                      本地存储封装（按角色 uid 隔离 + 整账号导出/恢复）
   cloud.js                        云函数调用与 FAQ 查询封装
   faq-cache.js                    FAQ 本地缓存
   ring-cost.js                    价格与费用计算（价格 0 生效）
+  ledger.js                       收益估值/ROI/周期过滤/多轮汇总
+  reward-prices.js                奖励价目表（书/铁/灵饰/战魄/特殊奖励参考价）
   task-usage.js / item-memory.js  常用任务排序、物品名记忆
   undo.js / ui.js                 撤销栈、震动开关
 cloudfunctions/                   5 个云函数（见下）
@@ -130,11 +140,11 @@ npm test             # Node 单测（游戏公式、费用计算、存储、撤�
 | 命令 | 覆盖 |
 |---|---|
 | `npm run smoke` | 核心路径冒烟（9 项） |
-| `npm run accept` | A+B 功能验收（16 项） |
-| `npm run accept:fresh` | 先清 storage 缓存再跑 A+B 验收（16 项） |
+| `npm run accept` | A+B 功能验收（18 项） |
+| `npm run accept:fresh` | 先清 storage 缓存再跑 A+B 验收（18 项） |
 | `npm run accept:cloud` | 云函数/云数据验收（8 项，需已部署云函数） |
 
-> 本机 2026-10-22 实测：smoke 9/9、accept 16/16、accept:cloud 8/8 通过（手机号能力已下线，不再验收）。
+> 本机 2026-10-22 实测：smoke 9/9、accept 18/18、accept:cloud 8/8 通过（手机号能力已下线，不再验收）。
 
 ## v1.2 变更摘要
 
@@ -150,10 +160,11 @@ npm test             # Node 单测（游戏公式、费用计算、存储、撤�
 - 手机号能力已移除（个人主体无法开通），账号页仅保留头像/昵称/退出。
 - 游戏公式基于公开资料，游戏版本更新后可能需要调整（统一在 `utils/constants.js` 修改）。
 - 云函数与云数据库需自行开通，仓库不包含云环境配置。
+- 收益账本 P3 待补：奖励价目表设置页、历史批量补录、导入导出对账本字段的校验。
 
 ## 路线图
 
-- **v1.3：收益记账**（成本 + 收益 + 投入产出比、历史投入、轮次收益明细、收益账本页）— 规划见 [docs/PLAN-v1.3-bookkeeping.md](docs/PLAN-v1.3-bookkeeping.md)
+- **v1.3：收益记账**（P1 记账底层 + P2 历史明细/账本页 ✅ 已实现；P3 价目表设置页、批量补录待做）— 规划见 [docs/PLAN-v1.3-bookkeeping.md](docs/PLAN-v1.3-bookkeeping.md)
 - v1.4：后台管理、全角色云同步、订阅消息（待排期）
 
 ## License

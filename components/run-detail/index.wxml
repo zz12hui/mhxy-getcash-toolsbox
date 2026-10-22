@@ -1,0 +1,38 @@
+<view class="sheet-overlay" catchtouchmove="noop" wx:if="{{show}}" bindtap="onClose">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">{{view.title}}</view>
+    <view class="stat-row"><text>等级 / 完成</text><text class="val">Lv.{{view.level}} · {{view.comp}}</text></view>
+    <view class="stat-row"><text>结算时间</text><text class="val" style="font-size:22rpx;">{{view.dateStr}}</text></view>
+    <view class="stat-row"><text>奖励</text><text class="val" style="font-size:22rpx;max-width:60%;">{{view.rewardStr}}</text></view>
+
+    <view class="section-sub-title" style="margin-top:16rpx;">💰 投入明细（{{view.costWan}}万）</view>
+    <view wx:for="{{view.costRows}}" wx:key="name" class="stat-row" style="padding:6rpx 0;">
+      <text style="font-size:24rpx;">{{item.name}} × {{item.qty}}</text>
+      <text class="val" style="font-size:24rpx;">{{item.amountWan}}万</text>
+    </view>
+    <view wx:if="{{view.extraCostWan !== '0.0'}}" class="stat-row" style="padding:6rpx 0;">
+      <text style="font-size:24rpx;">其他投入</text>
+      <text class="val" style="font-size:24rpx;">{{view.extraCostWan}}万</text>
+    </view>
+
+    <block wx:if="{{view.booked}}">
+      <view class="section-sub-title" style="margin-top:16rpx;">📦 收益明细（{{view.incomeWan}}万）</view>
+      <view wx:for="{{view.incomeRows}}" wx:key="name" class="stat-row" style="padding:6rpx 0;">
+        <text style="font-size:24rpx;">{{item.name}} × {{item.qty}}</text>
+        <text class="val" style="font-size:24rpx;color:var(--accent);">{{item.amountWan}}万</text>
+      </view>
+      <view class="stat-row" style="margin-top:12rpx;"><text>净收益</text><text class="val" style="color:{{view.profitPos?'var(--accent)':'var(--danger)'}};">{{view.profitWan}}万</text></view>
+      <view class="stat-row"><text>投入产出比</text><text class="val">{{view.roiStr}}</text></view>
+      <view class="stat-row"><text>净收益率</text><text class="val">{{view.netRateStr}}</text></view>
+      <view class="stat-row"><text>用时 / 时薪</text><text class="val" style="font-size:22rpx;">{{view.durationStr}} · {{view.hourlyStr}}</text></view>
+    </block>
+    <view wx:else class="reward-rule-box" style="margin-top:16rpx;">
+      <text>本轮未记账：只统计了投入，收益待补录（可在账本里按参考价补录）。</text>
+    </view>
+
+    <view class="sheet-actions">
+      <view class="btn btn-a" style="flex:1" bindtap="onClose">关闭</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,53 @@
+.filter-row {
+  display: flex;
+  gap: 8rpx;
+  flex-wrap: wrap;
+  margin-bottom: 8rpx;
+  align-items: center;
+}
+
+.chip {
+  padding: 8rpx 18rpx;
+  border: 1px solid var(--border);
+  border-radius: 24rpx;
+  font-size: 22rpx;
+  color: var(--text2);
+  background: var(--bg);
+}
+
+.chip.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0, 212, 170, 0.1);
+}
+
+.filter-hint {
+  font-size: 20rpx;
+  color: var(--text2);
+  margin-left: auto;
+}
+
+.ledger-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 8rpx;
+  border-bottom: 1px solid rgba(26, 39, 64, 0.5);
+}
+
+.ledger-title {
+  font-size: 26rpx;
+  color: var(--text);
+}
+
+.ledger-sub {
+  font-size: 20rpx;
+  color: var(--text2);
+  margin-top: 4rpx;
+}
+
+.ledger-meta {
+  font-size: 20rpx;
+  color: var(--text2);
+  margin-top: 4rpx;
+}

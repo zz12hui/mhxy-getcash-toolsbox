@@ -1,0 +1,59 @@
+<view class="app">
+  <scroll-view scroll-y class="scroll-wrap" style="flex:1;">
+    <view class="section">
+      <view class="filter-row">
+        <view wx:for="{{scopes}}" wx:key="key" class="chip scope-chip {{scope===item.key?'on':''}}" bindtap="onScopeTap" data-s="{{item.key}}">{{item.label}}</view>
+        <text class="filter-hint">{{roleCount}} 个角色</text>
+      </view>
+      <view class="filter-row">
+        <view wx:for="{{tools}}" wx:key="key" class="chip tool-chip {{tool===item.key?'on':''}}" bindtap="onToolTap" data-t="{{item.key}}">{{item.label}}</view>
+      </view>
+      <view class="filter-row">
+        <view wx:for="{{periods}}" wx:key="key" class="chip period-chip {{period===item.key?'on':''}}" bindtap="onPeriodTap" data-p="{{item.key}}">{{item.label}}</view>
+      </view>
+
+      <view class="stat-cards" style="margin-top:12rpx;">
+        <view class="stat-card"><view class="lbl">总投入</view><view class="val" style="color:#f472b6;font-size:28rpx;">{{summary.totalCostWan}}万</view></view>
+        <view class="stat-card"><view class="lbl">总产出</view><view class="val" style="color:var(--accent);font-size:28rpx;">{{summary.totalIncomeWan}}万</view></view>
+        <view class="stat-card"><view class="lbl">净收益</view><view class="val" style="color:{{summary.profitPos?'var(--accent)':'var(--danger)'}};font-size:28rpx;">{{summary.profitWan}}万</view></view>
+        <view class="stat-card"><view class="lbl">投入产出比</view><view class="val" style="font-size:28rpx;">{{summary.roiStr}}</view></view>
+      </view>
+
+      <view class="reward-rule-box">
+        <view class="stat-row" style="padding:4rpx 0;"><text>轮次 / 正收益率</text><text class="val">{{summary.count}} 轮 · {{summary.winRateStr}}</text></view>
+        <view class="stat-row" style="padding:4rpx 0;"><text>净收益率 / 时薪</text><text class="val">{{summary.netRateStr}} · {{summary.hourlyStr}}</text></view>
+        <view class="stat-row" style="padding:4rpx 0;"><text>平均每轮净收益</text><text class="val">{{summary.avgProfitWan}}万</text></view>
+        <view wx:if="{{summary.unbooked}}" class="stat-row" style="padding:4rpx 0;"><text>未记账轮次（只算投入）</text><text class="val" style="color:var(--warn);">{{summary.unbooked}} 轮</text></view>
+      </view>
+
+      <view class="section-title" style="margin-top:16rpx;">累计净收益</view>
+      <canvas type="2d" id="ledgerChart" style="width:100%;height:320rpx;background:var(--surface2);border-radius:8rpx;"></canvas>
+
+      <view class="section-title" style="margin-top:16rpx;">轮次记录</view>
+      <block wx:if="{{hasRuns}}">
+        <view wx:for="{{runList}}" wx:key="key" class="ledger-row" data-key="{{item.key}}" bindtap="openDetail">
+          <view style="flex:1;min-width:0;">
+            <view class="ledger-title">{{item.toolLabel}} · Lv.{{item.level}} <text class="hist-sub">{{item.compStr}}</text></view>
+            <view class="ledger-sub">{{item.dateStr}}<text wx:if="{{item.roleName}}"> · {{item.roleName}}</text></view>
+          </view>
+          <view style="text-align:right;">
+            <view wx:if="{{!item.unbooked}}" style="font-size:24rpx;color:{{item.profitPos?'var(--accent)':'var(--danger)'}};">{{item.profitWan}}万</view>
+            <view wx:else style="font-size:22rpx;color:var(--warn);">未记账</view>
+            <view class="ledger-meta">投入产出比 {{item.roiStr}}</view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty-state" style="padding:40rpx 0;">
+        <view class="icon">📒</view>
+        <text>还没有可统计的轮次，先去结算一轮吧</text>
+        <view style="display:flex;gap:16rpx;margin-top:20rpx;">
+          <view class="btn btn-a btn-xs" bindtap="goPet">去宠环</view>
+          <view class="btn btn-xs" bindtap="goChain">去跑环</view>
+        </view>
+      </view>
+      <view style="height:40rpx;"></view>
+    </view>
+  </scroll-view>
+
+  <run-detail show="{{showDetail}}" run="{{detailRun}}" tool="{{detailRun._tool || 'pet'}}" bind:close="closeDetail"/>
+</view>

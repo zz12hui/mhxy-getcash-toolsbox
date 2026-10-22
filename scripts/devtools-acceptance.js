@@ -298,6 +298,16 @@ async function main() {
       chainGuideClosed = (await getData(miniProgram)).showGuide === false
     }
     record('跑环使用引导点击空白可关闭', chainGuideClosed)
+
+    // ===== 12. 收益账本页 =====
+    await miniProgram.reLaunch('/pages/ledger/ledger')
+    await sleep(1200)
+    const ledgerData = await getData(miniProgram)
+    record('收益账本页可打开', !!(ledgerData && ledgerData.summary), 'count=' + (ledgerData.summary && ledgerData.summary.count))
+    await tapByText(miniProgram, '.period-chip', '全部')
+    await sleep(600)
+    const ledgerAll = await getData(miniProgram)
+    record('账本周期筛选可切换', ledgerAll.period === 'all', 'period=' + ledgerAll.period)
   } catch (err) {
     console.error('验收脚本异常：' + (err && err.stack ? err.stack : err))
     record('执行完整性', false, err && err.message)
