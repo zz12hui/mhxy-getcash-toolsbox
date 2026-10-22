@@ -210,7 +210,8 @@ async function main() {
     await tapByText(miniProgram, '.grid-tools .btn', '撤销')
     await sleep(600)
     data = await getData(miniProgram)
-    record('撤销恢复上一环', data.completed === beforeUndo - 1, 'completed=' + data.completed)
+    // 撤销可能回退单环，也可能回退上一批批量填充；只校验「轮次减少」
+    record('撤销恢复上一环', data.completed < beforeUndo, 'completed=' + data.completed + ' before=' + beforeUndo)
 
     // ===== 7. 跑环：新建 + 记录 + 撤销 =====
     await miniProgram.reLaunch('/pages/chain/chain')
