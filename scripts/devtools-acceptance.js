@@ -136,7 +136,7 @@ async function main() {
     await sleep(1500)
     let data = await getData(miniProgram)
     if (!data.hasCur) {
-      await tapByText(miniProgram, '.empty-state .btn', '开始新跑环')
+      await tapByText(miniProgram, '.empty-state .btn', '开始新宠环')
       await sleep(800)
       data = await getData(miniProgram)
     }
@@ -213,7 +213,7 @@ async function main() {
     // 撤销可能回退单环，也可能回退上一批批量填充；只校验「轮次减少」
     record('撤销恢复上一环', data.completed < beforeUndo, 'completed=' + data.completed + ' before=' + beforeUndo)
 
-    // ===== 7. 跑环：新建 + 记录 + 撤销 =====
+    // ===== 7. 人环：新建 + 记录 + 撤销 =====
     await miniProgram.reLaunch('/pages/chain/chain')
     await sleep(1500)
     data = await getData(miniProgram)
@@ -223,18 +223,18 @@ async function main() {
       data = await getData(miniProgram)
     }
     const chainBase = data.completed
-    record('跑环页面可记录', data.hasCur === true, 'completed=' + chainBase)
+    record('人环页面可记录', data.hasCur === true, 'completed=' + chainBase)
     await tapByText(miniProgram, '.qb-t', '寻人')
     await (await (await getPage(miniProgram)).$('.qb-go')).tap()
     await sleep(500)
     await (await (await getPage(miniProgram)).$('.qb-go')).tap()
     await sleep(700)
     data = await getData(miniProgram)
-    record('跑环连续记录', data.completed === chainBase + 2, 'completed=' + data.completed)
+    record('人环连续记录', data.completed === chainBase + 2, 'completed=' + data.completed)
     await tapByText(miniProgram, '.grid-tools .btn', '撤销')
     await sleep(600)
     data = await getData(miniProgram)
-    record('跑环撤销', data.completed === chainBase + 1, 'completed=' + data.completed)
+    record('人环撤销', data.completed === chainBase + 1, 'completed=' + data.completed)
 
     // ===== 8. 隐私与协议 Tab =====
     await miniProgram.reLaunch('/pages/privacy/privacy')
@@ -298,7 +298,7 @@ async function main() {
       await sleep(400)
       chainGuideClosed = (await getData(miniProgram)).showGuide === false
     }
-    record('跑环使用引导点击空白可关闭', chainGuideClosed)
+    record('人环使用引导点击空白可关闭', chainGuideClosed)
 
     // ===== 12. 收益账本页 =====
     await miniProgram.reLaunch('/pages/ledger/ledger')

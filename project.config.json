@@ -27,6 +27,10 @@
         "type": "folder"
       },
       {
+        "value": "assets",
+        "type": "folder"
+      },
+      {
         "value": "README.md",
         "type": "file"
       },

@@ -112,7 +112,7 @@ async function main() {
     record('宠环页面加载', !!data, 'hasCur=' + data.hasCur)
 
     if (!data.hasCur) {
-      const started = await tapByText(page, '.empty-state .btn', '开始新跑环')
+      const started = await tapByText(page, '.empty-state .btn', '开始新宠环')
       await page.waitFor(1000)
       data = await page.data()
       record('宠环新建记录', started && data.hasCur === true, 'nextRing=' + data.nextRing)
@@ -137,16 +137,16 @@ async function main() {
       record('宠环任务选择', false, '未找到「找人」任务按钮')
     }
 
-    // ===== 跑环：新建 =====
+    // ===== 人环：新建 =====
     page = await miniProgram.reLaunch('/pages/chain/chain')
     await page.waitFor(1500)
     data = await page.data()
-    record('跑环页面加载', !!data, 'hasCur=' + data.hasCur)
+    record('人环页面加载', !!data, 'hasCur=' + data.hasCur)
     if (!data.hasCur) {
       const started = await tapByText(page, '.empty-state .btn', '开始新任务链')
       await page.waitFor(1000)
       data = await page.data()
-      record('跑环新建记录', started && data.hasCur === true, 'nextRing=' + data.nextRing)
+      record('人环新建记录', started && data.hasCur === true, 'nextRing=' + data.nextRing)
     }
 
     // ===== 隐私与协议页 =====

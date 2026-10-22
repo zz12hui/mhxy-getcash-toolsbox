@@ -171,12 +171,12 @@ npm test             # Node 单测（游戏公式、费用计算、存储、撤�
 
 | 命令 | 覆盖 |
 |---|---|
-| `npm run smoke` | 核心路径冒烟（9 项） |
+| `npm run smoke` | 核心路径冒烟（7 项） |
 | `npm run accept` | A+B 功能验收（23 项） |
 | `npm run accept:fresh` | 先清 storage 缓存再跑 A+B 验收（23 项） |
 | `npm run accept:cloud` | 云函数/云数据验收（8 项，需已部署云函数） |
 
-> 本机 2026-10-22 实测：smoke 9/9、accept 23/23、accept:cloud 8/8 通过（手机号能力已下线，不再验收）。
+> 本机 2026-10-22 实测：smoke 7/7、accept 23/23、accept:cloud 8/8 通过（手机号能力已下线，不再验收）。
 
 ## 10. 版本变更
 
