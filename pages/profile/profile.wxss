@@ -109,19 +109,19 @@ page { padding-bottom: 130rpx; }
 
 /* Service grid — 4 per row */
 .service-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 12rpx;
 }
 
 .service-item {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: auto;
   min-width: 0;
-  height: 140rpx;
+  height: 132rpx;
   background: var(--surface);
   border-radius: 16rpx;
   border: 1rpx solid var(--border);
@@ -144,16 +144,25 @@ button.service-item::after {
 }
 
 .service-icon {
-  font-size: 40rpx;
+  font-size: 36rpx;
   line-height: 1;
 }
 
 .service-label {
-  font-size: 22rpx;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 20rpx;
+  line-height: 1.2;
   color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 button.service-contact {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
   margin: 0;
   padding: 0;
   line-height: normal;
