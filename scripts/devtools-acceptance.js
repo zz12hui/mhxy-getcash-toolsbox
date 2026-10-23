@@ -335,6 +335,13 @@ async function main() {
     const profileData = await getData(miniProgram)
     const profileHero = await (await getPage(miniProgram)).$('.ledger-hero')
     record('我的页有收益账本入口', !!(profileData.ledgerSummary && profileHero), 'hasSummary=' + !!profileData.ledgerSummary)
+
+    const rewardOpened = await tapByText(miniProgram, '.service-item', '赞赏作者')
+    await sleep(600)
+    const rewardData = await getData(miniProgram)
+    record('我的页赞赏作者可打开收款码', rewardOpened && rewardData.showReward === true, 'rewardOpened=' + rewardOpened)
+    await tapByText(miniProgram, '.sheet-actions .btn', '关闭')
+    await sleep(300)
   } catch (err) {
     console.error('验收脚本异常：' + (err && err.stack ? err.stack : err))
     record('执行完整性', false, err && err.message)

@@ -23,12 +23,23 @@ Page({
     activeUserName: '',
     userPickerRange: [],
     reduceMotion: false,
+    showReward: false,
     ledgerSummary: { hasData: false, profitStr: '0.0 万两', profitPos: true, roiStr: '—', costStr: '0.0 万两', incomeStr: '0.0 万两', count: 0, hourlyStr: '—' }
   },
 
   onShow() {
     this.loadData()
     TABBAR.syncTabBar(this, 3)
+  },
+
+  onHide() {
+    this.setTabBarHidden(false)
+  },
+
+  setTabBarHidden(hidden) {
+    if (typeof this.getTabBar !== 'function') return
+    const tb = this.getTabBar()
+    if (tb && tb.setData) tb.setData({ hidden: !!hidden })
   },
 
   loadData() {
@@ -178,5 +189,20 @@ Page({
   goFeedback() { wx.navigateTo({ url: '/pages/feedback/feedback' }) },
   goPrivacy() { wx.navigateTo({ url: '/pages/privacy/privacy' }) },
   goLedger() { wx.navigateTo({ url: '/pages/ledger/ledger' }) },
+
+  openReward() {
+    this.setData({ showReward: true })
+    this.setTabBarHidden(true)
+  },
+
+  closeReward() {
+    this.setData({ showReward: false })
+    this.setTabBarHidden(false)
+  },
+
+  previewReward() {
+    wx.previewImage({ urls: ['/images/reward-qr.jpg'] })
+  },
+
   noop() {}
 })

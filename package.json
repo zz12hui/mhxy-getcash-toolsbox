@@ -1,7 +1,7 @@
 {
   "name": "mhxy-getcash-toolsbox",
-  "version": "1.4.0",
-  "description": "微信小程序 — 梦幻西游人环记录与收益统计工具（宠环 100 环 / 人环 300 环，本地优先，收益账本 + 腾讯文档报表，v1.4）。",
+  "version": "1.4.1",
+  "description": "微信小程序 — 梦幻西游人环记录与收益统计工具（宠环 100 环 / 人环 300 环，本地优先，收益账本 + 腾讯文档报表，v1.4.1）。",
   "main": "app.js",
   "scripts": {
     "lint": "eslint pages/**/*.js utils/**/*.js app.js custom-tab-bar/index.js components/**/*.js --format stylish",

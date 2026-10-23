@@ -18,11 +18,6 @@ Page({
   refreshState() {
     const profile = S.getWxProfile()
     const isLoggedIn = !!profile
-    // 手机号能力已下线：清理历史版本可能残留的本地手机号
-    if (profile && profile.phoneNumber) {
-      delete profile.phoneNumber
-      S.saveWxProfile(profile)
-    }
     this.setData({
       isLoggedIn,
       nickName: profile ? (profile.nickName || '微信用户') : '',
