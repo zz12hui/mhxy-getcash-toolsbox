@@ -22,6 +22,10 @@
       提交反馈
     </view>
 
+    <button class="btn btn-ghost contact-service-btn" open-type="contact" session-from="feedback" send-message-title="梦幻搞钱工具箱" send-message-path="/pages/index/index">
+      💬 联系客服
+    </button>
+
     <view class="form-note">
       <text>也可以使用微信官方反馈通道，我们同样会收到。</text>
     </view>

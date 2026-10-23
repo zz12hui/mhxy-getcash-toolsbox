@@ -23,6 +23,7 @@ Page({
     activeUserName: '',
     userPickerRange: [],
     reduceMotion: false,
+    rewardEnabled: false,
     showReward: false,
     ledgerSummary: { hasData: false, profitStr: '0.0 万两', profitPos: true, roiStr: '—', costStr: '0.0 万两', incomeStr: '0.0 万两', count: 0, hourlyStr: '—' }
   },
@@ -191,6 +192,7 @@ Page({
   goLedger() { wx.navigateTo({ url: '/pages/ledger/ledger' }) },
 
   openReward() {
+    // 赞赏入口暂隐藏；如需开启：把 assets/reward-qr.jpg 复制回 images/，并设置 data.rewardEnabled=true
     this.setData({ showReward: true })
     this.setTabBarHidden(true)
   },

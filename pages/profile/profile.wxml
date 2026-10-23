@@ -100,7 +100,11 @@
           <text class="service-icon">🔒</text>
           <text class="service-label">隐私与协议</text>
         </view>
-        <view class="service-item" bindtap="openReward">
+        <button class="service-item service-contact" open-type="contact" session-from="profile" send-message-title="梦幻搞钱工具箱" send-message-path="/pages/index/index">
+          <text class="service-icon">💬</text>
+          <text class="service-label">联系客服</text>
+        </button>
+        <view wx:if="{{rewardEnabled}}" class="service-item" bindtap="openReward">
           <text class="service-icon">🙏</text>
           <text class="service-label">赞赏作者</text>
         </view>
@@ -110,8 +114,8 @@
     <view style="height:80rpx;"></view>
   </scroll-view>
 
-  <!-- 赞赏作者 -->
-  <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{showReward}}" bindtap="closeReward">
+  <!-- 赞赏作者（入口暂隐藏；后续 rewardEnabled=true 再开） -->
+  <view class="sheet-overlay" catchtouchmove="noop" wx:if="{{rewardEnabled && showReward}}" bindtap="closeReward">
     <view class="sheet reward-sheet" catchtap="noop">
       <view class="sheet-handle"></view>
       <view class="sheet-title">🙏 赞赏作者</view>

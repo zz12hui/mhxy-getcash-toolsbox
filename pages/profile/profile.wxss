@@ -109,8 +109,8 @@ page { padding-bottom: 130rpx; }
 
 /* Service grid — 4 per row */
 .service-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 12rpx;
 }
 
@@ -119,7 +119,8 @@ page { padding-bottom: 130rpx; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 156rpx;
+  width: 100%;
+  min-width: 0;
   height: 140rpx;
   background: var(--surface);
   border-radius: 16rpx;
@@ -150,6 +151,18 @@ button.service-item::after {
 .service-label {
   font-size: 22rpx;
   color: var(--text);
+}
+
+button.service-contact {
+  margin: 0;
+  padding: 0;
+  line-height: normal;
+  border: 1rpx solid var(--border);
+  background: var(--surface);
+}
+
+button.service-contact::after {
+  border: none;
 }
 
 /* 赞赏作者 */

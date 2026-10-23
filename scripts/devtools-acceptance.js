@@ -336,12 +336,13 @@ async function main() {
     const profileHero = await (await getPage(miniProgram)).$('.ledger-hero')
     record('我的页有收益账本入口', !!(profileData.ledgerSummary && profileHero), 'hasSummary=' + !!profileData.ledgerSummary)
 
-    const rewardOpened = await tapByText(miniProgram, '.service-item', '赞赏作者')
-    await sleep(600)
-    const rewardData = await getData(miniProgram)
-    record('我的页赞赏作者可打开收款码', rewardOpened && rewardData.showReward === true, 'rewardOpened=' + rewardOpened)
-    await tapByText(miniProgram, '.sheet-actions .btn', '关闭')
-    await sleep(300)
+    const profileServiceItems = await (await getPage(miniProgram)).$$('.service-item')
+    const serviceTexts = []
+    for (const item of profileServiceItems) serviceTexts.push((await item.text()).trim())
+    const hasContact = serviceTexts.some(t => t.indexOf('联系客服') >= 0)
+    const hasReward = serviceTexts.some(t => t.indexOf('赞赏作者') >= 0)
+    record('我的页有联系客服入口', hasContact, 'services=' + serviceTexts.join('|'))
+    record('赞赏作者入口已隐藏', !hasReward, 'hasReward=' + hasReward)
   } catch (err) {
     console.error('验收脚本异常：' + (err && err.stack ? err.stack : err))
     record('执行完整性', false, err && err.message)

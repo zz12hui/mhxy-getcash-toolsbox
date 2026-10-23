@@ -1283,3 +1283,14 @@ page {
   word-break: break-word;
   overflow-wrap: anywhere;
 }
+
+/* 原生客服按钮 */
+.contact-service-btn {
+  width: 100%;
+  margin-top: 20rpx;
+  line-height: normal;
+}
+
+.contact-service-btn::after {
+  border: none;
+}
