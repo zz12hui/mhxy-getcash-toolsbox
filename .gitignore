@@ -30,3 +30,10 @@ miniprogram_npm/
 
 # 云函数本地兜底配置（含 token，绝不提交）
 cloudfunctions/docsReport/config.local.js
+
+# 本地凭据/证书（不要提交）
+.env
+.env.*
+*.pem
+*.key
+*.p12

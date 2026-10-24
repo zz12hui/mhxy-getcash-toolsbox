@@ -137,12 +137,12 @@ tests/                            Node 单测（不参与小程序打包）
 ## 7. 快速开始 / 本地运行部署
 
 1. **安装微信开发者工具**（完整功能需微信扫码登录；游客模式只能编辑本地项目）。
-2. **准备 AppID**：云开发需要正式注册的小程序 AppID，测试号不支持云开发。仓库里的 `<YOUR_APPID>` 和云环境 `<YOUR_CLOUD_ENV>` 是作者自己的环境，**他人使用请替换成自己的**：
+2. **准备 AppID / 云环境**：云开发需要正式注册的小程序 AppID，测试号不支持云开发。仓库已脱敏，`project.config.json` 的 `appid` 与 `app.js` 的 `env` 是占位符，请替换成你自己的 AppID / 云环境 ID；不要把真实值提交回来。
    - `project.config.json` → `appid`
    - `app.js` → `wx.cloud.init({ env: '你的云环境ID' })`
 3. **导入项目**：选择本仓库根目录。
 4. **创建集合**：按上表在云开发控制台创建 6 个集合。
-5. **部署云函数**：`cloudfunctions/` 下 6 个目录分别右键「上传并部署：云端安装依赖」（已锁定 `wx-server-sdk@3.0.4`）。
+5. **部署云函数**：`cloudfunctions/` 下 7 个目录分别右键「上传并部署：云端安装依赖」（已锁定 `wx-server-sdk@3.0.4`）。
 6. **配置 `init` 鉴权**（二选一）：在云开发控制台 → 云函数 `init` → 配置 → 环境变量中添加：
    - 小程序内调用（推荐）：`ADMIN_OPENIDS = 你的openid`（多个用英文逗号分隔）。openid 可先调用一次 `login` 云函数，在返回值或日志里查看；用小程序调用 `init` 时会把该 openid 写入 `admins`，之后 `login` 返回 `isAdmin: true`。
    - 控制台/脚本调用：`INIT_SECRET = 一串随机长字符串`。控制台「云端测试」拿不到用户 openid，需要在参数里传 `secret`。
